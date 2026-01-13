@@ -1,6 +1,8 @@
-import { HeaderManager } from "../components/Header/HeaderManager";
 import { Outlet } from "react-router-dom";
 import { HeaderProvider } from "../contexts/HeaderContext";
+
+import { HeaderManager } from "../components/Header/HeaderManager";
+import { Footer } from "../components/Footer";
 
 export const MainLayout = () => {
   return (
@@ -9,6 +11,7 @@ export const MainLayout = () => {
       <main>
         <Outlet />
       </main>
+      <Footer />
     </HeaderProvider>
   );
 };

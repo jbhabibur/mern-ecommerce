@@ -6,7 +6,6 @@ import { PromoBanner } from "../components/shared/PromoBanner";
 import promoBannerPanjabi from "../assets/images/promo/promo-banner-panjabi.jpeg";
 import promoBannerFragrance from "../assets/images/promo/promo-banner-fragrance.png";
 import { FeatureProducts } from "../components/FeatureProducts";
-import { Footer } from "../components/Footer";
 import { InstagramGallery } from "../components/InstagramGallery";
 
 export const Home = () => {
@@ -19,7 +18,6 @@ export const Home = () => {
       <FeatureProducts />
       <PromoBanner image={promoBannerFragrance} title="Fragrance Collection" />
       <InstagramGallery />
-      <Footer />
     </>
   );
 };

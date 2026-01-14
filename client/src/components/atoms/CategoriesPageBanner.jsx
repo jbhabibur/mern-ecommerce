@@ -1,4 +1,23 @@
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import axios from "axios";
+
 export const CategoriesPageBanner = () => {
+  const [images, setImages] = useState([]);
+  const { categoryName } = useParams();
+
+  useEffect(() => {
+    axios
+      .get("/categories/shirt")
+      .then((res) => {
+        console.log(res.data);
+        setImages(res.data);
+      })
+      .catch(() => {
+        console.log("Failed");
+      });
+  }, []);
+
   return (
     <div className="w-full mb-6">
       <img

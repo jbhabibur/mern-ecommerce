@@ -1,11 +1,7 @@
-import React from "react";
-
 import Category1 from "../assets/images/categories/category-panjabi.png";
 import Category2 from "../assets/images/categories/category-shirt.png";
 import Category3 from "../assets/images/categories/category-polo.png";
 import Category4 from "../assets/images/categories/category-accessories.png";
-
-import { Link } from "react-router-dom";
 
 const categories = [
   { id: 1, name: "PANJABI", image: Category1 },
@@ -21,8 +17,8 @@ export const Categories = () => {
         {/* Categories Grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
           {categories.map((item) => (
-            <Link
-              to={`/categories/${item.name.toLowerCase().split(" ")[0]}`}
+            <a
+              href={`/categories/${item.name.toLowerCase().split(" ")[0]}`}
               key={item.id}
             >
               <div className="relative aspect-[4/3] overflow-hidden group cursor-pointer">
@@ -40,7 +36,7 @@ export const Categories = () => {
                   </h2>
                 </div>
               </div>
-            </Link>
+            </a>
           ))}
         </div>
       </div>

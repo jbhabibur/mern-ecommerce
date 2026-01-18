@@ -11,8 +11,10 @@ export const ProductPurchaseSection = ({ product }) => {
   const subtotal = (unitPrice * quantity).toLocaleString();
   const sizes = ["15", "15.5", "16", "16.5"];
 
+  console.log(product);
+
   return (
-    <div className="flex flex-col w-full max-w-md bg-white font-sans text-[#1a1a1a]">
+    <div className="flex flex-col w-full max-w-md bg-green-500 font-sans text-[#1a1a1a]">
       {/* Product Title & Price */}
       <h1 className="text-lg! md:text-2xl font-bold leading-tight mb-2">
         {product?.name}

@@ -1,12 +1,19 @@
 import Logo from "../../../assets/images/logo/logo.avif";
 import { Link } from "react-router-dom";
 import { ShoppingBag, Heart, Search } from "lucide-react";
-import { useSelector, useDispatch } from "react-redux";
+import { useDispatch } from "react-redux";
 import { setFocus, setQuery } from "../../../redux/slices/searchSlice";
-import { DesktopSearchOverlay } from "../../search/DesktopSearchOverlay"; // নিশ্চিত করুন পাথ ঠিক আছে
+import { DesktopSearchOverlay } from "../../search/DesktopSearchOverlay";
+import { useSelector } from "react-redux";
+import { cartActions } from "../../../redux/slices/cartSlice";
 
 export const MainHeader = () => {
   const dispatch = useDispatch();
+
+  // Redux state থেকে totalQuantity রিড করা হচ্ছে
+  const totalQuantity = useSelector((state) => state.cart.totalQuantity);
+
+  const isOpen = useSelector((state) => state.cart.isCartOpen); // গ্লোবাল ওপেন/ক্লোজ স্টেট
 
   return (
     <header className="w-full relative">
@@ -15,7 +22,9 @@ export const MainHeader = () => {
       <div className="max-w-[1300px] mx-auto flex items-center justify-between px-8 md:px-16 lg:px-20 py-2">
         {/* Left: Logo */}
         <div className="flex-shrink-0 scale-120">
-          <img src={Logo} alt="Dorjibari logo" className="h-10 w-auto" />
+          <a href="/">
+            <img src={Logo} alt="Dorjibari logo" className="h-10 w-auto" />
+          </a>
         </div>
 
         {/* Right Section */}
@@ -49,19 +58,29 @@ export const MainHeader = () => {
 
           {/* Cart & Wishlist */}
           <div className="flex gap-x-6 justify-end items-center">
-            <div className="flex gap-x-2 cursor-pointer group items-center">
+            <div
+              onClick={() => dispatch(cartActions.toggleCart(false))}
+              className="flex gap-x-2 cursor-pointer group items-center"
+            >
               <ShoppingBag className="w-5 h-5 transition-transform group-hover:scale-110" />
               <span className="text-sm">Shopping Cart</span>
-              <span className="bg-[#FFE5E8] rounded-full w-5 h-5 flex items-center justify-center text-[10px] font-bold">
-                0
-              </span>
+              {/* সংখ্যাটি যদি ০ এর বেশি হয় তবেই ব্যাজ দেখাবে */}
+              {totalQuantity > 0 ? (
+                <span className="bg-[#FFE5E8] rounded-full w-5 h-5 flex items-center justify-center text-[10px] font-bold">
+                  {totalQuantity}
+                </span>
+              ) : (
+                <span className="bg-[#FFE5E8] rounded-full w-5 h-5 flex items-center justify-center text-[10px] font-bold">
+                  0
+                </span>
+              )}
             </div>
             <div className="flex gap-x-2 cursor-pointer items-center group">
               <Heart className="w-5 h-5 transition-transform group-hover:scale-110" />
               <span className="text-sm">My Wish List</span>
             </div>
             <span className="text-sm cursor-pointer hover:underline">
-              Sign In
+              Sign In or Create an Account
             </span>
           </div>
         </div>

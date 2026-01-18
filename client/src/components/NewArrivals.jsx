@@ -1,110 +1,164 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation } from "swiper/modules";
-import { HiOutlineArrowLeft, HiOutlineArrowRight } from "react-icons/hi";
-import "swiper/css";
+import { Link } from "react-router-dom";
 
-import { SectionTitle } from "./shared/SectionTitle";
+// Swiper styles
+import "swiper/css";
+import "swiper/css/navigation";
+import { SectionHeader } from "./atoms/SectionHeader";
 import { ProductCard } from "./shared/ProductCard";
 import { PrimaryButton } from "./atoms/PrimaryButton";
 
 export const NewArrivals = () => {
-  const products = [1, 2, 3, 4, 5, 6, 7, 8];
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [slidesPerView, setSlidesPerView] = useState(2);
+  const [visibleCount, setVisibleCount] = useState(8); // Desktop load more state
 
-  const SLIDES_PER_VIEW = 2;
-  const SLIDES_PER_GROUP = 2;
-
-  const [currentIndex, setCurrentIndex] = useState(SLIDES_PER_VIEW);
-
-  const prevRef = useRef(null);
-  const nextRef = useRef(null);
-  const swiperRef = useRef(null);
+  const [products, setProducts] = useState([]);
+  const [initialLoading, setInitialLoading] = useState(true); // প্রথমবার লোডিংয়ের জন্য
+  const [isMoreLoading, setIsMoreLoading] = useState(false); // বাটনের জন্য
 
   useEffect(() => {
-    if (swiperRef.current && prevRef.current && nextRef.current) {
-      swiperRef.current.params.navigation.prevEl = prevRef.current;
-      swiperRef.current.params.navigation.nextEl = nextRef.current;
-      swiperRef.current.navigation.destroy();
-      swiperRef.current.navigation.init();
-      swiperRef.current.navigation.update();
-    }
-  }, [prevRef.current, nextRef.current]);
+    // Function to fetch data from the local server
+    const fetchProducts = async () => {
+      try {
+        // Ensure your json-server is running on this port
+        const response = await fetch("http://localhost:5000/products");
+        const data = await response.json();
+
+        // Filter products to show only those marked as 'isNewArrival'
+        const newArrivals = data.filter((item) => item.isNewArrival === true);
+        setProducts(newArrivals);
+
+        setInitialLoading(false);
+      } catch (error) {
+        console.error("Error fetching products:", error);
+        setInitialLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  const totalProducts = products.length;
+
+  // Desktop Load More handler
+  const handleLoadMore = () => {
+    setIsMoreLoading(true); // শুধু বাটনের লোডিং ট্রু হবে
+    setTimeout(() => {
+      setVisibleCount((prev) => prev + 8);
+      setIsMoreLoading(false);
+    }, 3000);
+  };
+
+  // Show loading state while data is being fetched
+  // প্রথমবার ডেটা আসার সময় শুধু এটা দেখাবে
+  if (initialLoading) {
+    return <div className="text-center py-10 font-medium">Loading...</div>;
+  }
 
   return (
-    <section className="lg:px-22 py-4 lg:py-24">
-      <SectionTitle title="NEW ARRIVALS" linkText="View All" linkUrl="/shop" />
-
-      {/* MOBILE & TABLET */}
-      <div className="block lg:hidden mt-8">
-        <Swiper
-          modules={[Navigation]}
-          spaceBetween={12} // Space reduced for mobile
-          slidesPerView={SLIDES_PER_VIEW}
-          slidesPerGroup={SLIDES_PER_GROUP}
-          speed={500}
-          allowTouchMove={true} // Mobile এ টাচ মুভ অন রাখা ভালো
-          onSwiper={(swiper) => (swiperRef.current = swiper)}
-          onSlideChange={(swiper) =>
-            setCurrentIndex(
-              Math.min(swiper.activeIndex + SLIDES_PER_VIEW, products.length)
-            )
-          }
-          className="product-swiper" // Custom class if needed
-        >
-          {products.map((item) => (
-            <SwiperSlide key={item} className="pb-4">
-              {" "}
-              {/* Slide padding added */}
-              <ProductCard
-                title={`Shirt: Full Sleeve Blue Door _0${item}`}
-                price="2,490.00"
-                disabled={false}
-              />
-            </SwiperSlide>
-          ))}
-        </Swiper>
-
-        {/* Navigation - Relative positioned so it doesn't overlap */}
-        <div className="flex items-center justify-between border-t border-gray-100 pt-6 bg-white mt-4">
-          {/* Fraction Display */}
-          <div className="text-gray-500 font-light text-xl tracking-widest">
-            {currentIndex}
-            <span className="mx-1 text-gray-300">/</span>
-            {products.length}
+    <div>
+      <div className="max-w-[1240px] mx-auto py-2 px-4 md:px-6">
+        <SectionHeader title="New Arrivals" linkText="View All" />
+      </div>
+      <div className="max-w-[1240px] mx-auto py-2 px-0 lg:px-6!">
+        {/* --- Desktop Grid Layout --- */}
+        <div className="hidden lg:block">
+          <div className="grid grid-cols-4 gap-8">
+            {products.slice(0, visibleCount).map((product) => (
+              <a
+                key={product.id}
+                href={`/products/${product.name
+                  .toLowerCase()
+                  .replace(/\s+/g, "-")}`}
+                className="no-underline! text-current! block!"
+              >
+                <ProductCard product={product} />
+              </a>
+            ))}
           </div>
 
-          {/* Nav Buttons */}
-          <div className="flex gap-3">
-            <button
-              ref={prevRef}
-              className="w-12 h-12 rounded-full border border-gray-200 flex items-center justify-center hover:bg-black hover:text-white transition-all disabled:opacity-30"
-            >
-              <HiOutlineArrowLeft size={20} />
-            </button>
-            <button
-              ref={nextRef}
-              className="w-12 h-12 rounded-full border border-gray-200 flex items-center justify-center hover:bg-black hover:text-white transition-all disabled:opacity-30"
-            >
-              <HiOutlineArrowRight size={20} />
-            </button>
+          {visibleCount < totalProducts && (
+            <div className="mt-20 flex items-center justify-center">
+              <PrimaryButton
+                label="Show More"
+                onClick={handleLoadMore}
+                hasLoad={isMoreLoading}
+              />
+            </div>
+          )}
+        </div>
+
+        {/* --- Mobile & Tablet Swiper (Limited to 8 products) --- */}
+        <div className="lg:hidden">
+          <Swiper
+            modules={[Navigation]}
+            spaceBetween={10}
+            slidesPerView={2}
+            onSlideChange={(swiper) => setCurrentIndex(swiper.activeIndex)}
+            onBreakpoint={(swiper) =>
+              setSlidesPerView(swiper.params.slidesPerView)
+            }
+            breakpoints={{
+              768: { slidesPerView: 3 },
+            }}
+            navigation={{
+              nextEl: ".custom-next",
+              prevEl: ".custom-prev",
+            }}
+          >
+            {/* Mobile এ আমরা slice(0, 8) ব্যবহার করছি যাতে ৮টির বেশি না দেখায় */}
+            {products.slice(0, 8).map((product) => (
+              <SwiperSlide key={product.id}>
+                <a
+                  key={product.id}
+                  href={`/products/${product.name
+                    .toLowerCase()
+                    .replace(/\s+/g, "-")}`}
+                  className="no-underline! text-current! block!"
+                >
+                  <ProductCard product={product} />
+                </a>
+              </SwiperSlide>
+            ))}
+          </Swiper>
+
+          <div className="flex items-center justify-between mt-10 px-3">
+            <div className="text-sm font-medium text-gray-600">
+              {Math.min(currentIndex + slidesPerView, 8)} / 8
+            </div>
+
+            <div className="flex gap-4">
+              <button className="custom-prev p-3 border border-gray-400 rounded-full hover:bg-black hover:text-white transition disabled:opacity-30">
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path d="M15 18l-6-6 6-6" />
+                </svg>
+              </button>
+              <button className="custom-next p-3 border border-gray-400 rounded-full hover:bg-black hover:text-white transition disabled:opacity-30">
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path d="M9 18l6-6-6-6" />
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
       </div>
-
-      {/* DESKTOP GRID */}
-      <div className="hidden lg:grid grid-cols-4 gap-x-8 gap-y-16 py-16">
-        {products.map((item) => (
-          <ProductCard
-            key={item}
-            title="Shirt: Full Sleeve Blue Door Regular Fit"
-            price="2,490.00"
-          />
-        ))}
-      </div>
-
-      <div className="flex items-center justify-center">
-        <PrimaryButton title="Show More" />
-      </div>
-    </section>
+    </div>
   );
 };

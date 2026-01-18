@@ -1,0 +1,256 @@
+{
+  "products": [
+    {
+      "id": "prod_001",
+      "name": "Full Sleeve Blue Door Regular Fit Dobby Shirt",
+      "slug": "full-sleeve-blue-door-regular-fit-dobby-shirt-m110",
+      "price": 2490,
+      "compare_at_price": 2990,
+      "currency": "BDT",
+      "category": "mens",
+      "subCategory": "top",
+      "itemType": "shirt",
+      "images": [
+        "/images/products/shirts/FormalShirts/shirt-fs-blue-door-dobby-310-1-main.jpeg",
+        "/images/products/shirts/FormalShirts/shirt-fs-blue-door-dobby-310-1-back.jpeg",
+        "/images/products/shirts/FormalShirts/shirt-fs-blue-door-dobby-310-1-close.jpeg"
+      ],
+      "variants": [
+        { "size": "15", "stock": 2 },
+        { "size": "15.5", "stock": 5 },
+        { "size": "16", "stock": 3 },
+        { "size": "16.5", "stock": 3 }
+      ],
+      "description": "100% Premium Cotton, Regular Fit, Modern Dobby Design.",
+      "isNewArrival": true,
+      "createdAt": "2024-01-15T10:00:00Z"
+    },
+    {
+      "id": "prod_002",
+      "name": "Full Sleeve Blue Door Regular Fit Dobby Shirt",
+      "slug": "full-sleeve-blue-door-regular-fit-dobby-shirt",
+      "price": 2390,
+      "compare_at_price": 2990,
+      "currency": "BDT",
+      "category": "mens",
+      "subCategory": "top",
+      "itemType": "shirt",
+      "images": [
+        "/images/products/shirts/FormalShirts/shirt-fs-blue-door-dobby-310-1-main.jpeg",
+        "/images/products/shirts/FormalShirts/shirt-fs-blue-door-dobby-310-1-back.jpeg",
+        "/images/products/shirts/FormalShirts/shirt-fs-blue-door-dobby-310-1-close.jpeg"
+      ],
+      "variants": [
+        { "size": "15", "stock": 2 },
+        { "size": "15.5", "stock": 5 },
+        { "size": "16", "stock": 3 },
+        { "size": "16.5", "stock": 3 }
+      ],
+      "description": "100% Premium Cotton, Regular Fit, Modern Dobby Design.",
+      "fabric": "100% Cotton",
+      "color": "Sky",
+      "isNewArrival": true,
+      "createdAt": "2024-01-15T10:00:00Z"
+    },
+    {
+      "id": "prod_003",
+      "name": "Full Sleeve Blue Door Regular Fit Dobby Shirt",
+      "slug": "full-sleeve-blue-door-regular-fit-dobby-shirt",
+      "price": 2490,
+      "compare_at_price": 2990,
+      "currency": "BDT",
+      "category": "mens",
+      "subCategory": "top",
+      "itemType": "shirt",
+      "images": [
+        "/images/products/shirts/FormalShirts/shirt-fs-blue-door-dobby-310-1-main.jpeg",
+        "/images/products/shirts/FormalShirts/shirt-fs-blue-door-dobby-310-1-back.jpeg",
+        "/images/products/shirts/FormalShirts/shirt-fs-blue-door-dobby-310-1-close.jpeg"
+      ],
+      "variants": [
+        { "size": "15", "stock": 2 },
+        { "size": "15.5", "stock": 5 },
+        { "size": "16", "stock": 3 },
+        { "size": "16.5", "stock": 3 }
+      ],
+      "description": "100% Premium Cotton, Regular Fit, Modern Dobby Design.",
+      "isNewArrival": true,
+      "createdAt": "2024-01-15T10:00:00Z"
+    },
+    {
+      "id": "prod_004",
+      "name": "Full Sleeve Blue Door Regular Fit Dobby Shirt",
+      "slug": "full-sleeve-blue-door-regular-fit-dobby-shirt",
+      "price": 2490,
+      "compare_at_price": 2990,
+      "currency": "BDT",
+      "category": "mens",
+      "subCategory": "top",
+      "itemType": "shirt",
+      "images": [
+        "/images/products/shirts/FormalShirts/shirt-fs-blue-door-dobby-310-1-main.jpeg",
+        "/images/products/shirts/FormalShirts/shirt-fs-blue-door-dobby-310-1-back.jpeg",
+        "/images/products/shirts/FormalShirts/shirt-fs-blue-door-dobby-310-1-close.jpeg"
+      ],
+      "variants": [
+        { "size": "15", "stock": 2 },
+        { "size": "15.5", "stock": 5 },
+        { "size": "16", "stock": 3 },
+        { "size": "16.5", "stock": 3 }
+      ],
+      "description": "100% Premium Cotton, Regular Fit, Modern Dobby Design.",
+      "isNewArrival": true,
+      "createdAt": "2024-01-15T10:00:00Z"
+    },
+    {
+      "id": "prod_005",
+      "name": "Full Sleeve Blue Door Regular Fit Dobby Shirt",
+      "slug": "full-sleeve-blue-door-regular-fit-dobby-shirt",
+      "price": 2490,
+      "compare_at_price": 2990,
+      "currency": "BDT",
+      "category": "mens",
+      "subCategory": "top",
+      "itemType": "shirt",
+      "images": [
+        "/images/products/shirts/FormalShirts/shirt-fs-blue-door-dobby-310-1-main.jpeg",
+        "/images/products/shirts/FormalShirts/shirt-fs-blue-door-dobby-310-1-back.jpeg",
+        "/images/products/shirts/FormalShirts/shirt-fs-blue-door-dobby-310-1-close.jpeg"
+      ],
+      "variants": [
+        { "size": "15", "stock": 2 },
+        { "size": "15.5", "stock": 5 },
+        { "size": "16", "stock": 3 },
+        { "size": "16.5", "stock": 3 }
+      ],
+      "description": "100% Premium Cotton, Regular Fit, Modern Dobby Design.",
+      "isNewArrival": true,
+      "createdAt": "2024-01-15T10:00:00Z"
+    },
+    {
+      "id": "prod_006",
+      "name": "Full Sleeve Blue Door Regular Fit Dobby Shirt",
+      "slug": "full-sleeve-blue-door-regular-fit-dobby-shirt",
+      "price": 2490,
+      "compare_at_price": 2990,
+      "currency": "BDT",
+      "category": "mens",
+      "subCategory": "top",
+      "itemType": "shirt",
+      "images": [
+        "/images/products/shirts/FormalShirts/shirt-fs-blue-door-dobby-310-1-main.jpeg",
+        "/images/products/shirts/FormalShirts/shirt-fs-blue-door-dobby-310-1-back.jpeg",
+        "/images/products/shirts/FormalShirts/shirt-fs-blue-door-dobby-310-1-close.jpeg"
+      ],
+      "variants": [
+        { "size": "15", "stock": 2 },
+        { "size": "15.5", "stock": 5 },
+        { "size": "16", "stock": 3 },
+        { "size": "16.5", "stock": 3 }
+      ],
+      "description": "100% Premium Cotton, Regular Fit, Modern Dobby Design.",
+      "isNewArrival": true,
+      "createdAt": "2024-01-15T10:00:00Z"
+    },
+    {
+      "id": "prod_007",
+      "name": "Full Sleeve Blue Door Regular Fit Dobby Shirt",
+      "slug": "full-sleeve-blue-door-regular-fit-dobby-shirt",
+      "price": 2490,
+      "compare_at_price": 2990,
+      "currency": "BDT",
+      "category": "mens",
+      "subCategory": "top",
+      "itemType": "shirt",
+      "images": [
+        "/images/products/shirts/FormalShirts/shirt-fs-blue-door-dobby-310-1-main.jpeg",
+        "/images/products/shirts/FormalShirts/shirt-fs-blue-door-dobby-310-1-back.jpeg",
+        "/images/products/shirts/FormalShirts/shirt-fs-blue-door-dobby-310-1-close.jpeg"
+      ],
+      "variants": [
+        { "size": "15", "stock": 2 },
+        { "size": "15.5", "stock": 5 },
+        { "size": "16", "stock": 3 },
+        { "size": "16.5", "stock": 3 }
+      ],
+      "description": "100% Premium Cotton, Regular Fit, Modern Dobby Design.",
+      "isNewArrival": true,
+      "createdAt": "2024-01-15T10:00:00Z"
+    },
+    {
+      "id": "prod_008",
+      "name": "Full Sleeve Blue Door Regular Fit Dobby Shirt",
+      "slug": "full-sleeve-blue-door-regular-fit-dobby-shirt",
+      "price": 2490,
+      "compare_at_price": 2990,
+      "currency": "BDT",
+      "category": "mens",
+      "subCategory": "top",
+      "itemType": "shirt",
+      "images": [
+        "/images/products/shirts/FormalShirts/shirt-fs-blue-door-dobby-310-1-main.jpeg",
+        "/images/products/shirts/FormalShirts/shirt-fs-blue-door-dobby-310-1-back.jpeg",
+        "/images/products/shirts/FormalShirts/shirt-fs-blue-door-dobby-310-1-close.jpeg"
+      ],
+      "variants": [
+        { "size": "15", "stock": 2 },
+        { "size": "15.5", "stock": 5 },
+        { "size": "16", "stock": 3 },
+        { "size": "16.5", "stock": 3 }
+      ],
+      "description": "100% Premium Cotton, Regular Fit, Modern Dobby Design.",
+      "isNewArrival": true,
+      "createdAt": "2024-01-15T10:00:00Z"
+    },
+    {
+      "id": "prod_009",
+      "name": "Full Sleeve Blue Door Regular Fit Dobby Shirt",
+      "slug": "full-sleeve-blue-door-regular-fit-dobby-shirt",
+      "price": 2490,
+      "compare_at_price": 2990,
+      "currency": "BDT",
+      "category": "mens",
+      "subCategory": "top",
+      "itemType": "shirt",
+      "images": [
+        "/images/products/shirts/FormalShirts/shirt-fs-blue-door-dobby-310-1-main.jpeg",
+        "/images/products/shirts/FormalShirts/shirt-fs-blue-door-dobby-310-1-back.jpeg",
+        "/images/products/shirts/FormalShirts/shirt-fs-blue-door-dobby-310-1-close.jpeg"
+      ],
+      "variants": [
+        { "size": "15", "stock": 2 },
+        { "size": "15.5", "stock": 5 },
+        { "size": "16", "stock": 3 },
+        { "size": "16.5", "stock": 3 }
+      ],
+      "description": "100% Premium Cotton, Regular Fit, Modern Dobby Design.",
+      "isNewArrival": true,
+      "createdAt": "2024-01-15T10:00:00Z"
+    },
+    {
+      "id": "prod_010",
+      "name": "Full Sleeve Blue Door Regular Fit Dobby Shirt",
+      "slug": "full-sleeve-blue-door-regular-fit-dobby-shirt",
+      "price": 2490,
+      "compare_at_price": 2990,
+      "currency": "BDT",
+      "category": "mens",
+      "subCategory": "top",
+      "itemType": "shirt",
+      "images": [
+        "/images/products/shirts/FormalShirts/shirt-fs-blue-door-dobby-310-1-main.jpeg",
+        "/images/products/shirts/FormalShirts/shirt-fs-blue-door-dobby-310-1-back.jpeg",
+        "/images/products/shirts/FormalShirts/shirt-fs-blue-door-dobby-310-1-close.jpeg"
+      ],
+      "variants": [
+        { "size": "15", "stock": 2 },
+        { "size": "15.5", "stock": 5 },
+        { "size": "16", "stock": 3 },
+        { "size": "16.5", "stock": 3 }
+      ],
+      "description": "100% Premium Cotton, Regular Fit, Modern Dobby Design.",
+      "isNewArrival": true,
+      "createdAt": "2024-01-15T10:00:00Z"
+    }
+  ]
+}

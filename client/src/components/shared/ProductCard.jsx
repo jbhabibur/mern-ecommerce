@@ -1,91 +1,96 @@
-import React, { useState } from "react";
-import demoImage from "../../assets/images/hero/hero2.jpeg";
-import { QuickAddActionBtn } from "../atoms/QuickAddActionBtn";
+import { Heart, Eye } from "lucide-react";
+import { useState } from "react";
+import { RoundActionButton } from "../atoms/RoundActionButton";
+import { useMediaQuery } from "../../hooks/useMediaQuery";
 import { SizeBadge } from "../atoms/SizeBadge";
-import { RoundActionButton as ActionButton } from "../atoms/RoundActionButton";
 
-export const ProductCard = ({
-  title = "Product Name",
-  price = "TK 2490",
-  disabled = false,
-}) => {
-  const [isCardHovered, setIsCardHovered] = useState(false);
+export const ProductCard = ({ product }) => {
+  const [isHovered, setIsHovered] = useState(false);
 
-  // Separate states for each button expansion
-  const [wishlistExpanded, setWishlistExpanded] = useState(false);
-  const [quickViewExpanded, setQuickViewExpanded] = useState(false);
+  const isDesktop = useMediaQuery("(min-width: 1024px)");
 
   return (
-    <div className="w-full bg-white transition-shadow duration-300">
+    <div className="group relative cursor-pointer bg-white">
+      {/* ✅ Image Container: Acts as the relative anchor for absolute children */}
       <div
-        onMouseEnter={() => setIsCardHovered(true)}
-        onMouseLeave={() => setIsCardHovered(false)}
-        className="relative overflow-hidden group bg-gray-50 aspect-square"
+        className="relative lg:overflow-hidden bg-gray-100 aspect-[5/5] lg:aspect-square"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
       >
+        {/* Primary Image */}
         <img
-          src={demoImage}
-          alt="Product"
-          className="w-full h-full object-cover block transition-all duration-200 ease-out group-hover:scale-300 group-hover:opacity-90"
-        />
-        <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity duration-200 pointer-events-none" />
-
-        {/* Buttons Layer */}
-        <div
-          className={`absolute top-2 right-2 md:top-4 md:right-4 z-10 flex flex-col items-end transition-all duration-300
-          ${
-            isCardHovered
-              ? "translate-x-0 opacity-100"
-              : "translate-x-10 opacity-0"
+          src={product.images?.[0]}
+          alt={product.name}
+          className={`w-full h-full object-cover transition-opacity duration-500 ease-in-out ${
+            isHovered ? "opacity-0" : "opacity-100"
           }`}
-        >
-          {/* Wishlist Toggle */}
-          <div
-            onMouseEnter={() => setWishlistExpanded(true)}
-            onMouseLeave={() => setWishlistExpanded(false)}
-          >
-            <ActionButton
-              type="wishlist"
-              isExpanded={wishlistExpanded}
-              onClick={() => console.log("Wishlist Clicked")}
-            />
-          </div>
+        />
 
-          {/* Quick View Toggle */}
-          <div
-            onMouseEnter={() => setQuickViewExpanded(true)}
-            onMouseLeave={() => setQuickViewExpanded(false)}
-          >
-            <ActionButton
-              type="quickview"
-              isExpanded={quickViewExpanded}
-              onClick={() => console.log("Quick View Clicked")}
-            />
-          </div>
+        {/* Secondary Image */}
+        {product.images?.[2] && (
+          <img
+            src={product.images[2]}
+            alt={product.name}
+            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ease-in-out ${
+              isHovered ? "opacity-100" : "opacity-0"
+            }`}
+          />
+        )}
+
+        {/* ✅ Action Buttons Overlay */}
+        <div className="absolute right-2 top-2 flex flex-col gap-2 lg:opacity-0 lg:group-hover:opacity-100! transition-opacity duration-300">
+          <RoundActionButton
+            icon={Heart}
+            expandable={isDesktop}
+            expandableText="Add to Wishlist"
+          />
         </div>
 
-        {/* Size Badge */}
+        <div className="absolute right-2 top-12 flex flex-col gap-2 lg:opacity-0 lg:group-hover:opacity-100! transition-opacity duration-300">
+          <RoundActionButton
+            icon={Eye}
+            expandable={isDesktop}
+            expandableText="Quick View"
+          />
+        </div>
+
+        {/* ✅ Size Tags - Hidden on Mobile/Tablet, Smooth Fade on Desktop Hover */}
         <div
-          className={`absolute bottom-[65px] left-0 w-full flex justify-center transition-opacity duration-300 
-          ${isCardHovered ? "opacity-100" : "opacity-0 pointer-events-none"}`}
+          className="hidden absolute left-0 bottom-16 right-0 items-center justify-center gap-2 transition-opacity duration-300 bg-black/5 py-2
+                lg:flex lg:opacity-0 lg:group-hover:opacity-100 pointer-events-none lg:group-hover:pointer-events-auto"
         >
-          <SizeBadge />
+          {product.variants?.map((v) => (
+            <span
+              key={v.size}
+              className="bg-white text-[10px] font-bold py-2 px-3 rounded-full border hover:border-black shadow min-w-[40px] text-center"
+            >
+              {v.size}
+            </span>
+          ))}
         </div>
 
-        {/* Quick Add Button */}
-        <div
-          className={`absolute bottom-0 left-0 w-full transition-transform duration-300 
-          ${isCardHovered ? "translate-y-0" : "translate-y-full"}`}
+        {/* ✅ Quick Add Button */}
+        <button
+          className="relative lg:absolute bottom-0 left-0 w-full z-20 bg-white mt-2 py-2 font-bold uppercase! text-sm! border! border-black! 
+                        transition-transform duration-300 ease-out
+                        /* Mobile: Visible */
+                        translate-y-0 
+                        /* Desktop: Slides up from bottom edge */
+                        lg:translate-y-full lg:group-hover:translate-y-0"
         >
-          <QuickAddActionBtn title="QUICK ADD" />
-        </div>
+          Quick Add
+        </button>
       </div>
 
-      {/* Product Details */}
-      <div className="flex flex-col items-center justify-center p-2 text-center">
-        <h3 className="text-xs! text-gray-900 font-normal line-clamp-2">
-          {title}
+      {/* Product Details Section */}
+      <div className="mt-4 text-center">
+        <h3 className="text-[12px]! text-gray-800 px-2 uppercase tracking-tight font-medium break-words leading-tight hover:underline">
+          {/* Removed 'line-clamp-1' to allow text to wrap to the next line instead of truncating */}
+          {product.name}
         </h3>
-        <span className="text-gray-950 font-bold text-sm mt-1">Tk {price}</span>
+        <p className="mt-1.5 font-bold text-[14px] text-black">
+          Tk {product.price}
+        </p>
       </div>
     </div>
   );

@@ -15,17 +15,17 @@ export const Footer = () => {
   const [isQuickLinksOpen, setIsQuickLinksOpen] = useState(false);
 
   return (
-    <footer className="w-full bg-[#1a1a1a] text-gray-300 py-12 border-t border-gray-800">
+    <footer className="w-full bg-[#232323] text-gray-300 py-12 border-t border-gray-800">
       <div className="container mx-auto px-6 lg:px-12">
         {/* 1. Main Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-8 mb-12">
           {/* Contact Us Section - Static */}
           <div className="space-y-4">
-            <h2 className="text-white font-bold text-lg uppercase tracking-wider">
+            <h2 className="text-white font-bold! text-sm! uppercase tracking-wider">
               Contact Us
             </h2>
-            <div className="space-y-2 text-sm leading-relaxed">
-              <h3 className="text-white font-semibold uppercase">
+            <div className="space-y-2 text-sm! leading-relaxed">
+              <h3 className="text-xs! text-[#cfcfcf] font-semibold! uppercase">
                 Head Office
               </h3>
               <p>
@@ -57,7 +57,7 @@ export const Footer = () => {
 
           {/* About Us Section - Static */}
           <div className="space-y-4">
-            <h2 className="text-white font-bold text-lg uppercase tracking-wider">
+            <h2 className="text-white font-bold! text-sm! uppercase tracking-wider">
               About Us
             </h2>
             <div className="space-y-3 text-sm leading-relaxed">
@@ -82,7 +82,7 @@ export const Footer = () => {
               className="flex justify-between items-center cursor-pointer md:cursor-default"
               onClick={() => setIsQuickLinksOpen(!isQuickLinksOpen)}
             >
-              <h2 className="text-white font-bold text-lg uppercase tracking-wider">
+              <h2 className="text-white font-bold! text-sm! uppercase tracking-wider">
                 Quick Links
               </h2>
               <span className="md:hidden text-white">
@@ -119,7 +119,7 @@ export const Footer = () => {
 
           {/* Social Section - Static */}
           <div className="space-y-4">
-            <h2 className="text-white font-bold text-lg uppercase tracking-wider">
+            <h2 className="text-white font-bold! text-sm! uppercase tracking-wider">
               Social
             </h2>
             <div className="flex space-x-4">

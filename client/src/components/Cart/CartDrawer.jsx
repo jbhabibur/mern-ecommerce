@@ -3,17 +3,34 @@ import { X, Plus, Minus, ShoppingBag, Gift, Tag } from "lucide-react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation } from "swiper/modules";
 
+// Redux hooks and actions
+import { useSelector, useDispatch } from "react-redux";
+import { cartActions } from "../../redux/slices/cartSlice";
+
 // Swiper styles
 import "swiper/css";
 import "swiper/css/navigation";
 
-export const CartDrawer = ({ isOpen, onClose }) => {
+export const CartDrawer = () => {
+  const dispatch = useDispatch();
+
+  // ১. রিডাক্স স্টোর থেকে ডায়নামিক ডেটা নেওয়া
+  const cartItems = useSelector((state) => state.cart.items);
+  const totalAmount = useSelector((state) => state.cart.totalAmount);
+  const totalQuantity = useSelector((state) => state.cart.totalQuantity);
+
+  // Read the global open/close state
+  const isOpen = useSelector((state) => state.cart.isCartOpen);
+  console.log(isOpen);
+
   return (
     <>
-      {/* Overlay - ক্লিক করলে ড্রয়ার বন্ধ হবে */}
+      {/* Overlay - ক্লিক করলে ড্রয়ার বন্ধ হবে */}
       <div
-        className={`fixed inset-0 bg-black/40 z-[100] transition-opacity duration-300 ${isOpen ? "opacity-100 visible" : "opacity-0 invisible"}`}
-        onClick={onClose}
+        className={`fixed inset-0 bg-black/40 z-[100] transition-opacity duration-300 ${
+          isOpen ? "opacity-100 visible" : "opacity-0 invisible"
+        }`}
+        onClick={() => dispatch(cartActions.setCartOpen(false))}
       />
 
       {/* Main Drawer Container */}
@@ -27,11 +44,11 @@ export const CartDrawer = ({ isOpen, onClose }) => {
               Shopping Cart
             </h2>
             <p className="text-xs text-gray-500 mt-1 uppercase tracking-wider font-medium">
-              4 items
+              {totalQuantity} items {/* আপডেট: ডায়নামিক কাউন্ট */}
             </p>
           </div>
           <button
-            onClick={onClose}
+            onClick={() => dispatch(cartActions.setCartOpen(false))}
             className="p-1 hover:bg-gray-100 rounded-full transition-all"
           >
             <X size={24} strokeWidth={1.5} />
@@ -42,23 +59,27 @@ export const CartDrawer = ({ isOpen, onClose }) => {
         <div className="max-h-[40vh] overflow-y-auto px-4 pt-4 pb-2 space-y-8 scrollbar-hide">
           {/* Cart Items List */}
           <div className="space-y-6">
-            <CartItem
-              img="https://via.placeholder.com/100x130"
-              title="Panjabi_Trendy Fit_Check_260#2"
-              variant="M"
-              price="2,190"
-              qty={3}
-            />
-            <CartItem
-              img="https://via.placeholder.com/100x130"
-              title="Shirt: Full Sleeve Blue Door"
-              variant="15"
-              price="2,490"
-              qty={1}
-            />
+            {cartItems.length > 0 ? (
+              cartItems.map((item) => (
+                <CartItem
+                  key={`${item.id}-${item.size}`}
+                  id={item.id}
+                  img={item.image}
+                  title={item.name}
+                  variant={item.size}
+                  price={item.price}
+                  qty={item.quantity}
+                  dispatch={dispatch} // ডিসপ্যাচ পাঠানো হলো
+                />
+              ))
+            ) : (
+              <div className="text-center py-10 text-gray-400 text-sm">
+                Your cart is empty
+              </div>
+            )}
           </div>
 
-          {/* Slider Section: You May Also Like */}
+          {/* Slider Section: You May Also Like (No logic changes here) */}
           <div className="pt-6 border-t border-gray-100">
             <div className="flex justify-between items-center mb-4">
               <h3 className="font-bold! text-gray-800 text-sm! uppercase tracking-wide">
@@ -121,11 +142,13 @@ export const CartDrawer = ({ isOpen, onClose }) => {
           <div className="space-y-1.5 mb-3">
             <div className="flex justify-between text-sm text-gray-600 font-medium">
               <span>Subtotal:</span>
-              <span>Tk 9,060.00</span>
+              <span>Tk {totalAmount.toLocaleString()}.00</span>{" "}
+              {/* আপডেট: ডায়নামিক */}
             </div>
             <div className="flex justify-between text-lg font-bold text-black tracking-tight">
               <span>Total:</span>
-              <span>Tk 9,060.00</span>
+              <span>Tk {totalAmount.toLocaleString()}.00</span>{" "}
+              {/* আপডেট: ডায়নামিক */}
             </div>
             <p className="text-[12px]! text-[#868686] mt-2 leading-relaxed">
               Tax included and shipping calculated at checkout
@@ -133,7 +156,7 @@ export const CartDrawer = ({ isOpen, onClose }) => {
           </div>
 
           <div className="space-y-3!">
-            <button className="w-full bg-black hover:bg-white! text-white hover:text-black! border border-black! py-2 font-bold text-[11px]  transition-all duration-500! uppercase!">
+            <button className="w-full bg-black hover:bg-white! text-white hover:text-black! border border-black! py-2 font-bold text-[11px] transition-all duration-500! uppercase!">
               Checkout
             </button>
             <button className="w-full bg-white hover:bg-black! text-black hover:text-white! border border-black! py-2 font-bold text-[11px] transition-all duration-500! uppercase!">
@@ -147,7 +170,7 @@ export const CartDrawer = ({ isOpen, onClose }) => {
 };
 
 // Internal Component for individual Cart Items
-const CartItem = ({ img, title, variant, price, qty }) => (
+const CartItem = ({ id, img, title, variant, price, qty, dispatch }) => (
   <div className="flex gap-4 relative">
     <div className="flex-shrink-0">
       <img
@@ -157,7 +180,7 @@ const CartItem = ({ img, title, variant, price, qty }) => (
       />
     </div>
     <div className="flex-1 min-w-0 pr-6">
-      <h4 className="text-[13px]! font-medium text-gray-800 leading-tight mb-1">
+      <h4 className="text-[13px]! font-medium text-gray-800 leading-tight mb-1 truncate">
         {title}
       </h4>
       <div className="flex items-center gap-2 text-[11px] text-gray-500 mb-2 uppercase tracking-wider">
@@ -165,23 +188,51 @@ const CartItem = ({ img, title, variant, price, qty }) => (
         <button className="hover:text-black transition-colors">✎</button>
       </div>
       <p className="text-sm font-bold mb-3 font-mono tracking-tighter">
-        Tk {price}.00
+        Tk {price.toLocaleString()}.00
       </p>
 
-      {/* Small Quantity Selector */}
+      {/* Small Quantity Selector - Redux কানেকশন */}
       <div className="flex items-center border border-gray-200 w-fit rounded-sm">
-        <button className="px-2 py-1 text-gray-400 hover:text-black transition-all hover:bg-gray-50">
+        <button
+          onClick={() =>
+            dispatch(
+              cartActions.updateQuantity({
+                id,
+                size: variant,
+                type: "decrement",
+              }),
+            )
+          }
+          className="px-2 py-1 text-gray-400 hover:text-black transition-all hover:bg-gray-50"
+        >
           <Minus size={12} />
         </button>
         <span className="w-8 text-center text-xs font-bold border-x py-1 border-gray-200">
           {qty}
         </span>
-        <button className="px-2 py-1 text-gray-400 hover:text-black transition-all hover:bg-gray-50">
+        <button
+          onClick={() =>
+            dispatch(
+              cartActions.updateQuantity({
+                id,
+                size: variant,
+                type: "increment",
+              }),
+            )
+          }
+          className="px-2 py-1 text-gray-400 hover:text-black transition-all hover:bg-gray-50"
+        >
           <Plus size={12} />
         </button>
       </div>
     </div>
-    <button className="absolute top-0 right-0 text-gray-300 hover:text-black transition-all">
+    {/* Remove Item Button */}
+    <button
+      onClick={() =>
+        dispatch(cartActions.removeFromCart({ id, size: variant }))
+      }
+      className="absolute top-0 right-0 text-gray-300 hover:text-black transition-all"
+    >
       <X size={18} />
     </button>
   </div>

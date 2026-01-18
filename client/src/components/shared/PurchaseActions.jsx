@@ -2,9 +2,42 @@ import React, { useState } from "react";
 import { Heart, Share2, Plus, Minus } from "lucide-react";
 import { CartDrawer } from "../Cart/CartDrawer"; // CartDrawer ইম্পোর্ট করা হয়েছে
 
-export const PurchaseActions = ({ unitPrice = 2490 }) => {
-  const [quantity, setQuantity] = useState(1);
-  const [openCart, setOpenCart] = useState(false);
+import { useDispatch } from "react-redux";
+import { cartActions } from "../../redux/slices/cartSlice";
+
+export const PurchaseActions = ({
+  id,
+  name,
+  unitPrice,
+  selectedSize,
+  quantity,
+  setQuantity,
+  productImage,
+}) => {
+  const dispatch = useDispatch(); // Initialize dispatch
+
+  const handleAddToCart = () => {
+    // Professional Check: Ensure a size is selected if your product has sizes
+    if (!selectedSize) {
+      alert("Please select a size first!");
+      return;
+    }
+
+    // Dispatch the action with the product data
+    dispatch(
+      cartActions.addToCart({
+        id: id,
+        name: name,
+        price: unitPrice,
+        quantity: quantity,
+        size: selectedSize,
+        image: productImage,
+      }),
+    );
+
+    // Open the drawer to show the updated cart
+    dispatch(cartActions.setCartOpen(true));
+  };
 
   const handleIncrement = () => setQuantity((q) => q + 1);
   const handleDecrement = () => setQuantity((q) => (q > 1 ? q - 1 : 1));
@@ -12,7 +45,7 @@ export const PurchaseActions = ({ unitPrice = 2490 }) => {
   return (
     <div className="flex flex-col gap-4 w-full relative">
       {/* আলাদা করা CartDrawer Component */}
-      <CartDrawer isOpen={openCart} onClose={() => setOpenCart(false)} />
+      <CartDrawer />
 
       <div className="text-base">
         <span className="text-gray-600 font-medium">Subtotal: </span>
@@ -47,7 +80,7 @@ export const PurchaseActions = ({ unitPrice = 2490 }) => {
 
         <div className="flex items-center gap-2 w-full md:flex-1">
           <button
-            onClick={() => setOpenCart(true)}
+            onClick={handleAddToCart} // Call the Redux handler
             className="flex-1 bg-[#1a1a1a] text-white h-12 font-bold text-[11px] uppercase tracking-[0.2em] hover:bg-black transition-all shadow-sm active:scale-[0.98]"
           >
             ADD TO CART

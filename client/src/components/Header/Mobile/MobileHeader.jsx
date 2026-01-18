@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { useDispatch } from "react-redux";
 import {
   X,
   User,
@@ -14,10 +13,17 @@ import { setClicked } from "../../../redux/slices/searchSlice";
 import Logo from "../../../assets/images/logo/logo.avif";
 import { NAVIGATION_DATA_MOBILE } from "../../../constants/navigationData";
 
+// Redux কানেকশন
+import { useDispatch, useSelector } from "react-redux";
+import { cartActions } from "../../../redux/slices/cartSlice";
+
 export const MobileHeader = () => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [activeSubMenu, setActiveSubMenu] = useState(null);
   const dispatch = useDispatch();
+
+  // ১. রিডাক্স স্টোর থেকে কার্ট কাউন্ট নেওয়া
+  const totalQuantity = useSelector((state) => state.cart.totalQuantity);
 
   const toggleDrawer = () => {
     setIsDrawerOpen(!isDrawerOpen);
@@ -42,16 +48,23 @@ export const MobileHeader = () => {
 
         <div className="flex items-center gap-4">
           <User className="w-6 h-6 cursor-pointer" />
-          <div className="relative">
-            <ShoppingBag className="w-6 h-6 cursor-pointer" />
-            <span className="absolute -top-2 -right-2 bg-gray-800 text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full">
-              0
-            </span>
+
+          {/* ২. কার্ট আইকন লজিক: ক্লিক করলে ড্রয়ার ওপেন হবে */}
+          <div
+            className="relative cursor-pointer"
+            onClick={() => dispatch(cartActions.setCartOpen(true))}
+          >
+            <ShoppingBag className="w-6 h-6" />
+            {totalQuantity > 0 && (
+              <span className="absolute -top-2 -right-2 bg-gray-800 text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full font-bold">
+                {totalQuantity}
+              </span>
+            )}
           </div>
         </div>
       </nav>
 
-      {/* --- SLIDING SIDE DRAWER --- */}
+      {/* --- SLIDING SIDE DRAWER (Menu) --- */}
       <div
         className={`fixed inset-0 z-50 transition-all duration-300 ${isDrawerOpen ? "visible" : "invisible"}`}
       >
@@ -63,19 +76,18 @@ export const MobileHeader = () => {
         <div
           className={`absolute top-0 left-0 w-80 h-full bg-white shadow-2xl transform transition-transform duration-300 ease-in-out ${
             isDrawerOpen ? "translate-x-0" : "-translate-x-full"
-          } flex flex-col overflow-hidden`} // Added overflow-hidden to contain the slide
+          } flex flex-col overflow-hidden`}
         >
           {/* Drawer Header */}
-          <div className="flex items-center justify-between px-4 py-2 bg-white z-10">
+          <div className="flex items-center justify-between px-4 py-3 bg-white z-10 border-b border-gray-50">
             {activeSubMenu ? (
               <div
                 className="flex items-center gap-3 cursor-pointer"
                 onClick={() => setActiveSubMenu(null)}
               >
-                {/* Icon and Text vertical alignment fix */}
                 <div className="flex items-center gap-2">
                   <MoveLeft className="w-5 h-5 text-gray-700" />
-                  <h2 className="text-[13px]! font-bold! uppercase leading-none mt-2">
+                  <h2 className="text-[13px] font-bold uppercase tracking-wide">
                     {activeSubMenu.label}
                   </h2>
                 </div>
@@ -90,7 +102,7 @@ export const MobileHeader = () => {
             />
           </div>
 
-          {/* Navigation Container with Sliding Effect */}
+          {/* Navigation Container */}
           <div className="relative flex-1 overflow-hidden">
             {/* Main Menu Layer */}
             <div

@@ -3,93 +3,41 @@ import { useDispatch } from "react-redux";
 import {
   X,
   User,
-  UserPlus,
   Heart,
-  ChevronLeft,
+  MoveLeft,
   Menu,
   Search,
   ShoppingBag,
 } from "lucide-react";
 import { MobileMenuItem } from "./MobileMenuItem";
 import { setClicked } from "../../../redux/slices/searchSlice";
-
 import Logo from "../../../assets/images/logo/logo.avif";
-
-// Constant data for navigation items
-const NAVIGATION_DATA = [
-  { id: 1, label: "Home" },
-  { id: 2, label: "Dirty Boys" },
-  {
-    id: 3,
-    label: "❄️ Winter Wardrobe ❄️",
-    hasArrow: true,
-    children: [
-      { label: "Go To ❄️ Winter Wardrobe ❄️" },
-      { label: "JACKET" },
-      { label: "STREETWEAR JACKET" },
-      { label: "SWEATER" },
-      { label: "SWEATSHIRT" },
-      { label: "T-SHIRT" },
-      { label: "POLO" },
-      { label: "CASUAL COAT" },
-      { label: "CASUAL SHIRT" },
-      { label: "SUIT/COAT/BLAZER" },
-      { label: "FATUA" },
-    ],
-  },
-  { id: 4, label: "Men Top", hasArrow: true, children: [] },
-  { id: 5, label: "Men Bottom", hasArrow: true, children: [] },
-  { id: 6, label: "Outerware", hasArrow: true, children: [] },
-  { id: 7, label: "Fragrance 30% OFF" },
-  { id: 8, label: "Accessories", hasArrow: true, children: [] },
-  { id: 9, label: "Gift Card" },
-  { id: 10, label: "Contact Us" },
-  { id: 11, label: "Sign In", isCapital: false, icon: User, isBold: false },
-  {
-    id: 12,
-    label: "Create an Account",
-    isCapital: false,
-    icon: UserPlus,
-    isBold: false,
-  },
-  {
-    id: 13,
-    label: "My Wish List",
-    isCapital: false,
-    icon: Heart,
-    isBold: false,
-  },
-];
+import { NAVIGATION_DATA_MOBILE } from "../../../constants/navigationData";
 
 export const MobileHeader = () => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [activeSubMenu, setActiveSubMenu] = useState(null);
-
   const dispatch = useDispatch();
 
   const toggleDrawer = () => {
     setIsDrawerOpen(!isDrawerOpen);
-    if (isDrawerOpen) setActiveSubMenu(null); // Reset submenu when closing
+    if (isDrawerOpen) setActiveSubMenu(null);
   };
 
   return (
     <>
       {/* --- MOBILE NAVIGATION BAR --- */}
-      <nav className="flex items-center justify-between px-4 py-3 bg-white border-b sticky top-0 z-40">
+      <nav className="flex items-center justify-between px-2 py-2 bg-white border-b sticky top-0 z-40">
         <div className="flex items-center gap-4">
           <Menu className="w-7 h-7 cursor-pointer" onClick={toggleDrawer} />
           <Search
-            onClick={() => {
-              dispatch(setClicked(true));
-              console.log("clicked");
-            }}
+            onClick={() => dispatch(setClicked(true))}
             className="w-6 h-6 cursor-pointer"
           />
         </div>
 
-        {/* Brand Logo */}
         <div className="flex items-center font-bold text-xl tracking-tighter uppercase">
-          <img src={Logo} alt="Dorjibari logo" className="h-8 w-auto ml-1" />
+          <img src={Logo} alt="Logo" className="h-8 w-auto ml-1" />
         </div>
 
         <div className="flex items-center gap-4">
@@ -105,46 +53,52 @@ export const MobileHeader = () => {
 
       {/* --- SLIDING SIDE DRAWER --- */}
       <div
-        className={`fixed inset-0 z-50 transition-all duration-300 ${
-          isDrawerOpen ? "visible" : "invisible"
-        }`}
+        className={`fixed inset-0 z-50 transition-all duration-300 ${isDrawerOpen ? "visible" : "invisible"}`}
       >
-        {/* Dark Overlay (Backdrop) */}
         <div
-          className={`absolute inset-0 bg-black/50 transition-opacity duration-300 ${
-            isDrawerOpen ? "opacity-100" : "opacity-0"
-          }`}
+          className={`absolute inset-0 bg-black/50 transition-opacity duration-300 ${isDrawerOpen ? "opacity-100" : "opacity-0"}`}
           onClick={toggleDrawer}
         />
 
-        {/* Menu Panel */}
         <div
           className={`absolute top-0 left-0 w-80 h-full bg-white shadow-2xl transform transition-transform duration-300 ease-in-out ${
             isDrawerOpen ? "translate-x-0" : "-translate-x-full"
-          }`}
+          } flex flex-col overflow-hidden`} // Added overflow-hidden to contain the slide
         >
           {/* Drawer Header */}
-          <div className="flex items-center justify-between px-4 py-4 border-b">
+          <div className="flex items-center justify-between px-4 py-2 bg-white z-10">
             {activeSubMenu ? (
               <div
                 className="flex items-center gap-3 cursor-pointer"
                 onClick={() => setActiveSubMenu(null)}
               >
-                <ChevronLeft className="w-6 h-6" />
-                <h2 className="text-sm font-bold uppercase">
-                  {activeSubMenu.label}
-                </h2>
+                {/* Icon and Text vertical alignment fix */}
+                <div className="flex items-center gap-2">
+                  <MoveLeft className="w-5 h-5 text-gray-700" />
+                  <h2 className="text-[13px]! font-bold! uppercase leading-none mt-2">
+                    {activeSubMenu.label}
+                  </h2>
+                </div>
               </div>
             ) : (
-              <h2 className="text-lg font-bold uppercase">Menu</h2>
+              <h2 className="text-lg font-bold leading-none">Menu</h2>
             )}
-            <X className="w-6 h-6 cursor-pointer" onClick={toggleDrawer} />
+
+            <X
+              className="w-6 h-6 cursor-pointer text-gray-700"
+              onClick={toggleDrawer}
+            />
           </div>
 
-          {/* Navigation Items List */}
-          <div className="flex-1 overflow-y-auto">
-            {(activeSubMenu ? activeSubMenu.children : NAVIGATION_DATA).map(
-              (item, index) => (
+          {/* Navigation Container with Sliding Effect */}
+          <div className="relative flex-1 overflow-hidden">
+            {/* Main Menu Layer */}
+            <div
+              className={`absolute inset-0 transition-transform duration-300 ease-in-out ${
+                activeSubMenu ? "-translate-x-full" : "translate-x-0"
+              } overflow-y-auto`}
+            >
+              {NAVIGATION_DATA_MOBILE.map((item, index) => (
                 <div
                   key={item.id || index}
                   onClick={() => item.children && setActiveSubMenu(item)}
@@ -152,8 +106,24 @@ export const MobileHeader = () => {
                 >
                   <MobileMenuItem {...item} />
                 </div>
-              )
-            )}
+              ))}
+            </div>
+
+            {/* Sub-Menu Layer */}
+            <div
+              className={`absolute inset-0 transition-transform duration-300 ease-in-out bg-white ${
+                activeSubMenu ? "translate-x-0" : "translate-x-full"
+              } overflow-y-auto`}
+            >
+              {activeSubMenu?.children?.map((item, index) => (
+                <div
+                  key={item.id || index}
+                  className="cursor-pointer border-b border-gray-50"
+                >
+                  <MobileMenuItem {...item} />
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>

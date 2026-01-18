@@ -1,9 +1,9 @@
 import Logo from "../../../assets/images/logo/logo.avif";
 import { Link } from "react-router-dom";
 import { ShoppingBag, Heart, Search } from "lucide-react";
-import { useSelector, useDispatch } from "react-redux";
+import { useDispatch } from "react-redux";
 import { setFocus, setQuery } from "../../../redux/slices/searchSlice";
-import { DesktopSearchOverlay } from "../../search/DesktopSearchOverlay"; // নিশ্চিত করুন পাথ ঠিক আছে
+import { DesktopSearchOverlay } from "../../search/DesktopSearchOverlay";
 
 export const MainHeader = () => {
   const dispatch = useDispatch();
@@ -15,7 +15,9 @@ export const MainHeader = () => {
       <div className="max-w-[1300px] mx-auto flex items-center justify-between px-8 md:px-16 lg:px-20 py-2">
         {/* Left: Logo */}
         <div className="flex-shrink-0 scale-120">
-          <img src={Logo} alt="Dorjibari logo" className="h-10 w-auto" />
+          <a href="/">
+            <img src={Logo} alt="Dorjibari logo" className="h-10 w-auto" />
+          </a>
         </div>
 
         {/* Right Section */}
@@ -61,7 +63,7 @@ export const MainHeader = () => {
               <span className="text-sm">My Wish List</span>
             </div>
             <span className="text-sm cursor-pointer hover:underline">
-              Sign In
+              Sign In or Create an Account
             </span>
           </div>
         </div>

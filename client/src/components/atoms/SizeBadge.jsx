@@ -1,13 +1,17 @@
-export const SizeBadge = ({ sizes = ["M", "L", "XL", "XXL"] }) => {
+import React from "react";
+
+export const SizeBadge = ({ sizes }) => {
   return (
-    <div className="flex gap-2 justify-center items-center">
+    // Ensure the parent container has h-full or a defined height for vertical centering
+    <div className="flex flex-col items-center justify-center gap-3 p-6 h-full">
       {sizes.map((size, index) => (
-        <div
+        // Circular badge with centered text and hover transition effects
+        <button
           key={index}
-          className="w-10 h-10 flex items-center justify-center rounded-full bg-white text-black text-sm font-medium shadow-sm border border-gray-100"
+          className="bg-white rounded-full border shadow-sm flex items-center justify-center w-10 h-10 text-xs font-bold hover:border-black transition-colors"
         >
           {size}
-        </div>
+        </button>
       ))}
     </div>
   );

@@ -1,40 +1,29 @@
-import React from "react";
-import { Heart, Eye } from "lucide-react";
+import { Heart } from "lucide-react";
 
 export const RoundActionButton = ({
-  type = "wishlist",
-  onClick,
-  isExpanded,
+  icon: Icon = Heart,
+  expandable = false,
+  expandableText = "Add to Wishlist",
 }) => {
-  const isWishlist = type === "wishlist";
-
   return (
-    <div
-      onClick={onClick}
-      className={`relative flex items-center justify-end bg-white text-black rounded-full h-10 transition-all duration-300 ease-in-out cursor-pointer shadow-md overflow-hidden mb-2 border border-gray-100
-        ${isExpanded ? "w-36 px-2" : "w-10"} 
-      `}
-    >
-      {/* Label: Controlled by isExpanded prop */}
-      <span
-        className={`absolute left-4 transition-opacity duration-300 whitespace-nowrap text-[11px] font-bold uppercase tracking-tight
-        ${isExpanded ? "opacity-100" : "opacity-0"}
-      `}
-      >
-        {isWishlist ? "Add To Wishlist" : "Quick View"}
-      </span>
+    /* Using 'group/btn' to distinguish this button's hover state 
+       from the parent Card's hover state.
+    */
+    <button className="group/btn flex items-center bg-white text-black border border-gray-200 p-2 rounded-full! shadow-md active:scale-95 hover:bg-gray-50 hover:shadow-lg transition-all duration-300">
+      {/* Text is hidden by default. 
+          It only shows when the specific button (group/btn) is hovered.
+      */}
 
-      {/* Icon Wrapper */}
-      <div className="flex items-center justify-center w-10 h-10 shrink-0">
-        {isWishlist ? (
-          <Heart
-            size={18}
-            className={`${isExpanded ? "fill-black" : ""} transition-colors`}
-          />
-        ) : (
-          <Eye size={18} />
-        )}
-      </div>
-    </div>
+      {expandable && (
+        <span className="hidden group-hover/btn:inline-block mr-2 text-sm font-medium whitespace-nowrap">
+          {expandableText}
+        </span>
+      )}
+
+      {/* Icon - Stays visible on the right side */}
+      <span className="flex items-center justify-center flex-shrink-0">
+        <Icon size={20} />
+      </span>
+    </button>
   );
 };

@@ -3,6 +3,7 @@ import { createBrowserRouter } from "react-router";
 import { MainLayout } from "../layout/MainLayout";
 import { Home } from "../pages/Home";
 import { CategoriesPage } from "../pages/CategoriesPage";
+import { SingleProduct } from "../pages/SingleProduct";
 
 const router = createBrowserRouter([
   {
@@ -16,6 +17,10 @@ const router = createBrowserRouter([
       {
         path: "/categories/:categoryName",
         element: <CategoriesPage />,
+      },
+      {
+        path: "/products/:slug",
+        element: <SingleProduct />,
       },
     ],
   },

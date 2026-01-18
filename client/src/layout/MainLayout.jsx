@@ -7,6 +7,7 @@ import { HeaderProvider } from "../contexts/HeaderContext";
 import { Provider } from "react-redux";
 import { store } from "../redux/store";
 import { SearchTrigger } from "../components/search/SearchTrigger";
+import { BottomNavigation } from "../components/shared/BottomNavigation";
 
 export const MainLayout = () => {
   return (
@@ -19,6 +20,10 @@ export const MainLayout = () => {
         <main>
           <Outlet />
         </main>
+        <Footer />
+
+        {/* Global Bottom Nav */}
+        <BottomNavigation />
       </HeaderProvider>
     </Provider>
   );

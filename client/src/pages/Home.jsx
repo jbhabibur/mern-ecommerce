@@ -1,12 +1,12 @@
-import { Categories } from "../components/Categories";
 import { Hero } from "../components/Hero";
+import { Categories } from "../components/Categories";
 import { NewArrivals } from "../components/NewArrivals";
 import { PromoBanner } from "../components/shared/PromoBanner";
-
-import promoBannerPanjabi from "../assets/images/promo/promo-banner-panjabi.jpeg";
-import promoBannerFragrance from "../assets/images/promo/promo-banner-fragrance.png";
 import { FeatureProducts } from "../components/FeatureProducts";
 import { InstagramGallery } from "../components/InstagramGallery";
+
+const promoBannerPanjabi = "/images/promo/promo-banner-panjabi.jpeg";
+const promoBannerFragrance = "/images/promo/promo-banner-fragrance.png";
 
 export const Home = () => {
   return (
@@ -14,10 +14,12 @@ export const Home = () => {
       <Hero />
       <Categories />
       <NewArrivals />
+
       <PromoBanner image={promoBannerPanjabi} title="Panjabi Collection" />
       <FeatureProducts />
+
       <PromoBanner image={promoBannerFragrance} title="Fragrance Collection" />
-      <InstagramGallery />
+      {/* <InstagramGallery /> */}
     </>
   );
 };

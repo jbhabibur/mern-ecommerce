@@ -4,6 +4,7 @@ import { MainLayout } from "../layout/MainLayout";
 import { Home } from "../pages/Home";
 import { CategoriesPage } from "../pages/CategoriesPage";
 import { SingleProduct } from "../pages/SingleProduct";
+import { ViewCart } from "../pages/ViewCart";
 
 const router = createBrowserRouter([
   {
@@ -21,6 +22,10 @@ const router = createBrowserRouter([
       {
         path: "/products/:slug",
         element: <SingleProduct />,
+      },
+      {
+        path: "/cart",
+        element: <ViewCart />,
       },
     ],
   },

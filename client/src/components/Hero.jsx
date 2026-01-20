@@ -7,7 +7,7 @@ import { CAROUSELS } from "../constants/carousel";
 export const Hero = ({ images = CAROUSELS }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  const headerHeight = "130px";
+  const headerHeight = "125px";
   const autoSlideInterval = 5000;
 
   const nextSlide = useCallback(() => {
@@ -35,7 +35,8 @@ export const Hero = ({ images = CAROUSELS }) => {
            Tablet: Fixed 500px to avoid white space
            Desktop: Full screen height minus header
         */
-        h-auto sm:h-[500px] lg:h-[calc(100vh-130px)]`}
+        h-auto sm:h-[500px] lg:h-[var(--dynamic-height)]!`}
+      style={{ "--dynamic-height": `calc(100vh - ${headerHeight})` }}
     >
       {/* --- Sliding Container --- */}
       <div

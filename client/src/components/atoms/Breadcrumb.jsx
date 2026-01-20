@@ -9,7 +9,7 @@ export const Breadcrumb = () => {
   const pathnames = location.pathname.split("/").filter((x) => x);
 
   return (
-    <nav className="w-full py-2 bg-white border-b border-gray-100 overflow-hidden ">
+    <nav className="w-full bg-white border-b border-gray-100 overflow-hidden ">
       {/* The 'mask-image' creates the fade-out effect on the right side.
         Everything from 0% to 80% is solid, then it fades to transparent at 100%.
       */}
@@ -21,17 +21,17 @@ export const Breadcrumb = () => {
           maskImage: "linear-gradient(to right, black 85%, transparent 100%)",
         }}
       >
-        <ol className="flex items-center whitespace-nowrap text-sm md:text-base text-gray-500 font-medium p-0 m-0">
+        <ol className="flex items-center whitespace-nowrap text-xs! md:text-base text-gray-500  font-medium p-0 m-0">
           {/* Home Link */}
-          <li className="flex items-center shrink-0">
+          <li className="flex items-center shrink-0 ">
             <Link
               to="/"
-              className="text-[#232323]! no-underline! hover:text-black transition-colors"
+              className="text-[#999999]! no-underline! hover:text-black! transition-colors"
             >
               Home
             </Link>
             {pathnames.length > 0 && (
-              <ChevronRight className="w-4 h-4 mx-1.5 text-black" />
+              <ChevronRight className="w-4 h-4 mx-1.5 text-[#999999]" />
             )}
           </li>
 
@@ -55,11 +55,11 @@ export const Breadcrumb = () => {
                   <>
                     <Link
                       to={to}
-                      className="text-[#999999]! no-underline! hover:text-black transition-colors capitalize"
+                      className="text-[#999999]!  no-underline! hover:text-black! transition-colors capitalize"
                     >
                       {displayName}
                     </Link>
-                    <ChevronRight className="w-4 h-4 mx-1.5 text-black" />
+                    <ChevronRight className="w-4 h-4 mx-1.5 text-[#999999]" />
                   </>
                 )}
               </li>

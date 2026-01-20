@@ -1,9 +1,31 @@
 import { X } from "lucide-react";
+import { DualRangeSlider } from "../atoms/DualRangeSlider";
 
-export const FilterSidebar = ({ isOpen, onClose }) => {
+export const FilterSidebar = ({
+  isOpen,
+  onClose,
+  inStockCount,
+  outOfStockCount,
+  selectedStock,
+  onStockChange,
+  priceRange,
+  onPriceChange,
+}) => {
+  const handleToggle = (value) => {
+    const updated = selectedStock.includes(value)
+      ? selectedStock.filter((i) => i !== value)
+      : [...selectedStock, value];
+    onStockChange(updated);
+  };
+
+  const handlePriceSlider = (e) => {
+    const val = parseInt(e.target.value);
+    onPriceChange([priceRange[0], val]);
+  };
+
   return (
     <>
-      {/* 1. Mobile Overlay: Filter open thakle pichon-ta kalo hobe */}
+      {/* 1. Mobile Overlay */}
       <div
         className={`fixed inset-0 bg-black/50 z-40 transition-opacity duration-300 md:hidden ${
           isOpen ? "opacity-100 visible" : "opacity-0 invisible"
@@ -19,7 +41,7 @@ export const FilterSidebar = ({ isOpen, onClose }) => {
           ${isOpen ? "translate-x-0" : "-translate-x-full"}
         `}
       >
-        {/* Mobile Close Button */}
+        {/* Mobile Header */}
         <div className="flex justify-between items-center md:hidden mb-6">
           <h2 className="font-bold text-sm tracking-widest uppercase">
             Filters
@@ -29,65 +51,63 @@ export const FilterSidebar = ({ isOpen, onClose }) => {
           </button>
         </div>
 
-        <div className="sticky top-4 space-y-8">
-          {/* CATEGORIES */}
+        <div className="sticky top-4 space-y-12 mt-4">
+          {/* CATEGORIES SECTION (Added to match image) */}
           <div>
-            <h3 className="font-bold border-b pb-2 mb-4 text-sm! tracking-wider uppercase">
-              CATEGORIES
+            <h3 className="font-bold! border-b-[1.5px] border-gray-400 pb-2 mb-4 text-base! tracking-widest uppercase text-[#1a1a1a]">
+              Categories
             </h3>
-            {/* Category list items here */}
-            <div className="text-xs text-gray-500 italic">
-              No categories added...
-            </div>
           </div>
 
           {/* AVAILABILITY */}
           <div>
-            <h3 className="font-bold border-b pb-2 mb-4 text-sm! tracking-wider uppercase">
-              AVAILABILITY
+            <h3 className="font-bold! border-b-[1.5px] border-gray-400 pb-2 mb-4 text-base! tracking-widest uppercase text-[#1a1a1a]">
+              Availability
             </h3>
-            <div className="space-y-2">
-              <div className="flex flex-col gap-y-3">
-                <div className="flex flex-col gap-y-3">
-                  <label className="cursor-pointer">
-                    <div className="flex items-center gap-x-2">
-                      <input type="checkbox" className="w-4 h-4 accent-black" />
-                      <span className="text-sm text-gray-600 hover:text-black transition-colors">
-                        In Stock (204)
-                      </span>
-                    </div>
-                  </label>
-
-                  <label className="cursor-pointer">
-                    <div className="flex items-center gap-x-2">
-                      <input type="checkbox" className="w-4 h-4 accent-black" />
-                      <span className="text-sm text-gray-600 hover:text-black transition-colors">
-                        Out Of Stock (70)
-                      </span>
-                    </div>
-                  </label>
-                </div>
-              </div>
+            <div className="flex flex-col gap-y-4">
+              {[
+                { id: "in-stock", label: "In Stock", count: inStockCount },
+                {
+                  id: "out-of-stock",
+                  label: "Out of Stock",
+                  count: outOfStockCount,
+                },
+              ].map((item) => (
+                <label
+                  key={item.id}
+                  className="flex items-center gap-x-3 leading-none cursor-pointer group"
+                >
+                  <input
+                    type="checkbox"
+                    className="w-[20px]! h-[20px]! border border-gray-300 rounded-none accent-black cursor-pointer shrink-0 appearance-none checked:bg-black checked:border-black relative after:content-[''] after:hidden checked:after:block after:absolute after:left-[6px] after:top-[2px] after:w-[5px] after:h-[10px] after:border-white after:border-b-2 after:border-r-2 after:rotate-45"
+                    checked={selectedStock.includes(item.id)}
+                    onChange={() => handleToggle(item.id)}
+                  />
+                  <span className="text-[16px] text-[#1a1a1a] leading-none select-none">
+                    {item.label}({item.count})
+                  </span>
+                </label>
+              ))}
             </div>
           </div>
 
           {/* PRICE */}
           <div>
-            <h3 className="font-bold border-b pb-2 mb-4 text-sm! tracking-wider uppercase">
-              PRICE
+            <h3 className="font-bold! border-b-[1.5px] border-gray-400 pb-3 mb-8 text-base! tracking-widest uppercase text-[#1a1a1a]">
+              Price
             </h3>
             <div className="px-1">
-              <div className="h-1 w-full bg-gray-200 rounded-lg relative mb-6">
-                <div className="absolute h-1 bg-black w-full rounded-lg"></div>
-                <div className="absolute -top-1 left-0 w-3 h-3 bg-black rounded-full border-2 border-white shadow cursor-pointer"></div>
-                <div className="absolute -top-1 right-0 w-3 h-3 bg-black rounded-full border-2 border-white shadow cursor-pointer"></div>
+              {/* Range Input Styling */}
+              <div className="relative mb-8 flex items-center">
+                <DualRangeSlider />
               </div>
-              <div className="flex justify-between mt-3 text-xs font-medium">
-                <div className="border p-2 w-20 text-center">৳ 0</div>
-                <div className="border p-2 w-20 text-center">৳ 2490</div>
-              </div>
-              <button className="w-full bg-[#222] text-white py-3 mt-6! text-[11px] font-bold tracking-[0.2em] uppercase hover:bg-black transition-all active:scale-[0.98]">
-                Apply Filter
+
+              {/* APPLY Button */}
+              <button
+                onClick={onClose}
+                className="w-full bg-[#1c1c1c] text-white py-2 mt-10 text-xl font-bold tracking-[0.1em] uppercase hover:bg-black transition-all"
+              >
+                Apply
               </button>
             </div>
           </div>

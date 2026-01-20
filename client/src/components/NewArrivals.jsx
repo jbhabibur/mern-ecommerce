@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation } from "swiper/modules";
-import { Link } from "react-router-dom";
 
 // Swiper styles
 import "swiper/css";
@@ -13,49 +12,63 @@ import { PrimaryButton } from "./atoms/PrimaryButton";
 export const NewArrivals = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [slidesPerView, setSlidesPerView] = useState(2);
-  const [visibleCount, setVisibleCount] = useState(8); // Desktop load more state
+  const [visibleCount, setVisibleCount] = useState(8);
 
   const [products, setProducts] = useState([]);
-  const [initialLoading, setInitialLoading] = useState(true); // প্রথমবার লোডিংয়ের জন্য
-  const [isMoreLoading, setIsMoreLoading] = useState(false); // বাটনের জন্য
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [isMoreLoading, setIsMoreLoading] = useState(false);
+  const [error, setError] = useState(null); // Missing error state added
 
   useEffect(() => {
-    // Function to fetch data from the local server
-    const fetchProducts = async () => {
+    const apiUrl = "http://localhost:5000/api/products/new-arrivals";
+
+    const getNewArrivals = async () => {
       try {
-        // Ensure your json-server is running on this port
-        const response = await fetch("http://localhost:5000/products");
-        const data = await response.json();
+        const response = await fetch(apiUrl);
 
-        // Filter products to show only those marked as 'isNewArrival'
-        const newArrivals = data.filter((item) => item.isNewArrival === true);
-        setProducts(newArrivals);
+        if (!response.ok) {
+          throw new Error("Data fetch korte somossya hochche");
+        }
 
-        setInitialLoading(false);
-      } catch (error) {
-        console.error("Error fetching products:", error);
-        setInitialLoading(false);
+        const result = await response.json();
+
+        if (result.success) {
+          setProducts(result.data); // Database array
+        }
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setInitialLoading(false); // Loading state set to false
       }
     };
 
-    fetchProducts();
+    getNewArrivals();
   }, []);
 
   const totalProducts = products.length;
 
-  // Desktop Load More handler
   const handleLoadMore = () => {
-    setIsMoreLoading(true); // শুধু বাটনের লোডিং ট্রু হবে
+    setIsMoreLoading(true);
     setTimeout(() => {
       setVisibleCount((prev) => prev + 8);
       setIsMoreLoading(false);
-    }, 3000);
+    }, 1500);
   };
 
-  // Show loading state while data is being fetched
-  // প্রথমবার ডেটা আসার সময় শুধু এটা দেখাবে
   if (initialLoading) {
-    return <div className="text-center py-10 font-medium">Loading...</div>;
+    return (
+      <div className="text-center py-20 font-medium text-gray-500">
+        Loading New Arrivals...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-20 text-red-500 font-medium">
+        Error: {error}
+      </div>
+    );
   }
 
   return (
@@ -63,16 +76,14 @@ export const NewArrivals = () => {
       <div className="max-w-[1240px] mx-auto py-2 px-4 md:px-6">
         <SectionHeader title="New Arrivals" linkText="View All" />
       </div>
-      <div className="max-w-[1240px] mx-auto py-2 px-0 lg:px-6!">
+      <div className="max-w-[1240px] mx-auto py-2 px-0 lg:px-6">
         {/* --- Desktop Grid Layout --- */}
         <div className="hidden lg:block">
           <div className="grid grid-cols-4 gap-8">
             {products.slice(0, visibleCount).map((product) => (
               <a
-                key={product.id}
-                href={`/products/${product.name
-                  .toLowerCase()
-                  .replace(/\s+/g, "-")}`}
+                key={product._id} // MongoDB ID use
+                href={`/products/${product.slug}`} // Backend slug use
                 className="no-underline! text-current! block!"
               >
                 <ProductCard product={product} />
@@ -91,7 +102,7 @@ export const NewArrivals = () => {
           )}
         </div>
 
-        {/* --- Mobile & Tablet Swiper (Limited to 8 products) --- */}
+        {/* --- Mobile & Tablet Swiper --- */}
         <div className="lg:hidden">
           <Swiper
             modules={[Navigation]}
@@ -109,14 +120,10 @@ export const NewArrivals = () => {
               prevEl: ".custom-prev",
             }}
           >
-            {/* Mobile এ আমরা slice(0, 8) ব্যবহার করছি যাতে ৮টির বেশি না দেখায় */}
             {products.slice(0, 8).map((product) => (
-              <SwiperSlide key={product.id}>
+              <SwiperSlide key={product._id}>
                 <a
-                  key={product.id}
-                  href={`/products/${product.name
-                    .toLowerCase()
-                    .replace(/\s+/g, "-")}`}
+                  href={`/products/${product.slug}`}
                   className="no-underline! text-current! block!"
                 >
                   <ProductCard product={product} />
@@ -127,7 +134,11 @@ export const NewArrivals = () => {
 
           <div className="flex items-center justify-between mt-10 px-3">
             <div className="text-sm font-medium text-gray-600">
-              {Math.min(currentIndex + slidesPerView, 8)} / 8
+              {Math.min(
+                currentIndex + slidesPerView,
+                products.length > 8 ? 8 : products.length,
+              )}{" "}
+              / {products.length > 8 ? 8 : products.length}
             </div>
 
             <div className="flex gap-4">

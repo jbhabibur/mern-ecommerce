@@ -105,7 +105,7 @@ export const CartDrawer = () => {
                 <SwiperSlide key={id}>
                   <div className="flex gap-3 border p-2 rounded-sm bg-gray-50/50 group cursor-pointer">
                     <img
-                      src="https://via.placeholder.com/80x100"
+                      src=""
                       alt="rec"
                       className="w-18 h-18 object-cover shadow-sm"
                     />

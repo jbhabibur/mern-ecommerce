@@ -112,11 +112,7 @@ export const MobileSearchOverlay = () => {
                 <SwiperSlide key={item}>
                   <div className="flex flex-col">
                     <div className="bg-[#f2f2f2] aspect-square rounded-md flex items-center justify-center mb-3">
-                      <img
-                        src="https://via.placeholder.com/150"
-                        alt="product"
-                        className="w-24 opacity-20"
-                      />
+                      <img src="" alt="product" className="w-24 opacity-20" />
                     </div>
                     <h4 className="text-sm text-gray-800 font-medium text-center">
                       Example Product Title

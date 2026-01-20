@@ -1,6 +1,6 @@
 export const PromoBanner = ({ image, title }) => {
   return (
-    <section className="w-full">
+    <section className="w-full my-5">
       <div
         className="relative w-full 
         /* Mobile: Square ratio, Desktop: Wide ratio */

@@ -1,10 +1,7 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { useSearchParams } from "react-router-dom";
 import { fetchCategoryProducts } from "../api/productApi";
 
-/**
- * Custom hook to manage category data, product filtering,
- * and specific stock availability states (In Stock, Partial, or Notify Me).
- */
 export const useCategory = (slug) => {
   const [products, setProducts] = useState([]);
   const [categoryInfo, setCategoryInfo] = useState({
@@ -12,128 +9,175 @@ export const useCategory = (slug) => {
     description: "",
     banner: "",
   });
-  const [loading, setLoading] = useState(true);
+
+  const [dataLoading, setDataLoading] = useState(true);
+  const [filterLoading, setFilterLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Filtering States for Sidebar
-  const [selectedStock, setSelectedStock] = useState([]); // Array like ['in-stock', 'out-of-stock']
-  const [priceRange, setPriceRange] = useState([0, 5000]); // [min, max]
+  const [searchParams, setSearchParams] = useSearchParams();
+  const debounceTimer = useRef(null);
 
+  /* -------------------- Dynamic Max Price -------------------- */
+  const maxPriceInRange = useMemo(() => {
+    if (!products.length) return 0;
+    return Math.max(...products.map((p) => Number(p.price) || 0));
+  }, [products]);
+
+  /* -------------------- URL Derived States -------------------- */
+  const selectedStock = searchParams.getAll("filter.v.availability");
+
+  const priceRange = useMemo(() => {
+    const gte = parseInt(searchParams.get("filter.v.price.gte")) || 0;
+    const lteParam = searchParams.get("filter.v.price.lte");
+    const lte = lteParam ? parseInt(lteParam) : maxPriceInRange;
+    return [gte, lte];
+  }, [searchParams, maxPriceInRange]);
+
+  const itemsPerPage = parseInt(searchParams.get("limit")) || 12;
+  const sortOption = searchParams.get("sort") || "featured";
+
+  /* -------------------- Update Filters -------------------- */
+  const updateFilters = useCallback(
+    async (newStock, newPrice, newLimit, newSort, forceUpdate = false) => {
+      setFilterLoading(true);
+
+      if (debounceTimer.current) clearTimeout(debounceTimer.current);
+
+      const applyChanges = async () => {
+        await new Promise((resolve) => setTimeout(resolve, 50));
+
+        const params = new URLSearchParams();
+        newStock.forEach((val) => params.append("filter.v.availability", val));
+        params.set("filter.v.price.gte", newPrice[0]);
+        params.set("filter.v.price.lte", newPrice[1]);
+        params.set("limit", newLimit ?? itemsPerPage);
+        params.set("sort", newSort ?? sortOption);
+
+        setSearchParams(params, { replace: true });
+      };
+
+      if (forceUpdate) {
+        await applyChanges();
+        setFilterLoading(false); // ✅ stop loading immediately
+      } else {
+        debounceTimer.current = setTimeout(async () => {
+          await applyChanges();
+          setFilterLoading(false); // ✅ stop loading after debounce
+        }, 1000);
+      }
+    },
+    [setSearchParams, itemsPerPage, sortOption],
+  );
+
+  /* -------------------- Fetch Category Data -------------------- */
   useEffect(() => {
     if (!slug) return;
 
-    let isMounted = true;
-    const getData = async () => {
-      setLoading(true);
+    let mounted = true;
+
+    const fetchData = async () => {
+      setDataLoading(true);
       try {
         const data = await fetchCategoryProducts(slug);
+        if (!mounted) return;
 
-        if (data.success && isMounted) {
-          const fetchedProducts = data.products || [];
-          setProducts(fetchedProducts);
-
-          // Update Category Meta Data (Banner, Title, etc.)
+        if (data.success) {
+          setProducts(data.products || []);
           setCategoryInfo({
             title: data.categoryData?.title || "",
             description: data.categoryData?.description || "",
             banner: data.categoryData?.banner || "",
           });
-
-          // Dynamic Price Adjustment: Set max price based on actual products in this category
-          if (fetchedProducts.length > 0) {
-            const prices = fetchedProducts.map((p) => p.price || 0);
-            const maxPriceInData = Math.max(...prices);
-            setPriceRange([0, maxPriceInData]);
-          } else {
-            setPriceRange([0, 5000]); // Default fallback
-          }
         }
       } catch (err) {
-        if (isMounted) setError(err.message);
+        if (mounted) setError(err.message);
       } finally {
-        if (isMounted) setLoading(false);
+        if (mounted) setDataLoading(false);
       }
     };
 
-    getData();
+    fetchData();
+
     return () => {
-      isMounted = false;
+      mounted = false;
+      if (debounceTimer.current) clearTimeout(debounceTimer.current);
     };
   }, [slug]);
 
-  /**
-   * Memoized Logic: Processes products to add availability flags
-   * and applies active filters (Stock and Price).
-   */
+  /* -------------------- Processed Data -------------------- */
   const processedData = useMemo(() => {
-    let totalInStockCount = 0;
-
-    // Phase 1: Enrich products with logical flags for the UI (Button States)
-    const productsWithStatus = products.map((p) => {
+    const enriched = products.map((p) => {
       const variants = p.variants || [];
-
-      // Logic: Product is completely sold out if every variant has 0 stock
-      const isCompletelyEmpty =
-        variants.length > 0 && variants.every((v) => v.stock === 0);
-
-      // Logic: Product is fully stocked if every variant has more than 0 stock
       const isAllSizesInStock =
         variants.length > 0 && variants.every((v) => v.stock > 0);
+      const isOutOfStock =
+        variants.length === 0 || variants.some((v) => v.stock === 0);
 
-      // Determine the specific string for Button text/logic in the frontend
-      let displayStatus = "";
-      if (isCompletelyEmpty) {
-        displayStatus = "NOTIFY_ME"; // UI should show "Notify Me" button
-      } else if (isAllSizesInStock) {
-        displayStatus = "ADD_TO_CART"; // UI should show "Add to Cart" button
-      } else {
-        displayStatus = "SELECT_SIZE"; // UI should show "Select Size" (Partial Stock)
-      }
-
-      return {
-        ...p,
-        isAllSizesInStock,
-        isCompletelyEmpty,
-        displayStatus,
-      };
+      return { ...p, isAllSizesInStock, isOutOfStock };
     });
 
-    // Phase 2: Apply Filters
-    const filtered = productsWithStatus.filter((p) => {
-      // Stock Filtering Logic
+    const inStockCount = enriched.filter((p) => p.isAllSizesInStock).length;
+
+    const outOfStockCount = enriched.filter((p) => p.isOutOfStock).length;
+
+    let filtered = enriched.filter((p) => {
       const stockMatch =
-        selectedStock.length === 0 ||
-        (selectedStock.includes("in-stock") && p.isAllSizesInStock) ||
-        (selectedStock.includes("out-of-stock") && p.isCompletelyEmpty);
+        !selectedStock.length ||
+        (selectedStock.includes("1") && p.isAllSizesInStock) ||
+        (selectedStock.includes("0") && p.isOutOfStock);
 
-      // Price Range Filtering Logic
-      const productPrice = p.price || 0;
-      const priceMatch =
-        productPrice >= priceRange[0] && productPrice <= priceRange[1];
-
-      // Global count: Increment if product is fully stocked (ignoring active filters)
-      if (p.isAllSizesInStock) totalInStockCount++;
+      const price = p.price || 0;
+      const priceMatch = price >= priceRange[0] && price <= priceRange[1];
 
       return stockMatch && priceMatch;
     });
 
+    if (sortOption === "price-low") {
+      filtered.sort((a, b) => (a.price || 0) - (b.price || 0));
+    }
+
+    if (sortOption === "price-high") {
+      filtered.sort((a, b) => (b.price || 0) - (a.price || 0));
+    }
+
     return {
-      filteredProducts: filtered,
-      inStockCount: totalInStockCount,
-      outOfStockCount: products.length - totalInStockCount,
+      paginatedProducts: filtered.slice(0, itemsPerPage),
+      totalFound: filtered.length,
+      inStockCount,
+      outOfStockCount,
     };
-  }, [products, selectedStock, priceRange]);
+  }, [
+    products,
+    itemsPerPage,
+    sortOption,
+    selectedStock.join(","),
+    priceRange.join("-"),
+  ]);
+
+  /* -------------------- Finish Filter Loading -------------------- */
+  useEffect(() => {
+    if (!filterLoading) return;
+
+    const id = requestAnimationFrame(() => {
+      setFilterLoading(false);
+    });
+
+    return () => cancelAnimationFrame(id);
+  }, [processedData]);
 
   return {
-    products: processedData.filteredProducts,
+    products: processedData.paginatedProducts,
     categoryInfo,
-    loading,
+    loading: dataLoading || filterLoading,
     error,
     inStockCount: processedData.inStockCount,
     outOfStockCount: processedData.outOfStockCount,
+    totalFound: processedData.totalFound,
+    maxPriceInRange,
     selectedStock,
-    setSelectedStock,
     priceRange,
-    setPriceRange,
+    itemsPerPage,
+    sortOption,
+    updateFilters,
   };
 };

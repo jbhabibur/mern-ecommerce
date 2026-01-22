@@ -2,19 +2,22 @@ import { Heart, Eye } from "lucide-react";
 import { useState } from "react";
 import { RoundActionButton } from "../atoms/RoundActionButton";
 import { useMediaQuery } from "../../hooks/useMediaQuery";
-import { SizeBadge } from "../atoms/SizeBadge";
 
 export const ProductCard = ({ product, view }) => {
   const [isHovered, setIsHovered] = useState(false);
   const isDesktop = useMediaQuery("(min-width: 1024px)");
 
-  // view logic handle করার জন্য
   const isList = view === "list";
 
-  // --- STOCK LOGIC FROM HOOK ---
-  // If displayStatus is "NOTIFY_ME", it means all sizes are 0 stock
-  const isSoldOut = product.displayStatus === "NOTIFY_ME";
-  const isPartialStock = product.displayStatus === "SELECT_SIZE";
+  // --- LOGIC FROM YOUR HOOK ---
+
+  // 1. SOLD OUT: If everything is out of stock (variants length 0 or all stock 0)
+  const totalStock =
+    product.variants?.reduce((acc, v) => acc + v.stock, 0) || 0;
+  const isFullySoldOut = totalStock === 0;
+
+  // 2. PARTIAL STOCK: Some sizes available, some not
+  const isPartialStock = !product.isAllSizesInStock && !isFullySoldOut;
 
   return (
     <div
@@ -27,15 +30,15 @@ export const ProductCard = ({ product, view }) => {
         className={`relative lg:overflow-hidden bg-gray-100 ${
           isList
             ? "w-32 h-40 sm:w-48 sm:h-60 md:w-64 md:h-80 shrink-0"
-            : "aspect-[5/5] lg:aspect-square w-full"
+            : "aspect-[3/3] lg:aspect-square w-full"
         }`}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
-        {/* SOLD OUT OVERLAY: Show if all sizes are zero */}
-        {isSoldOut && (
-          <div className="absolute left-0 top-0 z-10 flex items-center justify-center bg-black/20">
-            <span className="bg-[#C1C1C1] text-white px-3 py-1 text-[10px] font-bold uppercase tracking-widest shadow-lg">
+        {/* ✅ SOLD OUT OVERLAY: Shows when total stock is 0 */}
+        {isFullySoldOut && (
+          <div className="absolute left-0 top-0 z-20 flex items-center justify-center bg-black/10 backdrop-blur-[1px] pointer-events-none">
+            <span className="bg-[#C1C1C1] text-white px-2 py-1 text-[10px] font-bold uppercase tracking-widest shadow-lg">
               Sold Out
             </span>
           </div>
@@ -47,7 +50,7 @@ export const ProductCard = ({ product, view }) => {
           alt={product.name}
           className={`w-full h-full object-cover transition-opacity duration-500 ${
             isHovered && !isList ? "opacity-0" : "opacity-100"
-          }`}
+          } ${isFullySoldOut ? "grayscale-[0.5] opacity-80" : ""}`}
         />
 
         {/* Secondary Image */}
@@ -61,16 +64,13 @@ export const ProductCard = ({ product, view }) => {
           />
         )}
 
-        {/* Action Buttons Overlay */}
-        <div className="absolute right-2 top-2 flex flex-col gap-2 lg:opacity-0 lg:group-hover:opacity-100! transition-opacity duration-300">
+        {/* Action Buttons */}
+        <div className="absolute right-2 top-2 z-30 flex flex-col gap-2 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-300">
           <RoundActionButton
             icon={Heart}
             expandable={isDesktop}
             expandableText="Add to Wishlist"
           />
-        </div>
-
-        <div className="absolute right-2 top-12 flex flex-col gap-2 lg:opacity-0 lg:group-hover:opacity-100! transition-opacity duration-300">
           <RoundActionButton
             icon={Eye}
             expandable={isDesktop}
@@ -78,18 +78,15 @@ export const ProductCard = ({ product, view }) => {
           />
         </div>
 
-        {/* ✅ Size Tags - Hidden if Sold Out, shows only available sizes dynamically */}
-        {!isSoldOut && product.variants && product.variants.length > 0 && (
-          <div
-            className="hidden absolute left-0 bottom-16 right-0 items-center justify-center gap-2 transition-opacity duration-300 bg-black/5 py-2
-        lg:flex lg:opacity-0 lg:group-hover:opacity-100 pointer-events-none lg:group-hover:pointer-events-auto"
-          >
+        {/* Size Tags: Only show sizes that actually have stock */}
+        {!isFullySoldOut && product.variants?.length > 0 && (
+          <div className="hidden absolute left-0 bottom-16 right-0 items-center justify-center gap-2 transition-opacity duration-300 bg-black/5 py-2 lg:flex lg:opacity-0 lg:group-hover:opacity-100 pointer-events-none lg:group-hover:pointer-events-auto">
             {product.variants
-              .filter((v) => v.stock > 0) // Only show sizes that are in stock
+              .filter((v) => v.stock > 0)
               .map((v) => (
                 <span
                   key={v.size}
-                  className="bg-white text-[10px] font-bold py-2 px-3 rounded-full border hover:border-black shadow min-w-[40px] text-center text-black"
+                  className="bg-white text-[10px] font-bold py-2 px-3 rounded-full border border-gray-100 shadow-sm text-black"
                 >
                   {v.size}
                 </span>
@@ -97,39 +94,51 @@ export const ProductCard = ({ product, view }) => {
           </div>
         )}
 
-        {/* Quick Add / Notify Me Button (GRID MODE) */}
+        {/* DESKTOP ONLY BUTTON: Absolute overlay that slides up on hover */}
         {!isList && (
           <button
-            disabled={isSoldOut && false} // Keep clickable if you want to trigger a modal
-            className={`relative lg:absolute bottom-0 left-0 w-full z-20 mt-2 py-2 font-bold uppercase! text-sm! border! border-black! 
-                        transition-transform duration-300 ease-out translate-y-0 
-                        lg:translate-y-full lg:group-hover:translate-y-0
-                        ${isSoldOut ? "bg-white border-black! text-black" : "bg-black text-white"}`}
+            className={`hidden lg:block absolute bottom-0 left-0 w-full z-30 py-2 font-bold uppercase text-sm border border-black transition-all duration-300 translate-y-full group-hover:translate-y-0
+              ${isFullySoldOut ? "bg-white text-black" : "bg-black text-white"}`}
           >
-            {isSoldOut ? "Notify Me" : "Quick Add"}
+            {isFullySoldOut ? "Notify Me" : "Quick Add"}
           </button>
         )}
       </div>
+
+      {/* MOBILE ONLY BUTTON: Visible below the image container */}
+      {!isList && (
+        <button
+          className={`lg:hidden w-full mt-2 py-2 font-bold uppercase text-sm border border-black 
+            ${isFullySoldOut ? "bg-white text-black" : "bg-black text-white"}`}
+        >
+          {isFullySoldOut ? "Notify Me" : "Quick Add"}
+        </button>
+      )}
 
       {/* Product Details Section */}
       <div
         className={`mt-4 ${isList ? "flex-1 text-left mt-0 pt-2" : "text-center"}`}
       >
-        <h3 className="text-[12px]! text-gray-800 px-2 uppercase tracking-tight font-medium break-words leading-tight hover:underline">
+        <h3
+          className={`text-[12px]! uppercase tracking-tight font-medium! break-words leading-tight hover:underline ${isFullySoldOut ? "text-gray-400" : "text-gray-800"}`}
+        >
           {product.name}
         </h3>
-        <p className="mt-1.5 font-bold text-[14px] text-black">
+        <p
+          className={`mt-1.5 font-bold text-[14px] ${isFullySoldOut ? "text-gray-400" : "text-black"}`}
+        >
           Tk {product.price}
         </p>
 
-        {/* List mode এর জন্য ডেসক্রিপশন এবং বাটন */}
         {isList && (
           <div className="mt-4">
             <p className="text-gray-500 text-xs line-clamp-2 mb-4">
               {product.description}
             </p>
-            <button className="px-6 py-2 bg-black text-white text-[10px] uppercase font-bold tracking-widest">
-              Add to Cart
+            <button
+              className={`px-6 py-2 text-[10px] uppercase font-bold tracking-widest ${isFullySoldOut ? "bg-gray-100 text-gray-400 border border-gray-200" : "bg-black text-white"}`}
+            >
+              {isFullySoldOut ? "Out of Stock" : "Add to Cart"}
             </button>
           </div>
         )}

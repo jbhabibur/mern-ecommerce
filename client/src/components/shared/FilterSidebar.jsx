@@ -1,3 +1,4 @@
+import { useState, useEffect, useRef } from "react";
 import { X } from "lucide-react";
 import { DualRangeSlider } from "../atoms/DualRangeSlider";
 
@@ -7,41 +8,100 @@ export const FilterSidebar = ({
   inStockCount,
   outOfStockCount,
   selectedStock,
-  onStockChange,
   priceRange,
-  onPriceChange,
+  updateFilters,
+  totalFound,
+  maxPrice,
+  loading,
 }) => {
+  const sidebarRef = useRef(null);
+  const [localPrice, setLocalPrice] = useState(priceRange);
+  const [shouldShowRefined, setShouldShowRefined] = useState(false);
+
+  /* ---------------- Sync price range ---------------- */
+  useEffect(() => {
+    setLocalPrice(priceRange);
+  }, [priceRange[0], priceRange[1], maxPrice]);
+
+  /* ---------------- Refined By visibility + scroll ---------------- */
+  useEffect(() => {
+    if (loading) {
+      setShouldShowRefined(false);
+      return;
+    }
+
+    const isPriceFiltered = priceRange[0] !== 0 || priceRange[1] !== maxPrice;
+    const shouldShow = selectedStock.length > 0 || isPriceFiltered;
+
+    setShouldShowRefined(shouldShow);
+
+    if (shouldShow && sidebarRef.current) {
+      requestAnimationFrame(() => {
+        sidebarRef.current.scrollTo({
+          top: 0,
+          behavior: "smooth",
+        });
+      });
+    }
+  }, [loading, selectedStock, priceRange, maxPrice]);
+
+  /* ---------------- Handlers ---------------- */
   const handleToggle = (value) => {
+    if (loading) return;
+
     const updated = selectedStock.includes(value)
       ? selectedStock.filter((i) => i !== value)
       : [...selectedStock, value];
-    onStockChange(updated);
+
+    updateFilters(updated, priceRange);
   };
 
-  const handlePriceSlider = (e) => {
-    const val = parseInt(e.target.value);
-    onPriceChange([priceRange[0], val]);
+  const handleSliderChange = (newRange) => {
+    setLocalPrice(newRange);
+    updateFilters(selectedStock, newRange);
   };
+
+  const handleApplyClick = () => {
+    if (loading) return;
+    updateFilters(selectedStock, localPrice, null, null, true);
+    if (window.innerWidth < 768) onClose();
+  };
+
+  const handleClearAll = () => {
+    if (loading) return;
+    updateFilters([], [0, maxPrice], null, null, true);
+  };
+
+  const isPriceFiltered = priceRange[0] !== 0 || priceRange[1] !== maxPrice;
 
   return (
     <>
-      {/* 1. Mobile Overlay */}
+      {/* Overlay */}
       <div
         className={`fixed inset-0 bg-black/50 z-40 transition-opacity duration-300 md:hidden ${
-          isOpen ? "opacity-100 visible" : "opacity-0 invisible"
+          isOpen
+            ? "opacity-100 pointer-events-auto"
+            : "opacity-0 pointer-events-none"
         }`}
         onClick={onClose}
       />
 
-      {/* 2. Sidebar Main Container */}
+      {/* Sidebar */}
       <aside
+        ref={sidebarRef}
         className={`
-          fixed top-0 left-0 h-full w-[280px] bg-white z-50 p-6 transform transition-transform duration-300 ease-in-out
-          md:relative md:translate-x-0 md:w-full md:p-0 md:z-0 md:bg-transparent
-          ${isOpen ? "translate-x-0" : "-translate-x-full"}
+          fixed top-0 left-0 h-full w-[280px] bg-white z-50 p-6 
+          transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]
+          overflow-y-auto max-h-screen
+          md:relative md:block md:translate-x-0 md:opacity-100 md:w-full md:p-0 md:z-0 md:bg-transparent md:overflow-visible
+          ${
+            isOpen
+              ? "translate-x-0 opacity-100 shadow-2xl"
+              : "max-md:-translate-x-full max-md:opacity-0"
+          }
         `}
       >
-        {/* Mobile Header */}
+        {/* Mobile header */}
         <div className="flex justify-between items-center md:hidden mb-6">
           <h2 className="font-bold text-sm tracking-widest uppercase">
             Filters
@@ -51,65 +111,117 @@ export const FilterSidebar = ({
           </button>
         </div>
 
-        <div className="sticky top-4 space-y-12 mt-4">
-          {/* CATEGORIES SECTION (Added to match image) */}
+        <div className="md:sticky md:top-4 space-y-12 mt-4 pb-12 md:pb-0">
+          {/* Categories */}
           <div>
             <h3 className="font-bold! border-b-[1.5px] border-gray-400 pb-2 mb-4 text-base! tracking-widest uppercase text-[#1a1a1a]">
               Categories
             </h3>
           </div>
 
-          {/* AVAILABILITY */}
+          {/* Refined By */}
+          {shouldShowRefined && (
+            <div className="animate-in fade-in slide-in-from-top-1 duration-300">
+              <div className="flex justify-between items-center mb-1">
+                <h3 className="font-bold! text-[15px]! text-[#1a1a1a]">
+                  REFINED BY
+                </h3>
+                <button
+                  onClick={handleClearAll}
+                  className="text-[13px]! text-gray-800 underline underline-offset-4 hover:text-black"
+                >
+                  Clear All
+                </button>
+              </div>
+
+              <p className="text-[14px] text-gray-500 mb-4">
+                {totalFound} results
+              </p>
+
+              <div className="flex flex-wrap gap-2">
+                {selectedStock.map((id) => (
+                  <button
+                    key={id}
+                    onClick={() => handleToggle(id)}
+                    className="flex items-center gap-2 bg-[#f8f8f8] px-3 py-1.5 text-[13px]! hover:bg-[#707070] hover:text-white transition"
+                  >
+                    {id === "1" ? "In stock" : "Out of stock"}
+                    <X size={14} />
+                  </button>
+                ))}
+
+                {isPriceFiltered && (
+                  <button
+                    onClick={() =>
+                      updateFilters(
+                        selectedStock,
+                        [0, maxPrice],
+                        null,
+                        null,
+                        true,
+                      )
+                    }
+                    className="flex items-center gap-2 bg-[#f8f8f8] px-3 py-1.5 text-[13px]! hover:bg-[#707070] hover:text-white transition"
+                  >
+                    Tk {localPrice[0].toLocaleString()} – Tk{" "}
+                    {localPrice[1].toLocaleString()}
+                    <X size={14} />
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Availability */}
           <div>
             <h3 className="font-bold! border-b-[1.5px] border-gray-400 pb-2 mb-4 text-base! tracking-widest uppercase text-[#1a1a1a]">
               Availability
             </h3>
+
             <div className="flex flex-col gap-y-4">
               {[
-                { id: "in-stock", label: "In Stock", count: inStockCount },
-                {
-                  id: "out-of-stock",
-                  label: "Out of Stock",
-                  count: outOfStockCount,
-                },
+                { id: "1", label: "In Stock", count: inStockCount },
+                { id: "0", label: "Out of Stock", count: outOfStockCount },
               ].map((item) => (
                 <label
                   key={item.id}
-                  className="flex items-center gap-x-3 leading-none cursor-pointer group"
+                  className="flex items-center cursor-pointer h-5"
                 >
                   <input
                     type="checkbox"
-                    className="w-[20px]! h-[20px]! border border-gray-300 rounded-none accent-black cursor-pointer shrink-0 appearance-none checked:bg-black checked:border-black relative after:content-[''] after:hidden checked:after:block after:absolute after:left-[6px] after:top-[2px] after:w-[5px] after:h-[10px] after:border-white after:border-b-2 after:border-r-2 after:rotate-45"
+                    disabled={loading}
                     checked={selectedStock.includes(item.id)}
                     onChange={() => handleToggle(item.id)}
+                    className="w-[15px] h-[15px] border border-gray-300 appearance-none checked:bg-black checked:border-black relative after:content-[''] after:hidden checked:after:block after:absolute after:left-[5px] after:top-[1px] after:w-[4px] after:h-[8px] after:border-white after:border-b-2 after:border-r-2 after:rotate-45"
                   />
-                  <span className="text-[16px] text-[#1a1a1a] leading-none select-none">
-                    {item.label}({item.count})
+                  <span className="ml-2 text-[14px] text-[#1a1a1a]">
+                    {item.label} ({item.count})
                   </span>
                 </label>
               ))}
             </div>
           </div>
 
-          {/* PRICE */}
+          {/* Price */}
           <div>
             <h3 className="font-bold! border-b-[1.5px] border-gray-400 pb-3 mb-8 text-base! tracking-widest uppercase text-[#1a1a1a]">
               Price
             </h3>
-            <div className="px-1">
-              {/* Range Input Styling */}
-              <div className="relative mb-8 flex items-center">
-                <DualRangeSlider />
-              </div>
 
-              {/* APPLY Button */}
-              <button
-                onClick={onClose}
-                className="w-full bg-[#1c1c1c] text-white py-2 mt-10 text-xl font-bold tracking-[0.1em] uppercase hover:bg-black transition-all"
-              >
-                Apply
-              </button>
-            </div>
+            <DualRangeSlider
+              value={localPrice}
+              onChange={handleSliderChange}
+              minLimit={0}
+              maxLimit={maxPrice > 0 ? maxPrice : localPrice[1]}
+            />
+
+            <button
+              onClick={handleApplyClick}
+              disabled={loading}
+              className="w-full bg-[#1c1c1c] text-white py-2.5 mt-3 text-lg font-bold tracking-[0.1em] uppercase hover:bg-black disabled:opacity-50"
+            >
+              {loading ? "Applying..." : "Apply"}
+            </button>
           </div>
         </div>
       </aside>

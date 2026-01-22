@@ -1,28 +1,29 @@
-export const LoadMoreSection = () => {
-  // Eigulo pore dynamic hobe (props theke ashbe)
-  const currentItems = 20;
-  const totalItems = 209;
-  const progressPercentage = (currentItems / totalItems) * 100;
+import { BeatLoader } from "react-spinners";
 
+export const LoadMoreSection = ({
+  text,
+  currentItems,
+  totalItems,
+  loading,
+  onLoadMore,
+}) => {
   return (
-    <div className="flex flex-col items-center justify-center my-12 w-full max-w-md mx-auto">
-      {/* 1. Text Section */}
-      <p className="text-gray-500 text-sm mb-4 font-light tracking-wide">
-        Showing 1 - {currentItems} of {totalItems} total
+    <div className="flex flex-col items-center mt-12 mb-20">
+      <p className="text-[13px] text-gray-500 mb-4 tracking-wide">
+        Showing {currentItems} of {totalItems} products
       </p>
 
-      {/* 2. Progress Bar Container */}
-      <div className="w-full h-[2px] bg-gray-200 mb-8 relative">
-        {/* Active Blue Progress */}
-        <div
-          className="h-full bg-blue-600 transition-all duration-500"
-          style={{ width: `${progressPercentage}%` }}
-        ></div>
-      </div>
-
-      {/* 3. Show More Button */}
-      <button className="w-full border border-gray-400 py-4 px-8 text-sm font-bold uppercase tracking-[0.2em] hover:bg-black hover:text-white transition-colors duration-300">
-        Show More
+      <button
+        onClick={onLoadMore}
+        disabled={loading}
+        className="min-w-[180px] h-[50px] border border-black bg-white px-8 flex items-center justify-center font-bold text-[12px] uppercase tracking-[0.2em] hover:bg-black! hover:text-white! transition-all duration-300 disabled:bg-gray-50 disabled:border-gray-300 disabled:cursor-not-allowed group"
+      >
+        {loading ? (
+          <BeatLoader size={8} color="currentColor" />
+        ) : (
+          /* text prop thakle sheta dekhabe, na thakle 'Load More' dekhabe */
+          <span>{text || "Load More"}</span>
+        )}
       </button>
     </div>
   );

@@ -1,87 +1,120 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
-export const DualRangeSlider = () => {
-  const [minPrice, setMinPrice] = useState(0);
-  const [maxPrice, setMaxPrice] = useState(2990);
-  const minLimit = 0;
-  const maxLimit = 10000;
+export const DualRangeSlider = ({
+  value,
+  onChange,
+  minLimit = 0,
+  maxLimit,
+}) => {
+  const [localValue, setLocalValue] = useState(value);
+  const timerRef = useRef(null);
 
-  // স্লাইডারের কালো অংশটুকুর পজিশন ক্যালকুলেশন
-  const minPos = (minPrice / maxLimit) * 100;
-  const maxPos = (maxPrice / maxLimit) * 100;
+  // Sync with external value changes (e.g., URL resets)
+  useEffect(() => {
+    setLocalValue(value);
+  }, [JSON.stringify(value)]);
+
+  const minPrice = localValue[0];
+  const maxPrice = localValue[1];
+
+  const range = maxLimit - minLimit;
+  const minPos = range > 0 ? ((minPrice - minLimit) / range) * 100 : 0;
+  const maxPos = range > 0 ? ((maxPrice - minLimit) / range) * 100 : 100;
+
+  // Debounced callback to parent
+  const triggerChange = (newRange) => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => {
+      onChange(newRange);
+    }, 1000); // 1 second delay
+  };
+
+  const handleMinChange = (e) => {
+    const val = Math.min(Number(e.target.value), maxPrice - 1);
+    const newRange = [val, maxPrice];
+    setLocalValue(newRange); // Immediate UI update
+    triggerChange(newRange); // Delayed API/URL update
+  };
+
+  const handleMaxChange = (e) => {
+    const val = Math.max(Number(e.target.value), minPrice + 1);
+    const finalVal = val > maxLimit ? maxLimit : val;
+    const newRange = [minPrice, finalVal];
+    setLocalValue(newRange); // Immediate UI update
+    triggerChange(newRange); // Delayed API/URL update
+  };
 
   return (
-    <div className="w-full max-w-[350px] bg-white ">
-      {/* Slider Container */}
-      <div className="relative h-10 flex items-center mb-4">
-        {/* Background Track (Light Grey) */}
-        <div className="absolute w-full h-[5px] bg-[#e5e7eb] rounded-full"></div>
-
-        {/* Active Track (Black) */}
+    <div className="w-full relative py-4">
+      <div className="relative h-2 flex items-center mb-8">
+        <div className="absolute w-full h-1.5 bg-gray-200 rounded-full" />
         <div
-          className="absolute h-[5px] bg-[#1a1a1a] rounded-full"
+          className="absolute h-1.5 bg-black rounded-full"
           style={{ left: `${minPos}%`, right: `${100 - maxPos}%` }}
-        ></div>
+        />
 
-        {/* Min Range Input */}
         <input
           type="range"
           min={minLimit}
           max={maxLimit}
           value={minPrice}
-          onChange={(e) => {
-            const value = Math.min(Number(e.target.value), maxPrice - 500);
-            setMinPrice(value);
-          }}
-          className="absolute w-full pointer-events-none appearance-none bg-transparent z-30 
-          [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none 
-          [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:h-6 [&::-webkit-slider-thumb]:bg-white 
-          [&::-webkit-slider-thumb]:border-[5px] [&::-webkit-slider-thumb]:border-[#222] [&::-webkit-slider-thumb]:rounded-full cursor-pointer"
+          onChange={handleMinChange}
+          className="absolute w-full appearance-none pointer-events-none bg-transparent z-20 h-2 thumb-style"
         />
-
-        {/* Max Range Input */}
         <input
           type="range"
           min={minLimit}
           max={maxLimit}
           value={maxPrice}
-          onChange={(e) => {
-            const value = Math.max(Number(e.target.value), minPrice + 500);
-            setMaxPrice(value);
-          }}
-          className="absolute w-full pointer-events-none appearance-none bg-transparent z-30 
-          [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none 
-          [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:h-6 [&::-webkit-slider-thumb]:bg-white 
-          [&::-webkit-slider-thumb]:border-[5px] [&::-webkit-slider-thumb]:border-[#222] [&::-webkit-slider-thumb]:rounded-full cursor-pointer"
+          onChange={handleMaxChange}
+          className="absolute w-full appearance-none pointer-events-none bg-transparent z-30 h-2 thumb-style"
         />
       </div>
 
-      {/* Input Boxes Section */}
-      <div className="flex items-center justify-between gap-3">
-        {/* Min Input Box */}
-        <div className="flex flex-1 items-center border border-gray-300 px-3 py-2 h-12">
-          <span className="text-lg text-gray-700">৳</span>
+      {/* Manual Input Boxes */}
+      <div className="flex items-center gap-4">
+        <div className="flex-1 flex items-center border border-gray-300 px-2 h-10 bg-white">
+          <span className="text-gray-500 mr-1">৳</span>
           <input
             type="number"
             value={minPrice}
-            onChange={(e) => setMinPrice(Number(e.target.value))}
-            className="w-full text-right outline-none bg-transparent text-gray-700 font-normal [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            onChange={handleMinChange}
+            className="w-full outline-none text-sm text-right"
           />
         </div>
-
-        <span className="text-gray-500 text-sm lowercase">to</span>
-
-        {/* Max Input Box */}
-        <div className="flex flex-1 items-center border border-gray-300 px-3 py-2 h-12">
-          <span className="text-lg text-gray-700">৳</span>
+        <span className="text-xs font-bold text-gray-400">TO</span>
+        <div className="flex-1 flex items-center border border-gray-300 px-2 h-10 bg-white">
+          <span className="text-gray-500 mr-1">৳</span>
           <input
             type="number"
             value={maxPrice}
-            onChange={(e) => setMaxPrice(Number(e.target.value))}
-            className="w-full text-right outline-none bg-transparent text-gray-700 font-normal [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            onChange={handleMaxChange}
+            className="w-full outline-none text-sm text-right"
           />
         </div>
       </div>
+
+      <style jsx>{`
+        .thumb-style::-webkit-slider-thumb {
+          appearance: none;
+          pointer-events: auto;
+          height: 18px;
+          width: 18px;
+          border-radius: 50%;
+          background: white;
+          border: 2px solid black;
+          cursor: pointer;
+        }
+        .thumb-style::-moz-range-thumb {
+          pointer-events: auto;
+          height: 18px;
+          width: 18px;
+          border-radius: 50%;
+          background: white;
+          border: 2px solid black;
+          cursor: pointer;
+        }
+      `}</style>
     </div>
   );
 };

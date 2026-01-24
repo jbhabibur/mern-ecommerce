@@ -3,6 +3,8 @@ import { X, Plus, Minus, ShoppingBag, Gift, Tag } from "lucide-react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation } from "swiper/modules";
 
+import { getFullImagePath } from "../../api/apiConfig";
+
 // Redux hooks and actions
 import { useSelector, useDispatch } from "react-redux";
 import { cartActions } from "../../redux/slices/cartSlice";
@@ -146,9 +148,14 @@ export const CartDrawer = () => {
             <button className="w-full bg-black hover:bg-white! text-white hover:text-black! border border-black! py-2 font-bold text-[11px] transition-all duration-500! uppercase!">
               Checkout
             </button>
-            <button className="w-full bg-white hover:bg-black! text-black hover:text-white! border border-black! py-2 font-bold text-[11px] transition-all duration-500! uppercase!">
-              View Cart
-            </button>
+            <a
+              href={"/cart"}
+              onClick={() => dispatch(cartActions.setCartOpen(false))}
+            >
+              <button className="w-full bg-white hover:bg-black! text-black hover:text-white! border border-black! py-2 font-bold text-[11px] transition-all duration-500! uppercase!">
+                View Cart
+              </button>
+            </a>
           </div>
         </div>
       </div>
@@ -164,7 +171,7 @@ const CartItem = ({ item, dispatch }) => {
     <div className="flex gap-4 relative">
       <div className="flex-shrink-0">
         <img
-          src={image}
+          src={getFullImagePath(image)}
           alt={name}
           className="w-20 h-24 object-cover border border-gray-100"
         />

@@ -5,6 +5,7 @@ import { Home } from "../pages/Home";
 import { CategoriesPage } from "../pages/CategoriesPage";
 import { SingleProduct } from "../pages/SingleProduct";
 import { ViewCart } from "../pages/ViewCart";
+import { AllCollections } from "../pages/AllCollections";
 
 const router = createBrowserRouter([
   {
@@ -26,6 +27,10 @@ const router = createBrowserRouter([
       {
         path: "/cart",
         element: <ViewCart />,
+      },
+      {
+        path: "/collections",
+        element: <AllCollections />,
       },
     ],
   },

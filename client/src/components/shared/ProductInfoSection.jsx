@@ -84,7 +84,7 @@ export const ProductInfoSection = ({ product }) => {
         )}
 
         <PurchaseActions
-          id={product.id}
+          id={product._id || product.id}
           name={product.name}
           unitPrice={unitPrice}
           selectedSize={selectedSize} // This will be empty for belts, which is correct

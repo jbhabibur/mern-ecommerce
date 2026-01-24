@@ -9,7 +9,7 @@ export const Breadcrumb = () => {
   const pathnames = location.pathname.split("/").filter((x) => x);
 
   return (
-    <nav className="w-full bg-white border-b border-gray-100 overflow-hidden ">
+    <nav className="w-full bg-white overflow-hidden ">
       {/* The 'mask-image' creates the fade-out effect on the right side.
         Everything from 0% to 80% is solid, then it fades to transparent at 100%.
       */}

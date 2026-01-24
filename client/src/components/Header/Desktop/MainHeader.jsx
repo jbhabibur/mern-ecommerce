@@ -13,8 +13,6 @@ export const MainHeader = () => {
   // Redux state থেকে totalQuantity রিড করা হচ্ছে
   const totalQuantity = useSelector((state) => state.cart.totalQuantity);
 
-  const isOpen = useSelector((state) => state.cart.isCartOpen); // গ্লোবাল ওপেন/ক্লোজ স্টেট
-
   return (
     <header className="w-full relative">
       {" "}
@@ -59,7 +57,7 @@ export const MainHeader = () => {
           {/* Cart & Wishlist */}
           <div className="flex gap-x-6 justify-end items-center">
             <div
-              onClick={() => dispatch(cartActions.toggleCart(false))}
+              onClick={() => dispatch(cartActions.setCartOpen(true))}
               className="flex gap-x-2 cursor-pointer group items-center"
             >
               <ShoppingBag className="w-5 h-5 transition-transform group-hover:scale-110" />

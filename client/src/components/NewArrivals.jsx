@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation } from "swiper/modules";
 
+import { API_URLS } from "../api/API_URLS";
+
 // Swiper styles
 import "swiper/css";
 import "swiper/css/navigation";
@@ -20,11 +22,10 @@ export const NewArrivals = () => {
   const [error, setError] = useState(null); // Missing error state added
 
   useEffect(() => {
-    const apiUrl = "http://localhost:5000/api/products/new-arrivals";
-
     const getNewArrivals = async () => {
       try {
-        const response = await fetch(apiUrl);
+        // Use the imported constant instead of manual string building
+        const response = await fetch(API_URLS.NEW_ARRIVALS);
 
         if (!response.ok) {
           throw new Error("Data fetch korte somossya hochche");
@@ -33,12 +34,12 @@ export const NewArrivals = () => {
         const result = await response.json();
 
         if (result.success) {
-          setProducts(result.data); // Database array
+          setProducts(result.data);
         }
       } catch (err) {
         setError(err.message);
       } finally {
-        setInitialLoading(false); // Loading state set to false
+        setInitialLoading(false);
       }
     };
 

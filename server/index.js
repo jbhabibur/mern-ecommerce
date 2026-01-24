@@ -21,7 +21,12 @@ const app = express();
  * Global Middlewares
  */
 app.use(express.json()); // Body parser for JSON data
-app.use(cors()); // Allow requests from different origins (Frontend)
+app.use(
+  cors({
+    origin: ["http://localhost:5173", "https://mern-ecommerce-cfee.vercel.app"],
+    credentials: true,
+  }),
+);
 
 /**
  * Static Assets

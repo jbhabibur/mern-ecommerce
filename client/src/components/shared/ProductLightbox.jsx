@@ -7,32 +7,32 @@ import {
   ChevronRight,
   Maximize,
   Minimize,
-  Facebook,
-  Twitter,
-  PinIcon as Pinterest,
-  Copy,
-  Check,
 } from "lucide-react";
 
 import { ShareModal } from "../shared/ShareModal";
 
-// --- Main Lightbox Component ---
+/**
+ * --- Main Lightbox Component ---
+ * Added 'baseUrl' prop to handle image paths correctly
+ */
 export const ProductLightbox = ({
   images,
   currentIndex,
   onClose,
   onNext,
   onPrev,
+  baseUrl, // Receive the BASE_URL from the parent component
 }) => {
   const lightboxRef = useRef(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isShareOpen, setIsShareOpen] = useState(false);
 
-  // কারেন্ট ইউআরএল নেওয়ার জন্য (অথবা আপনি চাইলে props হিসেবে পাঠাতে পারেন)
+  // Get current URL for sharing purposes
   const currentUrl = typeof window !== "undefined" ? window.location.href : "";
 
   if (!images || images.length === 0) return null;
 
+  // Function to handle browser fullscreen mode
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
       lightboxRef.current?.requestFullscreen().catch((err) => {
@@ -96,9 +96,12 @@ export const ProductLightbox = ({
             <ChevronLeft size={40} />
           </button>
 
+          {/* UPDATED: Prepended baseUrl to the image source 
+            Matches the format: http://localhost:5000/uploads/products/image.jpg
+          */}
           <img
-            src={images[currentIndex]}
-            alt="Product"
+            src={`${baseUrl}/${images[currentIndex]}`}
+            alt="Product Full View"
             className="max-w-full max-h-full object-contain select-none animate-in zoom-in-95 duration-300"
           />
 

@@ -80,14 +80,8 @@ export const NewArrivals = () => {
         {/* --- Desktop Grid Layout --- */}
         <div className="hidden lg:block">
           <div className="grid grid-cols-4 gap-8">
-            {products.slice(0, visibleCount).map((product) => (
-              <a
-                key={product._id} // MongoDB ID use
-                href={`/products/${product.slug}`} // Backend slug use
-                className="no-underline! text-current! block!"
-              >
-                <ProductCard product={product} />
-              </a>
+            {products.slice(0, visibleCount).map((product, index) => (
+              <ProductCard key={index} product={product} />
             ))}
           </div>
 

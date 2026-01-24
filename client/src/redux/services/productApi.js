@@ -1,21 +1,32 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
+/**
+ * Product API slice to handle all product-related server interactions.
+ */
 export const productApi = createApi({
   reducerPath: "productApi",
-  // JSON Server er default port 3000 thake
-  baseQuery: fetchBaseQuery({ baseUrl: "http://localhost:5000/" }),
+  baseQuery: fetchBaseQuery({
+    baseUrl: `${import.meta.env.VITE_API_BASE_URL}/api`,
+  }), // Adjust base URL as per your server config
   endpoints: (builder) => ({
-    // Sokoll product fetch korar jonno
+    /**
+     * Fetches all products from the database.
+     */
     getAllProducts: builder.query({
       query: () => "products",
     }),
-    // Title diye filter kore single product anar jonno
-    getProductByTitle: builder.query({
-      query: (title) => `products?name=${title}`,
-      // JSON Server array return kore, tai transform kore single object nite paren
-      transformResponse: (response) => response[0],
+
+    /**
+     * Fetches a single product by its unique slug.
+     * Maps to the backend route: GET /api/products/:slug
+     */
+    getProductBySlug: builder.query({
+      query: (slug) => `products/${slug}`,
+      // Extracts the product object from the backend response wrapper { success, data }
+      transformResponse: (response) => response.data,
     }),
   }),
 });
 
-export const { useGetAllProductsQuery, useGetProductByTitleQuery } = productApi;
+// Export auto-generated hooks for usage in functional components
+export const { useGetAllProductsQuery, useGetProductBySlugQuery } = productApi;

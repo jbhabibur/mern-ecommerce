@@ -1,11 +1,9 @@
 import cors from "cors";
 import dotenv from "dotenv";
-
 import express from "express";
-
 import connectDB from "./config/db.js";
 
-// Routes Import (Category routes amra bad diyechi)
+// Routes Import
 import productRoutes from "./routes/productRoutes.js";
 import categoryRoutes from "./routes/categoryRoutes.js";
 
@@ -20,21 +18,26 @@ const app = express();
 /**
  * Global Middlewares
  */
-app.use(express.json()); // Body parser for JSON data
+app.use(express.json()); // Body parser
+
+// EKDHOM IMPORTANT: Domain gulo thikmoto thakte hobe
 const allowedOrigins = [
   "http://localhost:5173", // Local development
-  "https://mern-ecommerce-cfee.vercel.app", // Your Vercel frontend
+  "https://mern-ecommerce-cfee.vercel.app", // Purono domain
+  "https://mern-ecommerce-kappa-seven.vercel.app", // NOTUN DOMAIN (Vercel-e jeta active)
 ];
 
 app.use(
   cors({
     origin: function (origin, callback) {
+      // origin check logic
       if (!origin || allowedOrigins.indexOf(origin) !== -1) {
         callback(null, true);
       } else {
         callback(new Error("Not allowed by CORS"));
       }
     },
+    credentials: true,
   }),
 );
 
@@ -45,12 +48,8 @@ app.use("/uploads", express.static("uploads"));
 
 /**
  * API Routes mounting
- * Ekhon /api/products route-e shob dynamic filtering (New Arrivals, Winter, Panjabi) kaj korbe.
  */
-// Categories API (for admin or navigation menus)
 app.use("/api/categories", categoryRoutes);
-
-// Products API (for the shop and category pages)
 app.use("/api/products", productRoutes);
 
 /**

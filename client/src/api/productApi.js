@@ -1,9 +1,9 @@
 import axios from "axios";
+// Import the centralized API URLs
+import { API_URLS } from "../api/API_URLS";
 
 export const fetchCategoryProducts = async (slug) => {
-  // Use 'categories' (plural) to match the URL that worked in Postman
-  const response = await axios.get(
-    `http://localhost:5000/api/products/categories/${slug}`,
-  );
+  // Use the dynamic function from API_URLS for environmental compatibility
+  const response = await axios.get(API_URLS.CATEGORY_PRODUCTS(slug));
   return response.data;
 };

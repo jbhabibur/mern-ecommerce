@@ -9,15 +9,14 @@ export const ProductCard = ({ product, view }) => {
 
   const isList = view === "list";
 
-  // --- UPDATED SOLD OUT LOGIC ---
+  // Gallery-r moto BASE_URL variable ti nite hobe
+  const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
+  // --- STOCK LOGIC ---
   const getStockStatus = () => {
-    // 1. Case: Empty variants array or missing variants (e.g., Belt/Accessories)
     if (!product.variants || product.variants.length === 0) {
       return product.stock === 0;
     }
-
-    // 2. Case: Single-entry stock (Handles "stock: 5" structure)
     if (product.variants.length === 1 && !product.variants[0].size) {
       const stockValue =
         typeof product.variants[0] === "string"
@@ -25,8 +24,6 @@ export const ProductCard = ({ product, view }) => {
           : product.variants[0].stock;
       return stockValue === 0;
     }
-
-    // 3. Case: Standard variants with sizes (e.g., M, L, XL)
     const totalStockCount = product.variants.reduce(
       (acc, v) => acc + (v.stock || 0),
       0,
@@ -35,12 +32,6 @@ export const ProductCard = ({ product, view }) => {
   };
 
   const isFullySoldOut = getStockStatus();
-
-  // 2. PARTIAL STOCK: Only relevant for items with multiple sizes
-  const isPartialStock =
-    product.variants?.length > 1 &&
-    !product.isAllSizesInStock &&
-    !isFullySoldOut;
 
   return (
     <a href={`/products/${product.slug}`} className="no-underline! text-black!">
@@ -59,33 +50,35 @@ export const ProductCard = ({ product, view }) => {
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
         >
-          {/* ✅ SOLD OUT OVERLAY: Shows when total stock is 0 */}
+          {/* SOLD OUT OVERLAY */}
           {isFullySoldOut && (
-            <div className="absolute left-0 top-0 z-20 flex items-center justify-center bg-black/10 backdrop-blur-[1px] pointer-events-none">
+            <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/10 backdrop-blur-[1px] pointer-events-none">
               <span className="bg-[#C1C1C1] text-white px-2 py-1 text-[10px] font-bold uppercase tracking-widest shadow-lg">
                 Sold Out
               </span>
             </div>
           )}
 
-          {/* Primary Image */}
+          {/* ✅ Primary Image: SingleProduct-er moto logic */}
           <img
-            src={`http://localhost:5000/${product.images[0]}`}
+            src={`${BASE_URL}/${product.images[0]}`}
             alt={product.name}
             className={`w-full h-full object-cover transition-opacity duration-500 ${
               isHovered && !isList ? "opacity-0" : "opacity-100"
             } ${isFullySoldOut ? "grayscale-[0.5] opacity-80" : ""}`}
           />
-          {/* Secondary Image */}
+
+          {/* ✅ Secondary Image: SingleProduct-er moto logic */}
           {product.images?.[2] && (
             <img
-              src={`http://localhost:5000/${product.images[2]}`}
+              src={`${BASE_URL}/${product.images[2]}`}
               alt={product.name}
               className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${
                 isHovered ? "opacity-100" : "opacity-0"
               }`}
             />
           )}
+
           {/* Action Buttons */}
           <div className="absolute right-2 top-2 z-30 flex flex-col gap-2 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-300">
             <RoundActionButton
@@ -99,7 +92,8 @@ export const ProductCard = ({ product, view }) => {
               expandableText="Quick View"
             />
           </div>
-          {/* Size Tags: Only show sizes that actually have stock */}
+
+          {/* Size Tags */}
           {!isFullySoldOut &&
             product.variants?.length > 0 &&
             product.variants[0].size && (
@@ -116,28 +110,27 @@ export const ProductCard = ({ product, view }) => {
                   ))}
               </div>
             )}
-          {/* DESKTOP ONLY BUTTON: Absolute overlay that slides up on hover */}
+
+          {/* Desktop Button */}
           {!isList && (
             <button
-              className={`hidden lg:block absolute bottom-0 left-0 w-full z-30 py-2 font-bold uppercase text-sm border border-black transition-all duration-300 translate-y-full group-hover:translate-y-0
-              ${isFullySoldOut ? "bg-white text-black" : "bg-black text-white"}`}
+              className={`hidden lg:block absolute bottom-0 left-0 w-full z-30 py-2 font-bold uppercase text-sm border border-black transition-all duration-300 translate-y-full group-hover:translate-y-0 ${isFullySoldOut ? "bg-white text-black" : "bg-black text-white"}`}
             >
               {isFullySoldOut ? "Notify Me" : "Quick Add"}
             </button>
           )}
         </div>
 
-        {/* MOBILE ONLY BUTTON: Visible below the image container */}
+        {/* Mobile Button */}
         {!isList && (
           <button
-            className={`lg:hidden w-full mt-2 py-2 font-bold uppercase text-sm border border-black 
-            ${isFullySoldOut ? "bg-white text-black" : "bg-black text-white"}`}
+            className={`lg:hidden w-full mt-2 py-2 font-bold uppercase text-sm border border-black ${isFullySoldOut ? "bg-white text-black" : "bg-black text-white"}`}
           >
             {isFullySoldOut ? "Notify Me" : "Quick Add"}
           </button>
         )}
 
-        {/* Product Details Section */}
+        {/* Product Details */}
         <div
           className={`mt-4 ${isList ? "flex-1 text-left mt-0 pt-2" : "text-center"}`}
         >
@@ -151,7 +144,6 @@ export const ProductCard = ({ product, view }) => {
           >
             Tk {product.price}
           </p>
-
           {isList && (
             <div className="mt-4">
               <p className="text-gray-500 text-xs line-clamp-2 mb-4">

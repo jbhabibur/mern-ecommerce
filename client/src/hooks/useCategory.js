@@ -2,6 +2,8 @@ import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import { fetchCategoryProducts } from "../api/productApi";
 
+import { NAVIGATION_DATA_DESKTOP } from "../constants/navigationData";
+
 export const useCategory = (slug) => {
   const [products, setProducts] = useState([]);
   const [categoryInfo, setCategoryInfo] = useState({
@@ -79,6 +81,7 @@ export const useCategory = (slug) => {
       setDataLoading(true);
       try {
         const data = await fetchCategoryProducts(slug);
+        console.log("DB Category Data:", data.categoryData);
         if (!mounted) return;
 
         if (data.success) {
@@ -154,6 +157,13 @@ export const useCategory = (slug) => {
     priceRange.join("-"),
   ]);
 
+  // Find the Red Box Label (e.g., "Outerware") from your local constants
+  const parentCategoryLabel = useMemo(() => {
+    // We check the desktop navigation array for a matching slug
+    const navItem = NAVIGATION_DATA_DESKTOP.find((item) => item.slug === slug);
+    return navItem ? navItem.label : "";
+  }, [slug]);
+
   /* -------------------- Finish Filter Loading -------------------- */
   useEffect(() => {
     if (!filterLoading) return;
@@ -168,6 +178,7 @@ export const useCategory = (slug) => {
   return {
     products: processedData.paginatedProducts,
     categoryInfo,
+    parentCategoryLabel,
     loading: dataLoading || filterLoading,
     error,
     inStockCount: processedData.inStockCount,

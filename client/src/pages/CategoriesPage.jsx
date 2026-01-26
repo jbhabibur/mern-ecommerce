@@ -26,6 +26,7 @@ export const CategoriesPage = () => {
   const {
     products,
     categoryInfo,
+    parentCategoryLabel,
     loading,
     error,
     inStockCount,

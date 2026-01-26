@@ -7,6 +7,7 @@ import { SingleProduct } from "../pages/SingleProduct";
 import { ViewCart } from "../pages/ViewCart";
 import { AllCategories } from "../pages/AllCategories";
 import { ContactPage } from "../pages/ContactPage";
+import { RegisterPage } from "../pages/RegisterPage";
 
 const router = createBrowserRouter([
   {
@@ -36,6 +37,10 @@ const router = createBrowserRouter([
       {
         path: "/contact",
         element: <ContactPage />,
+      },
+      {
+        path: "/account/register",
+        element: <RegisterPage />,
       },
     ],
   },

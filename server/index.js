@@ -1,14 +1,18 @@
-import cors from "cors";
+// Load environment variables
 import dotenv from "dotenv";
+dotenv.config();
+
+import cors from "cors";
+
 import express from "express";
 import connectDB from "./config/db.js";
 
 // Routes Import
 import productRoutes from "./routes/productRoutes.js";
 import categoryRoutes from "./routes/categoryRoutes.js";
+import authRoutes from "./routes/authRoutes.js";
 
-// Load environment variables
-dotenv.config();
+console.log("EMAIL ENV:", process.env.EMAIL_USER, process.env.EMAIL_PASS);
 
 // Initialize Database Connection
 connectDB();
@@ -51,6 +55,7 @@ app.use("/uploads", express.static("uploads"));
  */
 app.use("/api/categories", categoryRoutes);
 app.use("/api/products", productRoutes);
+app.use("/api/auth", authRoutes);
 
 /**
  * Health Check Route

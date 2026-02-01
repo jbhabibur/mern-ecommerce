@@ -16,6 +16,7 @@ import { NAVIGATION_DATA_MOBILE } from "../../../constants/navigationData";
 // Redux কানেকশন
 import { useDispatch, useSelector } from "react-redux";
 import { cartActions } from "../../../redux/slices/cartSlice";
+import { openAuthDrawer } from "../../../redux/slices/authDrawerSlice";
 
 export const MobileHeader = () => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -47,9 +48,12 @@ export const MobileHeader = () => {
         </div>
 
         <div className="flex items-center gap-4">
-          <User className="w-6 h-6 cursor-pointer" />
+          <User
+            onClick={() => dispatch(openAuthDrawer())}
+            className="w-6 h-6 cursor-pointer"
+          />
 
-          {/* ২. কার্ট আইকন লজিক: ক্লিক করলে ড্রয়ার ওপেন হবে */}
+          {/* Cart icon logic: opens the cart drawer on click */}
           <div
             className="relative cursor-pointer"
             onClick={() => dispatch(cartActions.setCartOpen(true))}

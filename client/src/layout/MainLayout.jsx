@@ -6,7 +6,7 @@ import { HeaderManager } from "../components/Header/HeaderManager";
 import { Footer } from "../components/Footer";
 import { BottomNavigation } from "../components/shared/BottomNavigation";
 import { CartDrawer } from "../components/Cart/CartDrawer";
-import { AuthDrawer } from "../components/AuthDrawer";
+import { AuthDrawer } from "../features/auth/components/AuthDrawer";
 
 export const MainLayout = () => {
   const { isOpen } = useSelector((state) => state.authDrawer);

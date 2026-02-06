@@ -27,6 +27,7 @@ app.use(express.json()); // Body parser
 // EKDHOM IMPORTANT: Domain gulo thikmoto thakte hobe
 const allowedOrigins = [
   "http://localhost:5173", // Local development
+  "http://localhost:5174", // Local development
   "https://mern-ecommerce-cfee.vercel.app", // Purono domain
   "https://mern-ecommerce-kappa-seven.vercel.app", // NOTUN DOMAIN (Vercel-e jeta active)
 ];
@@ -54,7 +55,7 @@ app.use("/uploads", express.static("uploads"));
  * API Routes mounting
  */
 app.use("/api/categories", categoryRoutes);
-app.use("/api/products", productRoutes);
+app.use("/api/product", productRoutes);
 app.use("/api/auth", authRoutes);
 
 /**

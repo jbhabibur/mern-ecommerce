@@ -1,6 +1,14 @@
-// Social Icon Helper Component
 export const SocialIcon = ({ icon }) => (
-  <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-black hover:bg-yellow-500 hover:scale-110 transition-all cursor-pointer">
-    {icon}
+  <div
+    className="bg-white p-2.5 rounded-full cursor-pointer 
+               transition-all duration-200
+               outline-0 outline-white outline-offset-0
+               hover:outline-3 hover:outline-offset-6"
+  >
+    <div className="text-black">
+      {" "}
+      {/* আইকন দেখার জন্য কালার অ্যাড করা হয়েছে */}
+      {icon}
+    </div>
   </div>
 );

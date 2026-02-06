@@ -1,39 +1,44 @@
 import express from "express";
-const router = express.Router();
-
+import multer from "multer";
+import { storage } from "../config/cloudinary.js";
 import {
   getProductsByCategory,
   getNewArrivals,
-  createBulkProducts,
+  createProduct,
   getSingleProduct,
 } from "../controllers/productController.js";
+import { validate } from "../middleware/validate.middleware.js";
+import { productSchema } from "../validators/product.validator.js";
 
-/**
- * @route   POST /api/bulk
- * @desc    Bulk create products (Internal/Admin use)
- * @access  Private/Admin
- */
-router.post("/bulk", createBulkProducts);
+const router = express.Router();
 
-/**
- * @route   GET /api/categories/:categoryName
- * @desc    Fetch category details (banner, title) and all associated products
- * @access  Public
+/** * Multer Configuration
+ * 1. Uses the Cloudinary storage logic you defined.
+ * 2. Limits file size to 3MB per image.
  */
+const upload = multer({
+  storage: storage,
+  limits: { fileSize: 3 * 1024 * 1024 },
+});
+
+// Public Routes
 router.get("/categories/:categoryName", getProductsByCategory);
-
-/**
- * @route   GET /api/new-arrivals
- * @desc    Retrieve the latest product arrivals
- * @access  Public
- */
 router.get("/new-arrivals", getNewArrivals);
+router.get("/:slug", getSingleProduct);
 
 /**
- * @route   GET /api/products/:slug
- * @desc    Retrieve details for a single product using its unique slug
- * @access  Public
+ * @route   POST /api/product/add
+ * @desc    Create product with image upload and validation
+ * * Order is critical:
+ * 1. upload.array: Parses Multipart data, uploads images to Cloudinary subfolder (using slug).
+ * 2. validate: Joi checks the parsed req.body.
+ * 3. createProduct: Final database operation.
  */
-router.get("/:slug", getSingleProduct);
+router.post(
+  "/add",
+  upload.array("images", 5), // 'images' is the key from frontend, max 5 files
+  validate(productSchema), // Validates text fields after Multer parses them
+  createProduct,
+);
 
 export default router;

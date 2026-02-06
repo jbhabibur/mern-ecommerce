@@ -1,66 +1,129 @@
+// import mongoose from "mongoose";
+
+// const productSchema = new mongoose.Schema(
+//   {
+//     name: { type: String, required: true, trim: true },
+//     slug: { type: String, required: true, unique: true, lowercase: true },
+//     description: { type: String },
+//     price: { type: Number, required: true }, // Fixed: Number
+//     compare_at_price: { type: Number }, // Fixed: Number
+//     currency: { type: String, default: "BDT" },
+
+//     parentCategory: {
+//       type: mongoose.Schema.Types.ObjectId,
+//       ref: "Category",
+//       default: null,
+//     },
+//     category: {
+//       type: mongoose.Schema.Types.ObjectId,
+//       ref: "Category",
+//       default: null,
+//     },
+//     subcategory: {
+//       type: mongoose.Schema.Types.ObjectId,
+//       ref: "Category",
+//       default: null,
+//     },
+
+//     itemType: {
+//       type: String,
+//       required: true,
+//       enum: ["men-top", "men-bottom", "outware", "accessories"],
+//     },
+
+//     images: [
+//       {
+//         url: { type: String, required: true },
+//         isPrimary: { type: Boolean, default: false },
+//         isZoomView: { type: Boolean, default: false },
+//       },
+//     ],
+//     variants: [
+//       {
+//         size: { type: String },
+//         stock: { type: Number, required: true, default: 0 }, // Fixed: Number
+//       },
+//     ],
+//     color: { type: String },
+//     fabric: { type: String },
+
+//     analytics: {
+//       totalSales: { type: Number, default: 0 }, // Fixed: Number
+//       totalViews: { type: Number, default: 0 }, // Fixed: Number
+//       averageRating: { type: Number, default: 0 }, // Fixed: Number
+//       reviewCount: { type: Number, default: 0 }, // Fixed: Number
+//       popularityScore: { type: Number, default: 0 }, // Fixed: Number
+//     },
+
+//     isNewArrival: { type: Boolean, default: false },
+//     bestSeller: { type: Boolean, default: false },
+//   },
+//   { timestamps: true },
+// );
+
+// // Indexes
+// productSchema.index({ category: 1, parentCategory: 1 });
+// productSchema.index({ "analytics.popularityScore": -1 });
+
+// // Pre-save middleware
+// productSchema.pre("save", async function () {
+//   try {
+//     if (this.isModified("category") && this.category) {
+//       const Category = mongoose.model("Category");
+//       const categoryDoc = await Category.findById(this.category);
+//       if (categoryDoc && categoryDoc.parent) {
+//         this.parentCategory = categoryDoc.parent;
+//       }
+//     }
+//     // next();
+//   } catch (error) {
+//     // next(error);
+//   }
+// });
+
+// export default mongoose.models.Product ||
+//   mongoose.model("Product", productSchema);
+
 import mongoose from "mongoose";
 
 const productSchema = new mongoose.Schema(
   {
     name: { type: String, required: true, trim: true },
     slug: { type: String, required: true, unique: true, lowercase: true },
-    description: { type: String, required: true },
+    description: { type: String },
     price: { type: Number, required: true },
     compare_at_price: { type: Number },
     currency: { type: String, default: "BDT" },
 
-    // Primary Category link (e.g., Panjabi)
-    category: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Category",
-      required: true,
-    },
-
-    // Parent Category link (e.g., Winter Collection)
-    // This allows you to find all winter items at once.
+    // Category Fields
     parentCategory: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Category",
+      default: null,
+    },
+    category: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Category",
+      default: null,
+    },
+    subcategory: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Category",
+      default: null,
     },
 
-    itemType: {
-      type: String,
-      required: true,
-      enum: ["men-top", "men-bottom", "outware", "accessories"],
-    },
-
-    images: [{ type: String, required: true }],
-    variants: [
+    // Media Fields (Cloudinary URLs)
+    images: [
       {
-        size: { type: String },
-        stock: { type: Number, required: true, default: 0 },
+        url: { type: String, required: true },
+        isPrimary: { type: Boolean, default: false },
+        isZoomView: { type: Boolean, default: false },
+        public_id: { type: String }, // Useful for deleting from Cloudinary later
       },
     ],
-    color: { type: String },
-    fabric: { type: String },
-    isNewArrival: { type: Boolean, default: false },
-    bestSeller: { type: Boolean, default: false },
   },
   { timestamps: true },
 );
 
-// Faster filtering for category-based queries
-productSchema.index({ category: 1, parentCategory: 1 });
-
-/**
- * MIDDLEWARE: Automatically set parentCategory before saving
- * If you assign a product to "Panjabi", this script finds if "Panjabi"
- * has a parent (like "Winter Collection") and saves it.
- */
-productSchema.pre("save", async function (next) {
-  if (this.isModified("category")) {
-    const Category = mongoose.model("Category");
-    const cat = await Category.findById(this.category);
-    if (cat && cat.parent) {
-      this.parentCategory = cat.parent;
-    }
-  }
-  next();
-});
-
-export default mongoose.model("Product", productSchema);
+export default mongoose.models.Product ||
+  mongoose.model("Product", productSchema);

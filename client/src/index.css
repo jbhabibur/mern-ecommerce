@@ -9,3 +9,18 @@
 body {
   font-family: "Poppins", sans-serif;
 }
+
+@layer components {
+  .link-underline {
+    @apply relative inline-block transition-colors duration-300;
+  }
+
+  .link-underline::after {
+    @apply content-[''] absolute bottom-0 left-0 w-full h-[1px] bg-current 
+           scale-x-0 transition-transform duration-300 ease-in-out origin-right;
+  }
+
+  .link-underline:hover::after {
+    @apply scale-x-100 origin-left;
+  }
+}

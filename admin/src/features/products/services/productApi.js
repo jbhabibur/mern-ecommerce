@@ -6,19 +6,20 @@ import { BASE_URL } from "../../../api/apiConfig";
  */
 
 // 1. POST: Save a new product to the Database
-export const createProduct = async (productData) => {
+export const createProduct = async (formData) => {
   try {
     const response = await fetch(`${BASE_URL}/api/product/add`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(productData),
+      // IMPORTANT: Do NOT set "Content-Type" header when sending FormData.
+      // The browser will automatically set it to 'multipart/form-data'
+      // with the correct boundary.
+      body: formData,
     });
 
     const result = await response.json();
 
     if (!response.ok) {
+      // result.message will contain the "name is required" or validation errors from backend
       throw new Error(result.message || "Failed to create product");
     }
 
@@ -28,7 +29,7 @@ export const createProduct = async (productData) => {
       message: result.message || "Product created successfully",
     };
   } catch (error) {
-    console.error("Create Product Error:", error);
+    console.error("Create Product Error:", error.message);
     return {
       success: false,
       message: error.message || "Network error occurred",

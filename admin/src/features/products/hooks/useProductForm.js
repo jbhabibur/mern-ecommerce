@@ -13,6 +13,7 @@ export const useProductForm = () => {
     parentCategory: "",
     category: "",
     subcategory: "",
+    images: [], // Holds objects like { file: File, isPrimary: bool, isZoomView: bool }
   });
 
   const handleInputChange = (e) => {
@@ -23,11 +24,9 @@ export const useProductForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // 1. Basic Validation (Name & Price)
+    // 1. Basic Validation
     const name = formData.name.trim();
-    if (!name) {
-      return alert("Product name cannot be empty");
-    }
+    if (!name) return alert("Product name cannot be empty");
 
     // 2. Slug Processing
     const slug = formData.slug ? formData.slug.toLowerCase().trim() : "";
@@ -35,16 +34,14 @@ export const useProductForm = () => {
     // 3. Description
     const description = formData.description || "";
 
-    // 4. Price Validation (Positive Number)
+    // 4. Price Validation
     const price = Number(formData.price);
     if (!formData.price || isNaN(price)) {
       return alert("Price is required and must be a number");
     }
-    if (price <= 0) {
-      return alert("Price must be a positive number");
-    }
+    if (price <= 0) return alert("Price must be a positive number");
 
-    // 5. Compare At Price Validation (Optional)
+    // 5. Compare At Price Validation
     let compare_at_price = undefined;
     if (formData.compare_at_price && formData.compare_at_price !== "") {
       compare_at_price = Number(formData.compare_at_price);
@@ -56,9 +53,8 @@ export const useProductForm = () => {
     // 6. Currency
     const currency = formData.currency || "BDT";
 
-    // 7. Category ID Validation (Hex check for MongoDB ObjectId)
+    // 7. Category ID Validation
     const isValidId = (id) => /^[0-9a-fA-F]{24}$/.test(id);
-
     if (formData.parentCategory && !isValidId(formData.parentCategory)) {
       return alert("Invalid Parent Category ID");
     }
@@ -72,20 +68,35 @@ export const useProductForm = () => {
     setLoading(true);
 
     try {
-      const payload = {
-        name,
-        slug,
-        description,
-        price,
-        compare_at_price,
-        currency,
-        parentCategory: formData.parentCategory || null,
-        category: formData.category || null,
-        subcategory: formData.subcategory || null,
-      };
+      // 8. Prepare FormData
+      const data = new FormData();
+
+      // Append standard text fields
+      data.append("name", name);
+      data.append("slug", slug);
+      data.append("description", description);
+      data.append("price", price);
+      if (compare_at_price) data.append("compare_at_price", compare_at_price);
+      data.append("currency", currency);
+      data.append("parentCategory", formData.parentCategory || "");
+      data.append("category", formData.category || "");
+      data.append("subcategory", formData.subcategory || "");
+
+      // 9. Prepare and append Metadata (isPrimary, isZoomView)
+      // We map the state to an array of objects and stringify it for the backend
+      const metadata = formData.images.map((img) => ({
+        isPrimary: img.isPrimary || false,
+        isZoomView: img.isZoomView || false,
+      }));
+      data.append("imageMetadata", JSON.stringify(metadata));
+
+      // 10. Append actual file blobs
+      formData.images.forEach((img) => {
+        data.append("images", img.file);
+      });
 
       // API Call
-      const result = await createProduct(payload);
+      const result = await createProduct(data);
 
       if (result.success) {
         alert("Product added successfully! 🚀");
@@ -101,6 +112,7 @@ export const useProductForm = () => {
           parentCategory: "",
           category: "",
           subcategory: "",
+          images: [],
         });
       }
     } catch (err) {

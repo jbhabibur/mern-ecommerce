@@ -20,18 +20,22 @@ export const productSchema = Joi.object({
   category: Joi.string().hex().length(24).allow(null, ""),
   subcategory: Joi.string().hex().length(24).allow(null, ""),
 
-  // --- Media Validation (Matching your Mongoose Schema) ---
+  // --- ADD THIS FIELD HERE ---
+  // This allows the metadata string sent via FormData to pass validation
+  imageMetadata: Joi.string().allow(null, ""),
+
+  // --- Media Validation ---
+  // Note: Since req.files is handled by Multer, Joi often sees 'images'
+  // as empty during the initial request body check.
+  // You can make this .optional() if you are validating images in the controller.
   images: Joi.array()
     .items(
       Joi.object({
         url: Joi.string().uri().required(),
         public_id: Joi.string().required(),
         isPrimary: Joi.boolean().default(false),
-        isZoomView: Joi.boolean().default(false), // Flag for the hover/zoom image
+        isZoomView: Joi.boolean().default(false),
       }),
     )
-    .min(1) // Ensures at least one image is uploaded
-    .messages({
-      "array.min": "At least one product image is required",
-    }),
+    .optional(), // Changed to optional here because the files are processed AFTER validation
 });

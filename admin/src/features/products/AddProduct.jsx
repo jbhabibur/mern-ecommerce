@@ -37,16 +37,16 @@ export const AddProduct = () => {
           handleInputChange={handleInputChange}
         />
 
-        {/* <ImageUpload formData={formData} setFormData={setFormData} /> */}
+        <ImageUpload formData={formData} setFormData={setFormData} />
 
         {/* Pass extra handlers for variants */}
-        {/* <ProductSpecifications
+        <ProductSpecifications
           formData={formData}
-          handleVariantChange={handleVariantChange} // Eita thik ache
+          handleVariantChange={handleVariantChange}
           addVariant={addVariant}
           removeVariant={removeVariant}
           setFormData={setFormData}
-        /> */}
+        />
 
         {/* <ProductFlags
           formData={formData}

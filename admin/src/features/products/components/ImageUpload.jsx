@@ -4,7 +4,6 @@ import {
   X,
   Star,
   Link as LinkIcon,
-  Maximize2,
   Crosshair,
   FileImage,
 } from "lucide-react";
@@ -15,63 +14,70 @@ export const ImageUpload = ({ formData, setFormData }) => {
   const [previewImage, setPreviewImage] = useState(null);
   const [uploadMode, setUploadMode] = useState("file");
 
-  // logic to update images in formData
-  const updateImages = (newImages) => {
+  const setPrimary = (id) => {
     setFormData((prev) => ({
       ...prev,
-      images: newImages,
+      images: (prev.images || []).map((img) => ({
+        ...img,
+        isPrimary: img.id === id,
+      })),
     }));
-  };
-
-  const setPrimary = (id) => {
-    const updated = formData.images.map((img) => ({
-      ...img,
-      isPrimary: img.id === id,
-    }));
-    updateImages(updated);
   };
 
   const setAsZoomView = (id) => {
-    const updated = formData.images.map((img) => ({
-      ...img,
-      isZoomView: img.id === id,
+    setFormData((prev) => ({
+      ...prev,
+      images: (prev.images || []).map((img) => ({
+        ...img,
+        isZoomView: img.id === id,
+      })),
     }));
-    updateImages(updated);
   };
 
   const processFiles = (files) => {
     const newImages = files.map((file) => ({
       id: Math.random().toString(36).substr(2, 9),
-      url: URL.createObjectURL(file), // For frontend preview
-      file: file, // Critical for Cloudinary upload
+      url: URL.createObjectURL(file),
+      file: file,
       isPrimary: (formData.images || []).length === 0,
       isZoomView: false,
     }));
-    updateImages([...(formData.images || []), ...newImages]);
+
+    setFormData((prev) => ({
+      ...prev,
+      images: [...(prev.images || []), ...newImages],
+    }));
   };
 
   const handleUrlUpload = (e) => {
     e.preventDefault();
     if (!urlInput.trim()) return;
+
     const newImage = {
       id: Math.random().toString(36).substr(2, 9),
       url: urlInput,
-      file: null, // No binary file for URLs
+      file: null,
       isPrimary: (formData.images || []).length === 0,
       isZoomView: false,
     };
-    updateImages([...(formData.images || []), newImage]);
+
+    setFormData((prev) => ({
+      ...prev,
+      images: [...(prev.images || []), newImage],
+    }));
     setUrlInput("");
   };
 
   const removeImage = (id) => {
-    const updated = formData.images.filter((img) => img.id !== id);
-    // Revoke object URL to prevent memory leaks
-    const removedImg = formData.images.find((img) => img.id === id);
-    if (removedImg?.url?.startsWith("blob:")) {
-      URL.revokeObjectURL(removedImg.url);
+    const imageToRemove = formData.images.find((img) => img.id === id);
+    if (imageToRemove?.url?.startsWith("blob:")) {
+      URL.revokeObjectURL(imageToRemove.url);
     }
-    updateImages(updated);
+
+    setFormData((prev) => ({
+      ...prev,
+      images: prev.images.filter((img) => img.id !== id),
+    }));
   };
 
   return (
@@ -167,15 +173,29 @@ export const ImageUpload = ({ formData, setFormData }) => {
               className="w-full h-full object-cover"
             />
 
+            {/* Flags for User Feedback */}
+            <div className="absolute top-2 left-2 flex flex-col gap-1 z-10">
+              {img.isPrimary && (
+                <span className="bg-indigo-600 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-sm flex items-center gap-1">
+                  <Star className="w-3 h-3 fill-current" /> PRIMARY
+                </span>
+              )}
+              {img.isZoomView && (
+                <span className="bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-sm flex items-center gap-1">
+                  <Crosshair className="w-3 h-3" /> ZOOM VIEW
+                </span>
+              )}
+            </div>
+
             {/* Overlay Buttons */}
             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
               <button
                 type="button"
                 onClick={() => setPrimary(img.id)}
-                className={`p-2 rounded-full ${img.isPrimary ? "bg-indigo-600" : "bg-white text-indigo-600"}`}
+                className={`p-2 rounded-full ${img.isPrimary ? "bg-indigo-600 text-white" : "bg-white text-indigo-600"}`}
               >
                 <Star
-                  className={`w-5 h-5 ${img.isPrimary ? "fill-current text-white" : ""}`}
+                  className={`w-5 h-5 ${img.isPrimary ? "fill-current" : ""}`}
                 />
               </button>
               <button

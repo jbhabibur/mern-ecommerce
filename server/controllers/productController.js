@@ -131,12 +131,34 @@ export const createProduct = asyncHandler(async (req, res, next) => {
     parentCategory,
     category,
     subcategory,
+    imageMetadata, // This is the JSON string sent from the frontend
   } = req.body;
 
-  // 2. Data object preparation
+  console.log("Uploaded Files:", req.files);
+
+  // 2. Image Handling (Merging Cloudinary Data with Metadata)
+  let imageObjects = [];
+
+  // Parse the metadata string back into an array of objects
+  const parsedMetadata = imageMetadata ? JSON.parse(imageMetadata) : [];
+
+  if (req.files && req.files.length > 0) {
+    // We map through the uploaded files and merge them with the metadata by index
+    imageObjects = req.files.map((file, index) => ({
+      url: file.path, // URL provided by Cloudinary
+      public_id: file.filename, // Public ID provided by Cloudinary
+      // Get booleans from the parsed metadata based on the current file index
+      isPrimary: parsedMetadata[index]?.isPrimary || false,
+      isZoomView: parsedMetadata[index]?.isZoomView || false,
+    }));
+  }
+
+  // 3. Data object preparation
   const productData = {
     name,
-    slug: slug ? slugify(slug) : slugify(name),
+    slug: slug
+      ? slugify(slug, { lower: true })
+      : slugify(name, { lower: true }),
     description,
     price: Number(price),
     compare_at_price: compare_at_price ? Number(compare_at_price) : undefined,
@@ -144,16 +166,17 @@ export const createProduct = asyncHandler(async (req, res, next) => {
     parentCategory: parentCategory || null,
     category: category || null,
     subcategory: subcategory || null,
+    images: imageObjects, // Now saving the full Array of Objects
   };
 
-  // 3. Save to Database
+  // 4. Save to Database
   const newProduct = new Product(productData);
   const savedProduct = await newProduct.save();
 
-  // 4. Success Response
+  // 5. Success Response
   res.status(201).json({
     success: true,
-    message: "Product Created Successfully with Categories",
+    message: "Product Created Successfully with Structured Images",
     data: savedProduct,
   });
 });

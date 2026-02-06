@@ -48,17 +48,17 @@ export const AddProduct = () => {
           setFormData={setFormData}
         />
 
-        {/* <ProductFlags
+        <ProductFlags
           formData={formData}
           handleInputChange={handleInputChange}
-        /> */}
+        />
 
-        {/* <ProductAnalytics formData={formData} setFormData={setFormData} /> */}
+        <ProductAnalytics formData={formData} setFormData={setFormData} />
 
-        {/* <ProductItemType
+        <ProductItemType
           formData={formData}
           handleInputChange={handleInputChange}
-        /> */}
+        />
 
         <div className="sticky bottom-6 pt-4 z-40">
           <button

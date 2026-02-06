@@ -119,6 +119,16 @@ export const getSingleProduct = async (req, res) => {
  * @route   POST /api/product/add
  * @access  Admin / Private
  */
+/**
+ * @desc    Create a new product
+ * @route   POST /api/product/add
+ * @access  Admin / Private
+ */
+/**
+ * @desc    Create a new product with full classification and analytics
+ * @route   POST /api/product/add
+ * @access  Admin / Private
+ */
 export const createProduct = asyncHandler(async (req, res, next) => {
   // 1. Basic Fields Extraction
   const {
@@ -128,34 +138,40 @@ export const createProduct = asyncHandler(async (req, res, next) => {
     price,
     compare_at_price,
     currency,
+    itemType, // New field added
     parentCategory,
     category,
     subcategory,
-    imageMetadata, // This is the JSON string sent from the frontend
+    imageMetadata,
+    color,
+    fabric,
+    variants,
+    isNewArrival,
+    bestSeller,
+    analytics, // Received as a JSON string from FormData
   } = req.body;
 
-  console.log("Uploaded Files:", req.files);
-
-  // 2. Image Handling (Merging Cloudinary Data with Metadata)
-  let imageObjects = [];
-
-  // Parse the metadata string back into an array of objects
+  // 2. Data Parsing with Safety Fallbacks
+  // Since FormData sends everything as strings, we must parse JSON fields
   const parsedMetadata = imageMetadata ? JSON.parse(imageMetadata) : [];
+  const parsedVariants = variants ? JSON.parse(variants) : [];
+  const parsedAnalytics = analytics ? JSON.parse(analytics) : {};
 
+  // 3. Image Handling (Merging Cloudinary storage data with UI metadata)
+  let imageObjects = [];
   if (req.files && req.files.length > 0) {
-    // We map through the uploaded files and merge them with the metadata by index
     imageObjects = req.files.map((file, index) => ({
-      url: file.path, // URL provided by Cloudinary
-      public_id: file.filename, // Public ID provided by Cloudinary
-      // Get booleans from the parsed metadata based on the current file index
+      url: file.path, // URL from Cloudinary
+      public_id: file.filename, // Cloudinary Public ID for future deletions
       isPrimary: parsedMetadata[index]?.isPrimary || false,
       isZoomView: parsedMetadata[index]?.isZoomView || false,
     }));
   }
 
-  // 3. Data object preparation
+  // 4. Product Data Object Preparation
   const productData = {
     name,
+    itemType, // Assigned to the new schema field
     slug: slug
       ? slugify(slug, { lower: true })
       : slugify(name, { lower: true }),
@@ -166,17 +182,33 @@ export const createProduct = asyncHandler(async (req, res, next) => {
     parentCategory: parentCategory || null,
     category: category || null,
     subcategory: subcategory || null,
-    images: imageObjects, // Now saving the full Array of Objects
+    images: imageObjects,
+    color: color || "",
+    fabric: fabric || "",
+    variants: parsedVariants,
+
+    // Handle Boolean conversion from FormData strings
+    isNewArrival: isNewArrival === "true" || isNewArrival === true,
+    bestSeller: bestSeller === "true" || bestSeller === true,
+
+    // Mapping Analytics with strict number conversion
+    analytics: {
+      totalSales: Number(parsedAnalytics.totalSales) || 0,
+      totalViews: Number(parsedAnalytics.totalViews) || 0,
+      reviewCount: Number(parsedAnalytics.reviewCount) || 0,
+      averageRating: Number(parsedAnalytics.averageRating) || 0,
+      popularityScore: Number(parsedAnalytics.popularityScore) || 0,
+    },
   };
 
-  // 4. Save to Database
+  // 5. Database Operation
   const newProduct = new Product(productData);
   const savedProduct = await newProduct.save();
 
-  // 5. Success Response
+  // 6. Final Response
   res.status(201).json({
     success: true,
-    message: "Product Created Successfully with Structured Images",
+    message: "Product Created Successfully",
     data: savedProduct,
   });
 });

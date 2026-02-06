@@ -15,19 +15,27 @@ export const productSchema = Joi.object({
   compare_at_price: Joi.number().positive().allow(null, ""),
   currency: Joi.string().default("BDT"),
 
+  // --- Classification Validation ---
+  itemType: Joi.string()
+    .valid("men-top", "men-bottom", "outware", "accessories")
+    .required()
+    .messages({
+      "any.only": "Invalid Item Type selected",
+      "any.required": "Item Type is required for classification",
+    }),
+
   // --- Category Validation (MongoDB ObjectId Hex check) ---
   parentCategory: Joi.string().hex().length(24).allow(null, ""),
   category: Joi.string().hex().length(24).allow(null, ""),
   subcategory: Joi.string().hex().length(24).allow(null, ""),
 
-  // --- ADD THIS FIELD HERE ---
-  // This allows the metadata string sent via FormData to pass validation
+  // --- Metadata & Variants (FormData Strings) ---
+  // These allow the stringified JSON sent via FormData to pass validation
   imageMetadata: Joi.string().allow(null, ""),
+  variants: Joi.string().allow(null, ""),
 
   // --- Media Validation ---
-  // Note: Since req.files is handled by Multer, Joi often sees 'images'
-  // as empty during the initial request body check.
-  // You can make this .optional() if you are validating images in the controller.
+  // Validated as optional since Multer processes files separately
   images: Joi.array()
     .items(
       Joi.object({
@@ -37,5 +45,28 @@ export const productSchema = Joi.object({
         isZoomView: Joi.boolean().default(false),
       }),
     )
-    .optional(), // Changed to optional here because the files are processed AFTER validation
+    .optional(),
+
+  color: Joi.string().allow(""),
+  fabric: Joi.string().allow(""),
+
+  // --- Product Flags ---
+  // truthy allows strings like "true" or "1" from FormData to be treated as Boolean
+  isNewArrival: Joi.boolean().truthy("true", "1").default(false),
+  bestSeller: Joi.boolean().truthy("true", "1").default(false),
+
+  // --- Analytics Validation ---
+  // We use Joi.alternatives because FormData might send this as a string or an object
+  analytics: Joi.alternatives()
+    .try(
+      Joi.object({
+        totalSales: Joi.number().min(0).default(0),
+        totalViews: Joi.number().min(0).default(0),
+        reviewCount: Joi.number().min(0).default(0),
+        averageRating: Joi.number().min(0).max(5).default(0),
+        popularityScore: Joi.number().default(0),
+      }),
+      Joi.string().allow(""),
+    )
+    .optional(),
 });

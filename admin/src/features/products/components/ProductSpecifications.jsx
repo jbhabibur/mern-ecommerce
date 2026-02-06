@@ -13,22 +13,23 @@ export const ProductSpecifications = ({ formData, setFormData }) => {
 
   const handleVariantChange = (index, field, value) => {
     setFormData((prev) => {
-      // 1. Purono variants array-ta ke copy kora
       const updatedVariants = [...prev.variants];
 
-      // 2. Specific oi index-er object-ta keo copy kora (Immutaiblity maintain kora)
       updatedVariants[index] = {
         ...updatedVariants[index],
-        [field]: field === "stock" ? Number(value) : value,
+        // FIX: Empty string hole empty rakhen, noile Number-e convert korun
+        // Eita korle input box theke 0 delete kora jabe
+        [field]:
+          field === "stock" ? (value === "" ? "" : Number(value)) : value,
       };
 
-      // 3. Notun state return kora
       return {
         ...prev,
         variants: updatedVariants,
       };
     });
   };
+
   // Add a new empty variant row
   const addVariant = () => {
     setFormData((prev) => ({
@@ -104,7 +105,7 @@ export const ProductSpecifications = ({ formData, setFormData }) => {
 
         {/* Variants List */}
         <div className="space-y-3">
-          {formData.variants.map((variant, index) => (
+          {formData.variants?.map((variant, index) => (
             <div
               key={index}
               className="flex items-center gap-4 bg-gray-50/50 p-3 rounded-xl border border-gray-100 animate-in fade-in slide-in-from-top-2"
@@ -126,6 +127,7 @@ export const ProductSpecifications = ({ formData, setFormData }) => {
                 </div>
                 <input
                   type="number"
+                  // FIX: ekhane fallback "" deya holo jeno 0 delete korle blank hoye jay
                   value={variant.stock}
                   onChange={(e) =>
                     handleVariantChange(index, "stock", e.target.value)
@@ -148,7 +150,7 @@ export const ProductSpecifications = ({ formData, setFormData }) => {
           ))}
         </div>
 
-        {formData.variants.length === 0 && (
+        {formData.variants?.length === 0 && (
           <p className="text-center text-gray-400 text-sm py-4">
             No variants added. Click "Add Size" to begin.
           </p>

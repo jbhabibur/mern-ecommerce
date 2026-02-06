@@ -16,7 +16,8 @@ export const ProductFlags = ({ formData, handleInputChange }) => {
           <input
             type="checkbox"
             name="isNewArrival"
-            checked={formData.isNewArrival}
+            // FIX: formData theke value na pele jeno false hoy (controlled input)
+            checked={formData.isNewArrival || false}
             onChange={handleInputChange}
             className="peer h-5 w-5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 transition-all cursor-pointer"
           />
@@ -37,7 +38,8 @@ export const ProductFlags = ({ formData, handleInputChange }) => {
           <input
             type="checkbox"
             name="bestSeller"
-            checked={formData.bestSeller}
+            // FIX: formData theke value na pele jeno false hoy (controlled input)
+            checked={formData.bestSeller || false}
             onChange={handleInputChange}
             className="peer h-5 w-5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 transition-all cursor-pointer"
           />

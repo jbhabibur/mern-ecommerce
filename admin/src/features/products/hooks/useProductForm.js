@@ -14,21 +14,40 @@ export const useProductForm = () => {
     category: "",
     subcategory: "",
     images: [], // Holds objects like { file: File, isPrimary: bool, isZoomView: bool }
+    color: "",
+    fabric: "",
+    variants: [{ size: "", stock: 0 }],
+    isNewArrival: false,
+    bestSeller: false,
+    analytics: {
+      totalSales: 0,
+      totalViews: 0,
+      reviewCount: 0,
+      averageRating: 0,
+      popularityScore: 0,
+    },
+    itemType: "", // Added itemType field
   });
 
+  // Handle generic input changes (text, numbers, checkboxes)
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    const { name, value, type, checked } = e.target;
+
+    setFormData((prev) => ({
+      ...prev,
+      // If checkbox, take 'checked' boolean, otherwise take 'value'
+      [name]: type === "checkbox" ? checked : value,
+    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // 1. Basic Validation
+    // 1. Basic Name Validation
     const name = formData.name.trim();
     if (!name) return alert("Product name cannot be empty");
 
-    // 2. Slug Processing
+    // 2. Slug Processing (Lowercase and trimmed)
     const slug = formData.slug ? formData.slug.toLowerCase().trim() : "";
 
     // 3. Description
@@ -53,7 +72,7 @@ export const useProductForm = () => {
     // 6. Currency
     const currency = formData.currency || "BDT";
 
-    // 7. Category ID Validation
+    // 7. MongoDB ObjectId Validation (24-char hex)
     const isValidId = (id) => /^[0-9a-fA-F]{24}$/.test(id);
     if (formData.parentCategory && !isValidId(formData.parentCategory)) {
       return alert("Invalid Parent Category ID");
@@ -68,7 +87,7 @@ export const useProductForm = () => {
     setLoading(true);
 
     try {
-      // 8. Prepare FormData
+      // 8. Prepare FormData for Multipart/form-data request
       const data = new FormData();
 
       // Append standard text fields
@@ -81,27 +100,36 @@ export const useProductForm = () => {
       data.append("parentCategory", formData.parentCategory || "");
       data.append("category", formData.category || "");
       data.append("subcategory", formData.subcategory || "");
+      data.append("itemType", formData.itemType); // Appending Item Type
 
-      // 9. Prepare and append Metadata (isPrimary, isZoomView)
-      // We map the state to an array of objects and stringify it for the backend
+      // 9. Append Flags & Nested Objects (Stringified)
+      data.append("isNewArrival", formData.isNewArrival);
+      data.append("bestSeller", formData.bestSeller);
+      data.append("analytics", JSON.stringify(formData.analytics));
+
+      // 10. Prepare and append Image Metadata (isPrimary, isZoomView)
       const metadata = formData.images.map((img) => ({
         isPrimary: img.isPrimary || false,
         isZoomView: img.isZoomView || false,
       }));
       data.append("imageMetadata", JSON.stringify(metadata));
 
-      // 10. Append actual file blobs
+      data.append("color", formData.color);
+      data.append("fabric", formData.fabric);
+      data.append("variants", JSON.stringify(formData.variants));
+
+      // 11. Append actual file blobs (Must be the same key name as expected by Multer)
       formData.images.forEach((img) => {
-        data.append("images", img.file);
+        if (img.file) data.append("images", img.file);
       });
 
-      // API Call
+      // Execute API Call
       const result = await createProduct(data);
 
       if (result.success) {
         alert("Product added successfully! 🚀");
 
-        // Form Reset
+        // 12. Reset Form to initial state
         setFormData({
           name: "",
           slug: "",
@@ -113,6 +141,19 @@ export const useProductForm = () => {
           category: "",
           subcategory: "",
           images: [],
+          color: "",
+          fabric: "",
+          variants: [{ size: "", stock: 0 }],
+          isNewArrival: false,
+          bestSeller: false,
+          analytics: {
+            totalSales: 0,
+            totalViews: 0,
+            reviewCount: 0,
+            averageRating: 0,
+            popularityScore: 0,
+          },
+          itemType: "", // Reset itemType
         });
       }
     } catch (err) {

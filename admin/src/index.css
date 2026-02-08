@@ -16,6 +16,11 @@
   --color-theme-act: var(--accent);
   --color-theme-actfg: var(--accent-fg);
 
+  /* Success & Error Mapping (Added) */
+  --color-theme-success: var(--success);
+  --color-theme-success-fg: var(--success-fg);
+  --color-theme-error: var(--error);
+
   /* Radius */
   --radius-lg: 0.5rem;
   --radius-md: calc(0.5rem - 2px);
@@ -32,6 +37,11 @@
     --border: #e2e8f0;
     --accent: #2563eb;
     --accent-fg: #ffffff;
+
+    /* Success & Error Colors (Added) */
+    --success: #10b981;
+    --success-fg: #ffffff;
+    --error: #ef4444;
   }
 
   /* Tailwind v4 prefers the [data-theme="dark"] or .dark class */
@@ -43,19 +53,19 @@
     --border: #333333;
     --accent: #3b82f6;
     --accent-fg: #ffffff;
+
+    /* Success & Error Colors Dark (Added) */
+    --success: #059669;
+    --error: #f87171;
   }
 
-  /* GLOBAL RESET & ZERO TRANSITION 
-     Note: Using !important on * can sometimes break third-party 
-     UI components (like Headless UI or Framer Motion).
-  */
+  /* GLOBAL RESET & ZERO TRANSITION */
   *,
   ::before,
   ::after {
     @apply border-theme-line outline-theme-act;
     transition-property: none !important;
     transition-duration: 0s !important;
-    /* animation: none !important; */ /* Uncomment if you want to kill all loaders/spinners too */
   }
 
   body {

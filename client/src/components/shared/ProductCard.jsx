@@ -59,19 +59,19 @@ export const ProductCard = ({ product, view }) => {
             </div>
           )}
 
-          {/* ✅ Primary Image: SingleProduct-er moto logic */}
+          {/* ✅ Primary Image */}
           <img
-            src={`${BASE_URL}/${product.images[0]}`}
+            src={product.images?.[0]?.url || product.images?.[0]}
             alt={product.name}
             className={`w-full h-full object-cover transition-opacity duration-500 ${
               isHovered && !isList ? "opacity-0" : "opacity-100"
             } ${isFullySoldOut ? "grayscale-[0.5] opacity-80" : ""}`}
           />
 
-          {/* ✅ Secondary Image: SingleProduct-er moto logic */}
-          {product.images?.[2] && (
+          {/* ✅ Secondary Image */}
+          {product.images?.[1] && (
             <img
-              src={`${BASE_URL}/${product.images[2]}`}
+              src={product.images?.[1]?.url || product.images?.[1]}
               alt={product.name}
               className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${
                 isHovered ? "opacity-100" : "opacity-0"

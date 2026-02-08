@@ -49,7 +49,7 @@ export const NewArrivalsSection = () => {
   return (
     <SectionLayout bgColor="bg-white">
       {/* Header Section */}
-      <div className="py-5 bg-amber-400">
+      <div className="py-5">
         <SectionHeader title="New Arrivals" linkText="View All" />
       </div>
 

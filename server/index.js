@@ -11,6 +11,7 @@ import connectDB from "./config/db.js";
 import productRoutes from "./routes/productRoutes.js";
 import categoryRoutes from "./routes/categoryRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
+import storefrontRoutes from "./routes/storefront.routes.js";
 
 console.log("EMAIL ENV:", process.env.EMAIL_USER, process.env.EMAIL_PASS);
 
@@ -57,6 +58,7 @@ app.use("/uploads", express.static("uploads"));
 app.use("/api/categories", categoryRoutes);
 app.use("/api/product", productRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/storefront", storefrontRoutes);
 
 /**
  * Health Check Route

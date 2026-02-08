@@ -37,6 +37,44 @@ export const getNewArrivals = async (req, res) => {
 };
 
 /**
+ * @desc    Fetch top 8 products based on popularity score
+ * @route   GET /api/products/popular
+ * @access  Public
+ */
+export const getPopularProducts = async (req, res) => {
+  try {
+    // 1. Find all products
+    // 2. Sort by popularityScore in descending order (-1 means highest first)
+    // 3. Limit the result to exactly 8 products
+    const popularProducts = await Product.find()
+      .sort({ "analytics.popularityScore": -1 })
+      .limit(8);
+
+    // Check if any products exist
+    if (!popularProducts || popularProducts.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No popular products found.",
+      });
+    }
+
+    // Return the successful response with data
+    res.status(200).json({
+      success: true,
+      count: popularProducts.length,
+      data: popularProducts,
+    });
+  } catch (error) {
+    // Handle server-side errors
+    res.status(500).json({
+      success: false,
+      message: "Error retrieving popular products.",
+      error: error.message,
+    });
+  }
+};
+
+/**
  * @desc    Fetch products by category (including sub-categories)
  * @route   GET /api/categories/:categoryName
  * @access  Public
@@ -114,16 +152,6 @@ export const getSingleProduct = async (req, res) => {
   }
 };
 
-/**
- * @desc    Create a new product
- * @route   POST /api/product/add
- * @access  Admin / Private
- */
-/**
- * @desc    Create a new product
- * @route   POST /api/product/add
- * @access  Admin / Private
- */
 /**
  * @desc    Create a new product with full classification and analytics
  * @route   POST /api/product/add

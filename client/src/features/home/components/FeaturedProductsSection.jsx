@@ -1,20 +1,21 @@
-import React from "react";
-import { Link } from "react-router-dom";
 import { SectionLayout } from "../../../layout/SectionLayout";
-import { useCategoriesData } from "../hooks/useCategoriesData";
+import { ProductCard } from "../../../components/shared/ProductCard";
+import { useFeturedProductsData } from "../hooks/useFeturedProductsData";
+import { SectionHeader } from "../../../components/atoms/SectionHeader";
 
-export const CategoriesSection = () => {
-  const { categories, loading, error } = useCategoriesData();
+export const FeaturedProductsSection = () => {
+  // Destructured products (renamed from categories)
+  const { products, loading, error } = useFeturedProductsData();
 
-  // Loading State: Skeleton cards
+  // Loading State: Renders skeleton cards while fetching data
   if (loading) {
     return (
       <SectionLayout bgColor="bg-white">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-[10px] md:gap-8 py-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 py-10">
           {[1, 2, 3, 4].map((n) => (
             <div
               key={n}
-              className="aspect-[4/3] bg-gray-200 animate-pulse rounded-sm"
+              className="aspect-[3/4] bg-gray-100 animate-pulse rounded-md"
             />
           ))}
         </div>
@@ -22,38 +23,28 @@ export const CategoriesSection = () => {
     );
   }
 
-  // Error handle
-  if (error || categories.length === 0) return null;
+  // Error handle: Do not render section if there is an error or no products found
+  if (error || !products || products.length === 0) return null;
 
   return (
     <SectionLayout bgColor="bg-white">
-      {/* SectionLayout er bhetore agei container ebong responsive padding ache,
-          tai amra shudhu grid-ta bosiyechi.
-      */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-[10px] md:gap-8 py-10 md:py-8">
-        {categories.map((item) => (
-          <Link
-            key={item._id}
-            to={`/categories/${item.slug}`}
-            className="group block relative"
-          >
-            {/* Image Wrapper */}
-            <div className="relative aspect-[4/3] overflow-hidden bg-gray-50 rounded-sm">
-              <img
-                src={item.thumbnail} // DB theke thumbnail image fetch korbe
-                alt={item.name}
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-              />
+      {/* Header Section */}
+      <div className="py-5">
+        <SectionHeader title="Feature Products" linkText="View All" />
+      </div>
 
-              {/* Text Overlay */}
-              <div className="absolute inset-0 flex items-center justify-center bg-black/10 group-hover:bg-black/35 transition-all duration-300">
-                <h2 className="text-white font-bold! text-xs! sm:text-sm md:text-base tracking-[0.2em] uppercase drop-shadow-lg pointer-events-none text-center px-2">
-                  {item.name}
-                </h2>
-              </div>
-            </div>
-          </Link>
-        ))}
+      {/* Content Section */}
+      <div className="py-2">
+        {/* Responsive Grid Logic:
+          grid-cols-1: Mobile (1 product per row)
+          sm:grid-cols-2: Tablet (2 products per row)
+          lg:grid-cols-4: Desktop (4 products per row) 
+        */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-10 md:gap-8">
+          {products.map((product) => (
+            <ProductCard key={product._id} product={product} view="grid" />
+          ))}
+        </div>
       </div>
     </SectionLayout>
   );

@@ -9,7 +9,10 @@ import {
   Package,
   BarChart3,
   LogOut,
-  X, // Imported X icon
+  X,
+  Image,
+  MonitorPlay,
+  Layers,
 } from "lucide-react";
 
 const SidebarItem = ({
@@ -185,6 +188,40 @@ export const Sidebar = ({ isDarkMode, toggleSidebar }) => {
             active={path === "/customers"}
           />
         </Link>
+
+        {/* --- CONTENT MANAGEMENT SECTION --- */}
+        <div className="pt-4 mt-4 border-t border-theme-line">
+          <p className="text-[9px] font-black text-theme-muted uppercase tracking-[0.2em] px-4 mb-2">
+            Content Management
+          </p>
+
+          {/* Hero Carousel: Manage main homepage slider images and links */}
+          <Link to="/website/carousel">
+            <SidebarItem
+              icon={Image}
+              label="Hero Carousel"
+              active={path === "/website/carousel"}
+            />
+          </Link>
+
+          {/* Featured Categories: Manage which categories are showcased on the homepage */}
+          <Link to="/website/categories">
+            <SidebarItem
+              icon={Layers}
+              label="Home Categories"
+              active={path === "/website/categories"}
+            />
+          </Link>
+
+          {/* Promo Banners: Assign specific categories to Slot 1 and Slot 2 banners */}
+          <Link to="/website/banners">
+            <SidebarItem
+              icon={MonitorPlay}
+              label="Promo Banners"
+              active={path === "/website/banners"}
+            />
+          </Link>
+        </div>
 
         <div className="pt-4 mt-4 border-t border-theme-line">
           <p className="text-[9px] font-black text-theme-muted uppercase tracking-[0.2em] px-4 mb-2">

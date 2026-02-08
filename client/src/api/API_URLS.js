@@ -1,10 +1,11 @@
 import { BASE_URL } from "./apiConfig";
 
 export const API_URLS = {
-  NEW_ARRIVALS: `${BASE_URL}/api/products/new-arrivals`,
-  ALL_PRODUCTS: `${BASE_URL}/api/products`,
+  NEW_ARRIVALS: `${BASE_URL}/api/product/new-arrivals`,
+  POPULAR_PRODUCTS: `${BASE_URL}/api/product/popular`,
+  ALL_PRODUCTS: `${BASE_URL}/api/product`,
   ALL_CATEGORIES: `${BASE_URL}/api/categories/all`,
-  CATEGORY_PRODUCTS: (slug) => `${BASE_URL}/api/products/categories/${slug}`,
+  CATEGORY_PRODUCTS: (slug) => `${BASE_URL}/api/product/categories/${slug}`,
 
   // Categories endpoints
   /** * @description Fetch categories with specific fields to optimize payload.

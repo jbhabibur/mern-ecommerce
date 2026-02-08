@@ -1,43 +1,63 @@
 import express from "express";
-import multer from "multer";
-import { storage } from "../config/cloudinary.js";
+
+// Controller Imports
 import {
   getProductsByCategory,
   getNewArrivals,
   createProduct,
   getSingleProduct,
+  getPopularProducts,
 } from "../controllers/productController.js";
+
+// Middleware & Validation Imports
 import { validate } from "../middleware/validate.middleware.js";
 import { productSchema } from "../validators/product.validator.js";
 
 const router = express.Router();
 
-/** * Multer Configuration
- * 1. Uses the Cloudinary storage logic you defined.
- * 2. Limits file size to 3MB per image.
+/**
+ * -----------------------------------------------------------
+ * MULTER CONFIGURATION
+ * -----------------------------------------------------------
+ * 1. Storage: Uses Cloudinary configuration.
+ * 2. File Size Limit: 3MB per file.
  */
-const upload = multer({
-  storage: storage,
-  limits: { fileSize: 3 * 1024 * 1024 },
-});
+import upload from "../middleware/multer.middleware.js";
 
-// Public Routes
+/**
+ * -----------------------------------------------------------
+ * PRODUCT ROUTES
+ * -----------------------------------------------------------
+ */
+
+// @route   GET /api/products/categories/:categoryName
+// @desc    Retrieve products by category name
 router.get("/categories/:categoryName", getProductsByCategory);
+
+// @route   GET /api/products/new-arrivals
+// @desc    Retrieve recently added products
 router.get("/new-arrivals", getNewArrivals);
+
+// @route   GET /api/products/popular
+// @desc    Retrieve trending/popular products
+router.get("/popular", getPopularProducts);
+
+// @route   GET /api/products/:slug
+// @desc    Retrieve a single product details by slug
 router.get("/:slug", getSingleProduct);
 
 /**
- * @route   POST /api/product/add
- * @desc    Create product with image upload and validation
- * * Order is critical:
- * 1. upload.array: Parses Multipart data, uploads images to Cloudinary subfolder (using slug).
- * 2. validate: Joi checks the parsed req.body.
- * 3. createProduct: Final database operation.
+ * @route   POST /api/products/add
+ * @desc    Create a new product with multiple images
+ * @access  Private/Admin
+ * Logic:
+ * 1. upload.array parses multipart data and sends to Cloudinary.
+ * 2. validate checks the req.body against the Joi schema.
  */
 router.post(
   "/add",
-  upload.array("images", 5), // 'images' is the key from frontend, max 5 files
-  validate(productSchema), // Validates text fields after Multer parses them
+  upload.array("images", 5),
+  validate(productSchema),
   createProduct,
 );
 

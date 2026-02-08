@@ -4,6 +4,7 @@ import { Hero } from "../features/home/components/Hero";
 import { CategoriesSection } from "../features/home/components/CategoriesSection";
 import { NewArrivalsSection } from "../features/home/components/NewArrivalsSection";
 import { FeaturedProductsSection } from "../features/home/components/FeaturedProductsSection";
+import { SocialMediaSection } from "../features/home/components/SocialMediaSection";
 
 export const Home = () => {
   const { panjabiSlot, fragranceSlot, loading } = usePromos();
@@ -37,6 +38,8 @@ export const Home = () => {
           link={`/category/${fragranceSlot.category?.slug || fragranceSlot.category}`}
         />
       )}
+
+      <SocialMediaSection />
     </>
   );
 };

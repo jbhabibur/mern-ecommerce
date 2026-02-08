@@ -3,7 +3,7 @@ import { useLocation, Link } from "react-router-dom";
 import {
   LayoutDashboard,
   ShoppingBag,
-  Users,
+  Images,
   Settings,
   ChevronRight,
   Package,
@@ -183,7 +183,7 @@ export const Sidebar = ({ isDarkMode, toggleSidebar }) => {
 
         <Link to="/customers">
           <SidebarItem
-            icon={Users}
+            icon={Images}
             label="Customers"
             active={path === "/customers"}
           />
@@ -195,7 +195,7 @@ export const Sidebar = ({ isDarkMode, toggleSidebar }) => {
             Content Management
           </p>
 
-          {/* Hero Carousel: Manage main homepage slider images and links */}
+          {/* Hero Carousel */}
           <Link to="/website/carousel">
             <SidebarItem
               icon={Image}
@@ -204,7 +204,7 @@ export const Sidebar = ({ isDarkMode, toggleSidebar }) => {
             />
           </Link>
 
-          {/* Featured Categories: Manage which categories are showcased on the homepage */}
+          {/* Featured Categories */}
           <Link to="/website/categories">
             <SidebarItem
               icon={Layers}
@@ -213,12 +213,21 @@ export const Sidebar = ({ isDarkMode, toggleSidebar }) => {
             />
           </Link>
 
-          {/* Promo Banners: Assign specific categories to Slot 1 and Slot 2 banners */}
+          {/* Promo Banners */}
           <Link to="/website/banners">
             <SidebarItem
               icon={MonitorPlay}
               label="Promo Banners"
               active={path === "/website/banners"}
+            />
+          </Link>
+
+          {/* Social Gallery: Added for Instagram images */}
+          <Link to="/website/social">
+            <SidebarItem
+              icon={Images} // Apni chaile 'Instagram' icon import kore ekhane dite paren
+              label="Social Gallery"
+              active={path === "/website/social"}
             />
           </Link>
         </div>

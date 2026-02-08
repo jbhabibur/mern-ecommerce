@@ -3,6 +3,7 @@ import { createBrowserRouter } from "react-router";
 import { AdminLayout } from "../layouts/AdminLayout";
 import { AddProduct } from "../features/products/AddProduct";
 import { PromoManager } from "../features/storefront/PromoManager";
+import { SocialMediaManager } from "../features/storefront/SocialMediaManager";
 
 const router = createBrowserRouter([
   {
@@ -16,6 +17,10 @@ const router = createBrowserRouter([
       {
         path: "/website/banners",
         element: <PromoManager />,
+      },
+      {
+        path: "/website/social",
+        element: <SocialMediaManager />,
       },
     ],
   },

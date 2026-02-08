@@ -24,4 +24,7 @@ export const API_URLS = {
   RESEND_OTP: `${BASE_URL}/api/auth/resend-otp`,
   FORGET_PASSWORD: `${BASE_URL}/api/auth/forgot-password`,
   RESET_PASSWORD: `${BASE_URL}/api/auth/reset-password`,
+
+  // Storefront endpoints
+  GET_SOCIAL_MEDIA: `${BASE_URL}/api/storefront/social-feed`,
 };

@@ -29,7 +29,7 @@ export const PromoManager = () => {
         {/* Header Section: Column on mobile, Row on tablet/desktop */}
         <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-6 mb-8 lg:mb-12">
           <div className="space-y-1">
-            <h1 className="text-2xl md:text-3xl lg:text-4xl font-extrabold tracking-tight">
+            <h1 className="text-2xl md:text-3xl lg:text-4xl font-extrabold tracking-tight uppercase">
               Promotional Banners
             </h1>
             <p className="text-theme-muted text-xs md:text-sm max-w-md">

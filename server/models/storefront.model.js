@@ -37,6 +37,24 @@ const storefrontSchema = new mongoose.Schema(
         },
       },
     ],
+    social_feed: [
+      {
+        image: {
+          url: {
+            type: String,
+            required: [true, "Image URL is mandatory"],
+          },
+          public_id: {
+            type: String,
+            required: [true, "Cloudinary public_id is mandatory"],
+          },
+        },
+        createdAt: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
   },
   { timestamps: true },
 );

@@ -1,54 +1,11 @@
 import Product from "../models/Product.js";
 import Category from "../models/Category.js";
 
-/**
- * @desc    Bulk Insert Products with automated slug generation
- * @route   POST /api/bulk
- * @access  Private/Admin
- */
-export const createBulkProducts = async (req, res) => {
-  try {
-    const rawProducts = req.body;
-
-    if (!Array.isArray(rawProducts)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid data format. Request body must be an array.",
-      });
-    }
-
-    // Process products to ensure every item has a URL-friendly slug
-    const processedProducts = rawProducts.map((product) => ({
-      ...product,
-      slug:
-        product.slug ||
-        product.name
-          .toLowerCase()
-          .trim()
-          .replace(/[^\w\s-]/g, "") // Remove special characters
-          .replace(/[\s_-]+/g, "-") // Replace spaces and underscores with hyphens
-          .replace(/^-+|-+$/g, ""), // Trim hyphens from ends
-    }));
-
-    const createdProducts = await Product.insertMany(processedProducts);
-
-    res.status(201).json({
-      success: true,
-      count: createdProducts.length,
-      message: "Products uploaded and processed successfully.",
-      data: createdProducts,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Bulk upload operation failed.",
-      error: error.message,
-    });
-  }
-};
+import { slugify } from "../utils/slugify.utils.js";
+import { asyncHandler } from "../middleware/error.middleware.js";
 
 /**
- * @desc    Fetch products tagged as New Arrivals
+ * @desc    Fetch products marked as New Arrivals
  * @route   GET /api/new-arrivals
  * @access  Public
  */
@@ -58,10 +15,10 @@ export const getNewArrivals = async (req, res) => {
       createdAt: -1,
     });
 
-    if (!products || products.length === 0) {
+    if (!products.length) {
       return res.status(404).json({
         success: false,
-        message: "No new arrivals found at this time.",
+        message: "No new arrivals found.",
       });
     }
 
@@ -80,7 +37,45 @@ export const getNewArrivals = async (req, res) => {
 };
 
 /**
- * @desc    Fetch category metadata and all associated products (including sub-categories)
+ * @desc    Fetch top 8 products based on popularity score
+ * @route   GET /api/products/popular
+ * @access  Public
+ */
+export const getPopularProducts = async (req, res) => {
+  try {
+    // 1. Find all products
+    // 2. Sort by popularityScore in descending order (-1 means highest first)
+    // 3. Limit the result to exactly 8 products
+    const popularProducts = await Product.find()
+      .sort({ "analytics.popularityScore": -1 })
+      .limit(8);
+
+    // Check if any products exist
+    if (!popularProducts || popularProducts.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No popular products found.",
+      });
+    }
+
+    // Return the successful response with data
+    res.status(200).json({
+      success: true,
+      count: popularProducts.length,
+      data: popularProducts,
+    });
+  } catch (error) {
+    // Handle server-side errors
+    res.status(500).json({
+      success: false,
+      message: "Error retrieving popular products.",
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * @desc    Fetch products by category (including sub-categories)
  * @route   GET /api/categories/:categoryName
  * @access  Public
  */
@@ -89,7 +84,7 @@ export const getProductsByCategory = async (req, res) => {
     const { categoryName } = req.params;
     const slug = categoryName.toLowerCase();
 
-    // 1. Locate the category metadata
+    // 1️⃣ Find category metadata
     const category = await Category.findOne({ slug });
 
     if (!category) {
@@ -99,7 +94,7 @@ export const getProductsByCategory = async (req, res) => {
       });
     }
 
-    // 2. Query products belonging to this category or its parent category
+    // 2️⃣ Find products under this category or its parent
     const products = await Product.find({
       $or: [{ category: category._id }, { parentCategory: category._id }],
     }).sort({ createdAt: -1 });
@@ -123,7 +118,7 @@ export const getProductsByCategory = async (req, res) => {
 };
 
 /**
- * @desc    Fetch a single product detail by slug with populated references
+ * @desc    Fetch single product by slug
  * @route   GET /api/products/:slug
  * @access  Public
  */
@@ -131,7 +126,6 @@ export const getSingleProduct = async (req, res) => {
   try {
     const { slug } = req.params;
 
-    // Use an object to specify what to exclude (0 means exclude)
     const product = await Product.findOne({ slug }).select({
       category: 0,
       parentCategory: 0,
@@ -149,9 +143,7 @@ export const getSingleProduct = async (req, res) => {
       data: product,
     });
   } catch (error) {
-    // Check your terminal/console where the backend is running
-    // It will show the exact line causing the 500 error
-    console.error("Error in getSingleProduct:", error);
+    console.error("Get Single Product Error:", error.message);
     res.status(500).json({
       success: false,
       message: "Internal server error",
@@ -159,3 +151,92 @@ export const getSingleProduct = async (req, res) => {
     });
   }
 };
+
+/**
+ * @desc    Create a new product with full classification and analytics
+ * @route   POST /api/product/add
+ * @access  Admin / Private
+ */
+export const createProduct = asyncHandler(async (req, res, next) => {
+  // 1. Basic Fields Extraction
+  const {
+    name,
+    slug,
+    description,
+    price,
+    compare_at_price,
+    currency,
+    itemType, // New field added
+    parentCategory,
+    category,
+    subcategory,
+    imageMetadata,
+    color,
+    fabric,
+    variants,
+    isNewArrival,
+    bestSeller,
+    analytics, // Received as a JSON string from FormData
+  } = req.body;
+
+  // 2. Data Parsing with Safety Fallbacks
+  // Since FormData sends everything as strings, we must parse JSON fields
+  const parsedMetadata = imageMetadata ? JSON.parse(imageMetadata) : [];
+  const parsedVariants = variants ? JSON.parse(variants) : [];
+  const parsedAnalytics = analytics ? JSON.parse(analytics) : {};
+
+  // 3. Image Handling (Merging Cloudinary storage data with UI metadata)
+  let imageObjects = [];
+  if (req.files && req.files.length > 0) {
+    imageObjects = req.files.map((file, index) => ({
+      url: file.path, // URL from Cloudinary
+      public_id: file.filename, // Cloudinary Public ID for future deletions
+      isPrimary: parsedMetadata[index]?.isPrimary || false,
+      isZoomView: parsedMetadata[index]?.isZoomView || false,
+    }));
+  }
+
+  // 4. Product Data Object Preparation
+  const productData = {
+    name,
+    itemType, // Assigned to the new schema field
+    slug: slug
+      ? slugify(slug, { lower: true })
+      : slugify(name, { lower: true }),
+    description,
+    price: Number(price),
+    compare_at_price: compare_at_price ? Number(compare_at_price) : undefined,
+    currency: currency || "BDT",
+    parentCategory: parentCategory || null,
+    category: category || null,
+    subcategory: subcategory || null,
+    images: imageObjects,
+    color: color || "",
+    fabric: fabric || "",
+    variants: parsedVariants,
+
+    // Handle Boolean conversion from FormData strings
+    isNewArrival: isNewArrival === "true" || isNewArrival === true,
+    bestSeller: bestSeller === "true" || bestSeller === true,
+
+    // Mapping Analytics with strict number conversion
+    analytics: {
+      totalSales: Number(parsedAnalytics.totalSales) || 0,
+      totalViews: Number(parsedAnalytics.totalViews) || 0,
+      reviewCount: Number(parsedAnalytics.reviewCount) || 0,
+      averageRating: Number(parsedAnalytics.averageRating) || 0,
+      popularityScore: Number(parsedAnalytics.popularityScore) || 0,
+    },
+  };
+
+  // 5. Database Operation
+  const newProduct = new Product(productData);
+  const savedProduct = await newProduct.save();
+
+  // 6. Final Response
+  res.status(201).json({
+    success: true,
+    message: "Product Created Successfully",
+    data: savedProduct,
+  });
+});

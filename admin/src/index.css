@@ -1,0 +1,85 @@
+@import "tailwindcss";
+
+/* Google Fonts */
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap");
+
+@theme {
+  /* Font Family */
+  --font-poppins: "Poppins", ui-sans-serif, system-ui, sans-serif;
+
+  /* Theme Colors Mapping */
+  --color-theme-base: var(--bg-main);
+  --color-theme-sub: var(--bg-sub);
+  --color-theme-front: var(--fg-main);
+  --color-theme-muted: var(--fg-muted);
+  --color-theme-line: var(--border);
+  --color-theme-act: var(--accent);
+  --color-theme-actfg: var(--accent-fg);
+
+  /* Success & Error Mapping (Added) */
+  --color-theme-success: var(--success);
+  --color-theme-success-fg: var(--success-fg);
+  --color-theme-error: var(--error);
+
+  /* Radius */
+  --radius-lg: 0.5rem;
+  --radius-md: calc(0.5rem - 2px);
+  --radius-sm: calc(0.5rem - 4px);
+}
+
+@layer base {
+  :root {
+    /* Light Mode */
+    --bg-main: #ffffff;
+    --bg-sub: #f8f9fa;
+    --fg-main: #0f172a;
+    --fg-muted: #64748b;
+    --border: #e2e8f0;
+    --accent: #2563eb;
+    --accent-fg: #ffffff;
+
+    /* Success & Error Colors (Added) */
+    --success: #10b981;
+    --success-fg: #ffffff;
+    --error: #ef4444;
+  }
+
+  /* Tailwind v4 prefers the [data-theme="dark"] or .dark class */
+  .dark {
+    --bg-main: #1a1a1a;
+    --bg-sub: #242424;
+    --fg-main: #f8fafc;
+    --fg-muted: #94a3b8;
+    --border: #333333;
+    --accent: #3b82f6;
+    --accent-fg: #ffffff;
+
+    /* Success & Error Colors Dark (Added) */
+    --success: #059669;
+    --error: #f87171;
+  }
+
+  /* GLOBAL RESET & ZERO TRANSITION */
+  *,
+  ::before,
+  ::after {
+    @apply border-theme-line outline-theme-act;
+    transition-property: none !important;
+    transition-duration: 0s !important;
+  }
+
+  body {
+    font-family: var(--font-poppins);
+    background-color: var(--bg-main);
+    color: var(--fg-main);
+    @apply antialiased selection:bg-theme-act selection:text-theme-actfg;
+  }
+
+  /* Ensure inputs/buttons inherit font properly */
+  input,
+  button,
+  textarea,
+  select {
+    font-family: inherit;
+  }
+}

@@ -1,41 +1,60 @@
 import mongoose from "mongoose";
 
+/**
+ * Category Schema
+ * Optimized for granular visibility control on Homepage and Category Menus.
+ */
 const categorySchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      required: true,
+      required: [true, "Category name is required"],
       trim: true,
     },
     slug: {
       type: String,
-      required: true,
+      required: [true, "Slug is required"],
       unique: true,
       lowercase: true,
-      index: true, // Faster searching by slug
+      index: true,
     },
-    bannerImage: {
-      type: String,
-      default: "", // Always return an empty string instead of undefined
-    },
-    description: {
-      type: String,
-      default: "",
-    },
+    /**
+     * Images for different UI placements
+     */
+    thumbnail: { type: String, default: "" }, // Grid icons / Sidebars
+    bannerImage: { type: String, default: "" }, // Top of Category Landing Page
+    carouselImage: { type: String, default: "" }, // Homepage Slider Image
+
+    description: { type: String, default: "" },
+
     parent: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Category", // Self-referencing for child categories
+      ref: "Category",
       default: null,
     },
-    showOnHome: {
+
+    /**
+     * VISIBILITY CONTROLS
+     * showInCarousel: Controls if the promotional image appears in the home slider.
+     * showInCategories: Controls if the category appears in menus/shop pages.
+     */
+    showInCarousel: {
       type: Boolean,
       default: false,
     },
+    showInCategories: {
+      type: Boolean,
+      default: true,
+    },
   },
-  { timestamps: true },
+  {
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  },
 );
 
-// Optional: Virtual field to get child categories (if needed later)
+// Virtual for sub-categories remains the same
 categorySchema.virtual("children", {
   ref: "Category",
   localField: "_id",

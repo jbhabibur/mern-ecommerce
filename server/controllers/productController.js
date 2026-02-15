@@ -118,39 +118,33 @@ export const getProductsByCategory = async (req, res) => {
 };
 
 /**
- * @desc    Fetch single product by slug
+ * @desc    Fetch a single product by its slug
  * @route   GET /api/products/:slug
  * @access  Public
  */
-export const getSingleProduct = async (req, res) => {
-  try {
-    const { slug } = req.params;
+export const getSingleProductBySlug = asyncHandler(async (req, res, next) => {
+  const { slug } = req.params;
 
-    const product = await Product.findOne({ slug }).select({
-      category: 0,
-      parentCategory: 0,
-    });
+  // Database Query: Attempt to find product and exclude internal/unnecessary fields
+  const product = await Product.findOne({ slug }).select({
+    category: 0,
+    parentCategory: 0,
+    __v: 0, // Industry Standard: Usually exclude the version key
+  });
 
-    if (!product) {
-      return res.status(404).json({
-        success: false,
-        message: "Product not found.",
-      });
-    }
-
-    res.status(200).json({
-      success: true,
-      data: product,
-    });
-  } catch (error) {
-    console.error("Get Single Product Error:", error.message);
-    res.status(500).json({
-      success: false,
-      message: "Internal server error",
-      error: error.message,
-    });
+  // Resource Check: Handle cases where the slug does not match any document
+  if (!product) {
+    const error = new Error("Product not found.");
+    error.status = 404;
+    return next(error);
   }
-};
+
+  // Success Response: Return the product data
+  res.status(200).json({
+    success: true,
+    data: product,
+  });
+});
 
 /**
  * @desc    Create a new product with full classification and analytics

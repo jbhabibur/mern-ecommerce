@@ -7,6 +7,8 @@ export const API_URLS = {
   ALL_CATEGORIES: `${BASE_URL}/api/categories/all`,
   CATEGORY_PRODUCTS: (slug) => `${BASE_URL}/api/product/categories/${slug}`,
 
+  SINGLE_PRODUCT: `${BASE_URL}/api/products`,
+
   // Categories endpoints
   /** * @description Fetch categories with specific fields to optimize payload.
    * @usage API_URLS.GET_CATEGORIES("name,carouselImage")

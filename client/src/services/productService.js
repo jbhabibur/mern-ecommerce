@@ -1,15 +1,42 @@
 import apiInstance from "./apiInstance";
 import { API_URLS } from "../api/API_URLS";
+import { BASE_URL } from "../api/apiConfig";
 
 /**
- * Fetches the latest products for the New Arrivals section.
+ * @desc    Fetch a single product by its slug
+ * @param   {string} slug - The unique product identifier from the URL
+ * @returns {Promise<Object>}
+ */
+export const fetchProductBySlug = async (slug) => {
+  try {
+    const response = await apiInstance.get(
+      `${API_URLS.SINGLE_PRODUCT}/${slug}`,
+    );
+
+    if (response.data && response.data.success) {
+      return response.data.data;
+    }
+
+    return response.data;
+  } catch (error) {
+    throw error.response?.data?.message || `Failed to load product: ${slug}`;
+  }
+};
+
+/**
+ * @desc    Fetches the latest products for the New Arrivals section
+ * @returns {Promise<Array>}
  */
 export const fetchNewArrivals = async () => {
   try {
-    const { data } = await axiosClient.get(ENDPOINTS.PRODUCTS.NEW_ARRIVALS);
-    return data;
+    // apiInstance use kora hoyeche jate interceptors (auth/error) thikmoto kaj kore
+    const response = await apiInstance.get(API_URLS.NEW_ARRIVALS);
+
+    if (response.data && response.data.success) {
+      return response.data.data;
+    }
+    return response.data;
   } catch (error) {
-    // Professional error fallback in English
     throw error.response?.data?.message || "Failed to load new arrivals.";
   }
 };
@@ -22,7 +49,6 @@ export const fetchPopularProducts = async () => {
   try {
     const response = await apiInstance.get(API_URLS.POPULAR_PRODUCTS);
 
-    // Check for success based on your backend controller structure
     if (response.data && response.data.success) {
       return response.data.data;
     }
@@ -32,6 +58,6 @@ export const fetchPopularProducts = async () => {
       "Error fetching popular products:",
       error.response?.data || error.message,
     );
-    throw error;
+    throw error.response?.data?.message || "Failed to load popular products.";
   }
 };

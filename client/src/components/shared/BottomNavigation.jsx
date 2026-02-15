@@ -1,19 +1,20 @@
 import React from "react";
 import { Home, Search, LayoutGrid, User, ShoppingBag } from "lucide-react";
-import { cartActions } from "../../redux/slices/cartSlice"; // সঠিক ইম্পোর্ট নিশ্চিত করুন
-import { useDispatch, useSelector } from "react-redux"; // useSelector যোগ করা হয়েছে
+import { useDispatch, useSelector } from "react-redux";
+import { openAuthDrawer } from "../../redux/slices/authDrawerSlice";
 
 export const BottomNavigation = () => {
   const dispatch = useDispatch();
 
-  // ১. রিডাক্স থেকে কার্ট কাউন্ট নেওয়া
+  // 1. Get cart count from Redux state
   const totalQuantity = useSelector((state) => state.cart.totalQuantity);
 
-  // ক্লিক হ্যান্ডলার
+  // 2. Handle navigation item clicks
   const handleItemClick = (label) => {
-    if (label === "Cart") {
-      dispatch(cartActions.setCartOpen(true)); // কার্ট ড্রয়ার ওপেন করবে
+    if (label === "Account") {
+      dispatch(openAuthDrawer());
     }
+    // You can add other navigation logic here (e.g., using useNavigate)
   };
 
   const navItems = [
@@ -21,7 +22,7 @@ export const BottomNavigation = () => {
     { icon: <Search size={24} />, label: "Search", count: null },
     { icon: <LayoutGrid size={24} />, label: "Collection", count: null },
     { icon: <User size={24} />, label: "Account", count: null },
-    { icon: <ShoppingBag size={24} />, label: "Cart", count: totalQuantity }, // ডায়নামিক কাউন্ট
+    { icon: <ShoppingBag size={24} />, label: "Cart", count: totalQuantity }, // Dynamic count from Redux
   ];
 
   return (
@@ -29,12 +30,13 @@ export const BottomNavigation = () => {
       {navItems.map((item, index) => (
         <button
           key={index}
-          onClick={() => handleItemClick(item.label)} // ক্লিক ইভেন্ট যোগ করা হয়েছে
+          onClick={() => handleItemClick(item.label)} // Click event handler
           className="flex flex-col items-center justify-center gap-1 min-w-[64px] transition-colors hover:text-black text-gray-700"
         >
           <div className="relative">
             {item.icon}
-            {/* Cart Badge - ০ এর বেশি হলেই কেবল দেখাবে */}
+
+            {/* Cart Badge - Only shows if label is 'Cart' and count is greater than 0 */}
             {item.label === "Cart" && item.count > 0 && (
               <span className="absolute -top-2 -right-2 bg-black text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
                 {item.count}

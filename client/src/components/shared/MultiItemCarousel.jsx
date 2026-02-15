@@ -2,6 +2,9 @@ import React from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation } from "swiper/modules";
 
+import { MultiItemCarouselSkeleton } from "../shared/skeletons/MultiItemCarouselSkeleton";
+import { MultiItemCarouselError } from "../shared/errors/MultiItemCarouselError";
+
 import { useSocialMediaData } from "../../hooks/useSocialMediaData";
 
 // Swiper styles
@@ -10,13 +13,12 @@ import "swiper/css/navigation";
 
 export const MultiItemCarousel = () => {
   const { posts: slides, loading, error } = useSocialMediaData();
-  console.log(slides);
 
-  if (loading)
-    return <div className="text-center py-10">Loading Slider...</div>;
+  // Integrated Loading State
+  if (loading) return <MultiItemCarouselSkeleton />;
 
-  if (error)
-    return <div className="text-center py-10 text-red-500">{error}</div>;
+  // Integrated Error State
+  if (error) return <MultiItemCarouselError error={error} />;
 
   return (
     <div className="relative px-8 group">

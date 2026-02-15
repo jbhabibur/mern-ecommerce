@@ -1,53 +1,61 @@
-// import { useSelector } from "react-redux";
-// import { Outlet } from "react-router-dom";
-// import { HeaderProvider } from "../contexts/HeaderContext";
-// import { SearchTrigger } from "../components/search/SearchTrigger";
-// import { HeaderManager } from "../components/Header/HeaderManager";
-// import { Footer } from "../components/Footer";
-// import { BottomNavigation } from "../components/shared/BottomNavigation";
-// import { CartDrawer } from "../components/Cart/CartDrawer";
-// import { AuthDrawer } from "../features/auth/components/AuthDrawer";
-
 import { Outlet } from "react-router-dom";
-import { Footer } from "../features/footer/components/Footer";
+import { useSelector } from "react-redux";
+
 import { HeaderController } from "../features/header/components/HeaderController";
+import { Footer } from "../features/footer/components/Footer";
+import { GlobalLoader } from "../components/atoms/GlobalLoader";
+import { AuthDrawer } from "../features/auth/components/AuthDrawer";
+import { BottomNavigation } from "../components/shared/BottomNavigation";
 
-// export const MainLayout = () => {
-//   const { isOpen } = useSelector((state) => state.authDrawer);
+import { useScrollToTop } from "../hooks/useScrollToTop";
 
-//   return (
-//     <HeaderProvider>
-//       <div
-//         className={`relative transition-transform duration-500 ease-in-out ${
-//           // Shift only happens on desktop (md:). On mobile, it stays at 0.
-//           isOpen ? "md:-translate-x-[50px] translate-x-0" : "translate-x-0"
-//         }`}
-//       >
-//         <SearchTrigger />
-//         <HeaderManager />
-//         {/* Add padding bottom so content isn't hidden by the fixed BottomNav on mobile */}
-//         <main className="pb-16 md:pb-0">
-//           <Outlet />
-//         </main>
-//         <Footer />
-//         <BottomNavigation />
-//       </div>
-
-//       <CartDrawer />
-//       <AuthDrawer />
-//     </HeaderProvider>
-//   );
-// };
-
+/**
+ * MainLayout component serves as the primary wrapper for the application.
+ * It manages global UI elements like navigation, footers, loaders, and modals.
+ */
 export const MainLayout = () => {
+  // Reset window scroll position on route changes
+  useScrollToTop();
+
+  // Access global application and drawer states from Redux
+  const { isAppLoading } = useSelector((state) => state.auth);
+  const { isOpen } = useSelector((state) => state.authDrawer);
+
   return (
-    <div>
-      {/* Header */}
-      <HeaderController />
-      <main>
-        <Outlet />
-      </main>
-      <Footer />
+    <div className="relative min-h-screen flex flex-col overflow-x-hidden">
+      {/* App-wide loading overlay */}
+      {isAppLoading && <GlobalLoader />}
+
+      {/* Main Content Wrapper: 
+          Shifts exactly 20px to the left when the drawer is open 
+          to create a subtle "partial push" depth effect.
+      */}
+      <div
+        className={`flex flex-col flex-grow transition-transform duration-500 ease-in-out ${
+          isOpen ? "-translate-x-[20px]" : "translate-x-0"
+        }`}
+      >
+        {/* Navigation Header */}
+        <HeaderController />
+
+        {/* Main Content Area */}
+        <main className="flex-grow pb-16 md:pb-0">
+          <Outlet />
+        </main>
+
+        {/* Footer */}
+        <Footer />
+      </div>
+
+      {/* --------------- Global Components --------------- */}
+
+      {/* AuthDrawer: Handled as a separate layer so it can open fully 
+          while the background content only shifts slightly.
+      */}
+      <AuthDrawer />
+
+      {/* Mobile-only navigation bar */}
+      <BottomNavigation />
     </div>
   );
 };

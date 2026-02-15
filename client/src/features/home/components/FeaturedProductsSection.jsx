@@ -2,34 +2,24 @@ import { SectionLayout } from "../../../layout/SectionLayout";
 import { ProductCard } from "../../../components/shared/ProductCard";
 import { useFeturedProductsData } from "../hooks/useFeturedProductsData";
 import { SectionHeader } from "../../../components/atoms/SectionHeader";
+import { FeaturedProductsSkeleton } from "./FeaturedProductsSectionSkeleton";
+import { FeaturedProductsError } from "./FeaturedProductsSectionError";
 
 export const FeaturedProductsSection = () => {
-  // Destructured products (renamed from categories)
   const { products, loading, error } = useFeturedProductsData();
 
   // Loading State: Renders skeleton cards while fetching data
-  if (loading) {
-    return (
-      <SectionLayout bgColor="bg-white">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 py-10">
-          {[1, 2, 3, 4].map((n) => (
-            <div
-              key={n}
-              className="aspect-[3/4] bg-gray-100 animate-pulse rounded-md"
-            />
-          ))}
-        </div>
-      </SectionLayout>
-    );
-  }
+  if (loading) return <FeaturedProductsSkeleton />;
 
   // Error handle: Do not render section if there is an error or no products found
-  if (error || !products || products.length === 0) return null;
+  if (error || !products || products.length === 0) {
+    return <FeaturedProductsError error={error} />;
+  }
 
   return (
     <SectionLayout bgColor="bg-white">
       {/* Header Section */}
-      <div className="py-5">
+      <div className="mt-10">
         <SectionHeader title="Feature Products" linkText="View All" />
       </div>
 

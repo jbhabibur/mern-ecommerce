@@ -14,7 +14,7 @@ export const sendVerificationEmail = async ({
 }) => {
   try {
     const info = await transporter.sendMail({
-      from: `"BEMAN Support" <${process.env.EMAIL_USER}>`,
+      from: `"MENS FASHION's Support" <${process.env.EMAIL_USER}>`,
       to: email,
       subject: `Verify your account - ${otp}`,
       html: verificationTemplate(name, otp, verificationUrl),
@@ -33,9 +33,9 @@ export const sendVerificationEmail = async ({
 export const sendSuccessEmail = async ({ email, name }) => {
   try {
     const info = await transporter.sendMail({
-      from: `"BEMAN Support" <${process.env.EMAIL_USER}>`,
+      from: `"MENS FASHION's Support" <${process.env.EMAIL_USER}>`,
       to: email,
-      subject: "Welcome to BEMAN - Verification Successful",
+      subject: "Welcome to MENS FASHION - Verification Successful",
       html: successTemplate(name),
     });
     console.log("Success email sent: " + info.response);
@@ -51,9 +51,9 @@ export const sendSuccessEmail = async ({ email, name }) => {
 export const sendResetPasswordEmail = async ({ email, name, resetUrl }) => {
   try {
     const info = await transporter.sendMail({
-      from: `"BEMAN Support" <${process.env.EMAIL_USER}>`,
+      from: `"MENS FASHION's Support" <${process.env.EMAIL_USER}>`,
       to: email,
-      subject: "Password Reset Request - BEMAN",
+      subject: "Password Reset Request - MENS FASHION",
       html: resetPasswordTemplate(name, resetUrl), // Use the template function
     });
     console.log("Reset email sent: " + info.response);

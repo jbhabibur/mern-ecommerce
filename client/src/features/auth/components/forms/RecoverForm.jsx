@@ -1,22 +1,22 @@
 import { useState } from "react";
 import { forgotPassword } from "../../../../services/authService";
+import { ButtonSpinner } from "../../../../components/loaders/ButtonSpinner";
+import { PrimaryButton } from "../../../../components/atoms/PrimaryButton";
+import { Toast } from "../../../../components/atoms/Toast";
+import { AnimatePresence } from "framer-motion";
 
 export const RecoverForm = ({ onCancel }) => {
   const [email, setEmail] = useState("");
-  const [fieldError, setFieldError] = useState(""); // For validation under input
-  const [backendError, setBackendError] = useState(""); // For the top error box (image 3)
+  const [fieldError, setFieldError] = useState("");
+  const [backendError, setBackendError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
+  const [showToast, setShowToast] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Reset errors
     setFieldError("");
     setBackendError("");
-    setIsSuccess(false);
 
-    // --- Frontend Validation (shown under input) ---
     if (!email) {
       setFieldError("Email address is required.");
       return;
@@ -30,12 +30,11 @@ export const RecoverForm = ({ onCancel }) => {
     setLoading(true);
     try {
       const response = await forgotPassword({ email });
-      if (response.success) {
-        setIsSuccess(true);
-        setEmail(""); // Clear input on success
+      if (response?.success) {
+        setShowToast(true); // Show the toast on success
+        setEmail("");
       }
     } catch (err) {
-      // If user is not found, show the red box at the top like image 3
       const msg = err.response?.data?.message || "Something went wrong.";
       setBackendError(msg);
     } finally {
@@ -44,71 +43,87 @@ export const RecoverForm = ({ onCancel }) => {
   };
 
   return (
-    <div className="py-10 animate-in fade-in duration-500">
-      <h1 className="text-left text-xl! font-bold! mb-4 text-black uppercase">
-        Reset your password
-      </h1>
-      <p className="text-gray-600 text-[15px] mb-8 leading-relaxed">
-        We will send you an email to reset your password.
-      </p>
+    <div className="w-full animate-in fade-in duration-500">
+      {/* Toast Notification */}
+      <AnimatePresence>
+        {showToast && (
+          <Toast
+            type="success"
+            message="Reset link sent! Please check your email inbox."
+            onClose={() => setShowToast(false)}
+          />
+        )}
+      </AnimatePresence>
 
-      {/* --- Top Error Box (Matches Image 3) --- */}
+      <header className="mb-6">
+        <h2 className="text-lg font-bold uppercase tracking-tight text-zinc-900">
+          Reset your password
+        </h2>
+        <p className="text-[10px] uppercase tracking-widest text-zinc-400 mt-1">
+          We will send you an email to reset your password.
+        </p>
+      </header>
+
+      {/* Backend Error Alert */}
       {backendError && (
-        <div className="bg-[#FDF3F3] border border-[#F3DADA] text-[#D02E2E] p-4 mb-6 text-center text-sm">
-          {backendError}
+        <div className="mb-6 border-l-2 p-3 flex flex-col gap-1 bg-red-50 border-red-500 transition-all duration-300">
+          <span className="text-[8px] font-black uppercase tracking-[0.2em] text-red-500">
+            System Alert
+          </span>
+          <p className="text-[10px] font-bold uppercase tracking-tight leading-relaxed text-red-700">
+            {backendError}
+          </p>
         </div>
       )}
 
-      {/* Success Message (Optional, without toast) */}
-      {isSuccess && (
-        <div className="bg-[#F3FAF5] border border-[#D1E7DD] text-[#0F5132] p-4 mb-6 text-center text-sm">
-          Check your email for the reset link!
-        </div>
-      )}
-
-      <form className="space-y-6" noValidate onSubmit={handleSubmit}>
-        <div>
-          <label className="block text-sm font-semibold mb-2">
-            Email Address
+      <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+        <div className="space-y-1.5">
+          <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
+            Email Address <span className="text-red-500">*</span>
           </label>
           <input
             type="email"
-            name="recoverEmail"
             value={email}
+            name="recoverEmail"
+            placeholder="john@example.com"
             onChange={(e) => {
               setEmail(e.target.value);
-              if (fieldError) setFieldError(""); // Clear field error on type
-              if (backendError) setBackendError(""); // Clear top error on type
+              if (fieldError) setFieldError("");
+              if (backendError) setBackendError("");
             }}
             disabled={loading}
-            className={`w-full border p-3 focus:outline-none transition duration-300 ${
-              fieldError
+            className={`w-full border-b-2 bg-transparent py-2 text-sm transition-all focus:outline-none ${
+              fieldError || backendError
                 ? "border-red-500"
-                : "border-gray-300 focus:border-black"
+                : "border-zinc-200 focus:border-black"
             }`}
           />
-
-          {/* --- Field Validation Error (under input) --- */}
           {fieldError && (
-            <p className="text-red-500 text-xs mt-1 font-medium">
+            <p className="text-[10px] font-bold uppercase text-red-500 mt-1 tracking-tight">
               {fieldError}
             </p>
           )}
         </div>
 
-        <div className="flex items-center gap-8 pt-2">
-          <button
-            type="submit"
-            disabled={loading}
-            className="border border-black bg-white px-12 py-3 text-sm font-bold tracking-widest hover:bg-black hover:text-white transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {loading ? "SENDING..." : "SUBMIT"}
-          </button>
+        <div className="flex flex-col sm:flex-row items-center gap-6 pt-2">
+          <div className="w-full sm:w-auto sm:min-w-[160px]">
+            <PrimaryButton
+              type="submit"
+              text="Submit"
+              loading={loading}
+              disabled={loading}
+              initialBg="#18181b"
+              initialText="#FFFFFF"
+              loadingComponent={
+                <ButtonSpinner color="white" text="Sending..." />
+              }
+            />
+          </div>
 
           <button
             type="button"
             onClick={onCancel}
-            className="text-sm text-gray-600 underline hover:text-black transition cursor-pointer"
+            className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 hover:text-black underline underline-offset-4 transition-colors cursor-pointer"
           >
             Cancel
           </button>

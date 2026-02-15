@@ -1,22 +1,36 @@
 import { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
+import { Eye, EyeOff } from "lucide-react";
 import { resetPassword } from "../../../../services/authService";
 
-export const ResetForm = () => {
-  const { token } = useParams(); // Extract token from URL
-  const navigate = useNavigate();
+// Components
+import { ButtonSpinner } from "../../../../components/loaders/ButtonSpinner";
+import { PrimaryButton } from "../../../../components/atoms/PrimaryButton";
 
+export const ResetForm = () => {
+  const { token } = useParams();
+
+  // Form State
   const [formData, setFormData] = useState({
     password: "",
     confirmPassword: "",
   });
-  const [fieldErrors, setFieldErrors] = useState({}); // Validation under input
-  const [backendError, setBackendError] = useState(""); // Top red box error
+
+  // UI State
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [backendError, setBackendError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // Toggle Visibility Functions
+  const togglePassword = () => setShowPassword(!showPassword);
+  const toggleConfirmPassword = () =>
+    setShowConfirmPassword(!showConfirmPassword);
+
+  // Handle Input Changes
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-    // Clear errors when typing starts
     setFieldErrors({ ...fieldErrors, [e.target.name]: "" });
     setBackendError("");
   };
@@ -25,10 +39,11 @@ export const ResetForm = () => {
     e.preventDefault();
     const errors = {};
 
-    // --- Frontend Validation ---
-    if (!formData.password) errors.password = "Password is required.";
-    else if (formData.password.length < 6)
+    if (!formData.password) {
+      errors.password = "Password is required.";
+    } else if (formData.password.length < 6) {
       errors.password = "Min 6 characters required.";
+    }
 
     if (formData.password !== formData.confirmPassword) {
       errors.confirmPassword = "Passwords do not match.";
@@ -42,12 +57,11 @@ export const ResetForm = () => {
     setLoading(true);
     try {
       const response = await resetPassword(token, formData);
-      if (response.success) {
-        // Redirect to login after 2 seconds or immediately
-        navigate("/account/login");
+      if (response?.success) {
+        // This triggers a full browser refresh to the login page
+        window.location.href = "/account/login?resetSuccess=true";
       }
     } catch (err) {
-      // Backend error shown at the top (Matches your reference image style)
       const msg = err.response?.data?.message || "Link invalid or expired.";
       setBackendError(msg);
     } finally {
@@ -56,78 +70,116 @@ export const ResetForm = () => {
   };
 
   return (
-    <div className="w-full max-w-[450px] animate-in fade-in duration-500">
-      <h1 className="text-left text-xl font-bold mb-4 text-black uppercase">
-        Reset Password
-      </h1>
-      <p className="text-gray-600 text-[15px] mb-8 leading-relaxed">
-        Please enter your new password below to secure your account.
-      </p>
+    <div className="mx-auto max-w-[450px] min-w-[250px] w-full animate-in fade-in duration-500 px-4 sm:px-0">
+      {/* Form Header */}
+      <header className="mb-6">
+        <h2 className="text-lg font-bold uppercase tracking-tight text-zinc-900">
+          Reset Password
+        </h2>
+        <p className="text-[10px] uppercase tracking-widest text-zinc-400 mt-1">
+          Please enter your new password below to secure your account
+        </p>
+      </header>
 
-      {/* --- Top Error Box (Backend Errors) --- */}
+      {/* Error Alert */}
       {backendError && (
-        <div className="bg-[#FDF3F3] border border-[#F3DADA] text-[#D02E2E] p-4 mb-6 text-center text-sm font-medium">
-          {backendError}
+        <div className="mb-6 bg-red-50 border-l-2 border-red-500 p-3 flex flex-col gap-1">
+          <span className="text-[8px] font-black uppercase tracking-[0.2em] text-red-500">
+            System Alert
+          </span>
+          <p className="text-[10px] font-bold uppercase tracking-tight text-red-700 leading-relaxed">
+            {backendError}
+          </p>
         </div>
       )}
 
-      <form className="space-y-6" noValidate onSubmit={handleSubmit}>
-        {/* New Password */}
-        <div>
-          <label className="block text-sm font-semibold mb-2">
-            New Password
+      <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+        {/* New Password Field */}
+        <div className="space-y-1.5">
+          <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
+            New Password <span className="text-red-500">*</span>
           </label>
-          <input
-            type="password"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            disabled={loading}
-            className={`w-full border p-3 focus:outline-none transition duration-300 ${
-              fieldErrors.password
-                ? "border-red-500"
-                : "border-gray-300 focus:border-black"
-            }`}
-          />
+          {/* Wrapper with relative and overflow-hidden to keep icon locked */}
+          <div className="relative">
+            <input
+              type={showPassword ? "text" : "password"}
+              name="password"
+              placeholder="••••••••"
+              value={formData.password}
+              onChange={handleChange}
+              disabled={loading}
+              // Added pr-10 to make space for the icon so text doesn't overlap
+              className={`w-full border-b-2 bg-transparent py-2 pr-10 text-sm transition-all focus:outline-none ${
+                fieldErrors.password
+                  ? "border-red-500"
+                  : "border-zinc-200 focus:border-black"
+              }`}
+            />
+            <button
+              type="button"
+              onClick={togglePassword}
+              // Changed bottom to 2 to keep it vertically aligned regardless of hover
+              className="absolute right-0 bottom-2 text-zinc-400 hover:text-black transition-colors"
+            >
+              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
+          </div>
           {fieldErrors.password && (
-            <p className="text-red-500 text-xs mt-1 font-medium">
+            <p className="text-[10px] font-bold uppercase text-red-500 mt-1 tracking-tight">
               {fieldErrors.password}
             </p>
           )}
         </div>
 
-        {/* Confirm Password */}
-        <div>
-          <label className="block text-sm font-semibold mb-2">
-            Confirm New Password
+        {/* Confirm Password Field */}
+        <div className="space-y-1.5">
+          <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
+            Confirm New Password <span className="text-red-500">*</span>
           </label>
-          <input
-            type="password"
-            name="confirmPassword"
-            value={formData.confirmPassword}
-            onChange={handleChange}
-            disabled={loading}
-            className={`w-full border p-3 focus:outline-none transition duration-300 ${
-              fieldErrors.confirmPassword
-                ? "border-red-500"
-                : "border-gray-300 focus:border-black"
-            }`}
-          />
+          <div className="relative">
+            <input
+              type={showConfirmPassword ? "text" : "password"}
+              name="confirmPassword"
+              placeholder="••••••••"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              disabled={loading}
+              className={`w-full border-b-2 bg-transparent py-2 pr-10 text-sm transition-all focus:outline-none ${
+                fieldErrors.confirmPassword
+                  ? "border-red-500"
+                  : "border-zinc-200 focus:border-black"
+              }`}
+            />
+            <button
+              type="button"
+              onClick={toggleConfirmPassword}
+              className="absolute right-0 bottom-2 text-zinc-400 hover:text-black transition-colors"
+            >
+              {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
+          </div>
           {fieldErrors.confirmPassword && (
-            <p className="text-red-500 text-xs mt-1 font-medium">
+            <p className="text-[10px] font-bold uppercase text-red-500 mt-1 tracking-tight">
               {fieldErrors.confirmPassword}
             </p>
           )}
         </div>
 
-        <div className="pt-2">
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full border border-black bg-white px-12 py-3 text-sm font-bold tracking-widest hover:bg-black hover:text-white transition duration-300 disabled:opacity-50"
-          >
-            {loading ? "UPDATING..." : "RESET PASSWORD"}
-          </button>
+        {/* Submit Button */}
+        <div className="pt-4">
+          <div className="w-full sm:w-auto sm:min-w-[200px]">
+            <PrimaryButton
+              type="submit"
+              text="Reset Password"
+              loading={loading}
+              disabled={loading}
+              initialBg="#18181b"
+              initialText="#FFFFFF"
+              loadingComponent={
+                <ButtonSpinner color="white" text="Updating..." />
+              }
+            />
+          </div>
         </div>
       </form>
     </div>

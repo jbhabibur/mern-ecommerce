@@ -1,39 +1,56 @@
-import { useEffect } from "react";
+import { useEffect, useState, useRef } from "react"; // Added useRef
 import { useDispatch, useSelector } from "react-redux";
 import { closeAuthDrawer } from "../../../redux/slices/authDrawerSlice";
-import { X } from "lucide-react";
+import { X, Eye, EyeOff } from "lucide-react";
 import { useCustomCursor } from "../hooks/useCustomCursor";
 import { useLogin } from "../hooks/useLogin";
+import { ButtonSpinner } from "../../../components/loaders/ButtonSpinner";
+import { PrimaryButton } from "../../../components/atoms/PrimaryButton";
 
 export const AuthDrawer = () => {
   const { isOpen } = useSelector((state) => state.authDrawer);
   const dispatch = useDispatch();
 
-  // Custom hooks
+  const [showPassword, setShowPassword] = useState(false);
+  const [isRotating, setIsRotating] = useState(false);
+
+  // 1. Create Refs for the input fields
+  const emailRef = useRef(null);
+  const passwordRef = useRef(null);
+
   const { mousePos } = useCustomCursor(isOpen);
-  const { formData, loading, statusMsg, handleChange, executeLogin } =
-    useLogin();
+  const {
+    formData,
+    loading,
+    statusMsg,
+    handleChange,
+    executeLogin,
+    handleVerifyAndRedirect,
+  } = useLogin(() => dispatch(closeAuthDrawer()));
 
-  // 1. Logic for Global Banner: Show only if there is no specific field attached
-  const showGlobalBanner = !statusMsg.field && statusMsg.text;
+  const showGlobalBanner = statusMsg.type === "error" && !statusMsg.field;
 
-  // Automatically close drawer if login is successful
+  // 2. Updated useEffect to use refs instead of document.getElementsByName
   useEffect(() => {
-    if (statusMsg.type === "success") {
-      const timer = setTimeout(() => {
-        dispatch(closeAuthDrawer());
-      }, 1500);
-      return () => clearTimeout(timer);
-    }
-  }, [statusMsg.type, dispatch]);
-
-  // Auto-focus the field that has an error
-  useEffect(() => {
-    if (statusMsg.field) {
-      const element = document.getElementsByName(statusMsg.field)[0];
-      if (element) element.focus();
+    if (statusMsg.field === "email") {
+      emailRef.current?.focus();
+    } else if (statusMsg.field === "password") {
+      passwordRef.current?.focus();
     }
   }, [statusMsg.field]);
+
+  /**
+   * Handles the click event for the close button.
+   * Triggers a 180-degree rotation animation before closing the drawer.
+   */
+  const handleClose = () => {
+    setIsRotating(true);
+
+    setTimeout(() => {
+      dispatch(closeAuthDrawer());
+      setIsRotating(false);
+    }, 200);
+  };
 
   return (
     <>
@@ -63,119 +80,156 @@ export const AuthDrawer = () => {
       <div
         className={`fixed top-0 right-0 h-full bg-white z-[101] shadow-2xl transition-transform duration-500 ease-in-out transform ${
           isOpen ? "translate-x-0" : "translate-x-full"
-        } w-[85%] md:w-[380px]`}
+        } w-[85%] sm:w-[360px] overflow-y-auto`}
       >
-        <div className="flex items-center justify-between p-4 border-b">
-          <h2 className="text-xl font-bold uppercase tracking-tight mb-0">
+        <div className="flex items-center justify-between p-6">
+          <h2 className="text-lg! font-bold uppercase tracking-tight mb-0 text-zinc-900">
             Login
           </h2>
-          <button onClick={() => dispatch(closeAuthDrawer())}>
-            <X className="w-6 h-6" />
+          <button onClick={handleClose}>
+            <X
+              className={`w-5 h-5 text-zinc-500 hover:text-black transition-transform duration-300 ${isRotating ? "rotate-180" : "rotate-0"}`}
+            />
           </button>
         </div>
 
-        {/* Login Form Content */}
-        <div className="p-4 space-y-6">
-          {/* GLOBAL BANNER: Only for Success or General Failures */}
+        <div className="p-6">
           {showGlobalBanner && (
-            <div
-              className={`p-3 text-sm text-center border animate-in fade-in duration-300 ${
-                statusMsg.type === "success"
-                  ? "bg-green-50 border-green-100 text-green-600"
-                  : "bg-red-50 border-red-100 text-red-600"
-              }`}
-            >
+            <div className="mb-6 p-3 text-[10px] font-bold text-center border bg-red-50 border-red-100 text-red-600 uppercase tracking-widest animate-in fade-in">
               {statusMsg.text}
             </div>
           )}
 
-          <form onSubmit={executeLogin} className="space-y-5" noValidate>
-            {/* Email Field */}
-            <div>
-              <label className="block text-sm font-semibold mb-1.5">
+          <form onSubmit={executeLogin} className="space-y-4" noValidate>
+            {/* Email Input */}
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
                 Email Address <span className="text-red-500">*</span>
               </label>
               <input
+                ref={emailRef} // 3. Attach Ref
                 type="email"
                 name="email"
+                placeholder="john@example.com"
                 value={formData.email}
                 onChange={handleChange}
-                placeholder="Email Address"
-                className={`w-full border p-3 outline-none transition-colors duration-300 ${
+                className={`w-full border-b-2 bg-transparent py-2 text-sm transition-all focus:outline-none ${
                   statusMsg.field === "email"
-                    ? "border-red-500 focus:border-red-500"
-                    : "border-gray-200 focus:border-black"
+                    ? "border-red-500"
+                    : "border-zinc-200 focus:border-black"
                 }`}
               />
-              {/* INPUT VALIDATION MESSAGE */}
-              {statusMsg.field === "email" && (
-                <div className="mt-1.5 text-xs font-bold text-red-600">
-                  {statusMsg.text}
-                </div>
-              )}
             </div>
 
-            {/* Password Field */}
-            <div>
-              <label className="block text-sm font-semibold mb-1.5">
+            {/* Password Input Area */}
+            <div className="relative space-y-1.5">
+              <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
                 Password <span className="text-red-500">*</span>
               </label>
               <input
-                type="password"
+                ref={passwordRef} // 4. Attach Ref
+                type={showPassword ? "text" : "password"}
                 name="password"
+                placeholder="••••••••"
                 value={formData.password}
                 onChange={handleChange}
-                placeholder="Password"
-                className={`w-full border p-3 outline-none transition-colors duration-300 ${
+                className={`w-full border-b-2 bg-transparent py-2 text-sm transition-all focus:outline-none ${
                   statusMsg.field === "password"
-                    ? "border-red-500 focus:border-red-500"
-                    : "border-gray-200 focus:border-black"
+                    ? "border-red-500"
+                    : "border-zinc-200 focus:border-black"
                 }`}
               />
-              {/* INPUT VALIDATION MESSAGE */}
-              {statusMsg.field === "password" && (
-                <div className="mt-1.5 text-xs font-bold text-red-600">
-                  {statusMsg.text}
-                </div>
-              )}
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-0 bottom-3.5 text-zinc-400 hover:text-black transition-colors"
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
             </div>
 
-            <div className="text-center flex flex-col gap-y-3 pt-2">
-              <button
+            {/* Error Feedback Section */}
+            {(statusMsg.field || statusMsg.message) && !showGlobalBanner && (
+              <div className="bg-red-50 border-l-2 border-red-500 p-3 flex flex-col gap-3 transition-all duration-300 animate-in fade-in">
+                <div className="flex flex-col gap-1">
+                  <span className="text-[8px] font-black uppercase tracking-[0.2em] text-red-500">
+                    System Alert
+                  </span>
+                  <p className="text-[10px] font-bold uppercase tracking-tight text-red-700 leading-relaxed">
+                    {statusMsg.text || statusMsg.message}
+                  </p>
+                </div>
+
+                {statusMsg.canVerify && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleVerifyAndRedirect();
+                      dispatch(closeAuthDrawer());
+                    }}
+                    className="w-full sm:w-fit bg-red-600 text-white text-[9px] font-black uppercase tracking-[0.15em] px-4 py-2 hover:bg-black transition-all duration-300 shadow-sm"
+                  >
+                    Verify Now
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* Form Actions */}
+            <div className="flex flex-col gap-6 pt-4">
+              <PrimaryButton
                 type="submit"
+                text="Sign In"
+                loading={loading}
                 disabled={loading}
-                className="w-full bg-[#222] border border-black text-white hover:text-black py-3 font-bold uppercase tracking-widest hover:bg-white transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {loading ? "Processing..." : "Log In"}
-              </button>
+                initialBg="#18181b"
+                initialText="#FFFFFF"
+                loadingComponent={
+                  <ButtonSpinner color="white" text="Processing..." />
+                }
+              />
 
-              <a
-                href={"/account/login#recover"}
-                className="text-xs underline underline-offset-4 text-gray-500 hover:text-black"
-              >
-                Forgot your password?
-              </a>
-
-              <div className="relative py-2">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t border-gray-200"></span>
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-white px-2 text-gray-400">New here?</span>
-                </div>
+              <div className="flex justify-center">
+                <a
+                  href="/account/recover"
+                  className="no-underline! w-fit link-underline text-[10px] font-bold uppercase tracking-widest text-black pb-0.5 leading-tight"
+                >
+                  Lost your password?
+                </a>
               </div>
 
-              <a
-                href="/account/register"
-                onClick={() => dispatch(closeAuthDrawer())}
-              >
-                <button
-                  type="button"
-                  className="w-full border border-black py-3 font-bold uppercase tracking-widest bg-white hover:bg-[#222] text-black hover:text-white transition-all duration-300"
+              {/* Wrapper */}
+              <div>
+                <div className="relative py-2">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t border-zinc-100"></span>
+                  </div>
+                  <div className="relative flex justify-center text-[10px] uppercase font-black tracking-widest">
+                    <span className="bg-white px-3 text-zinc-400">
+                      New here?
+                    </span>
+                  </div>
+                </div>
+
+                <a
+                  href="/account/register"
+                  onClick={() => dispatch(closeAuthDrawer())}
+                  className="no-underline!"
                 >
-                  Create Account
-                </button>
-              </a>
+                  <PrimaryButton
+                    type="button"
+                    text="Create Account"
+                    loading={loading}
+                    disabled={loading}
+                    initialBg="#FFFFFF"
+                    initialText="#18181b"
+                    className="border border-zinc-200"
+                    loadingComponent={
+                      <ButtonSpinner color="black" text="Processing..." />
+                    }
+                  />
+                </a>
+              </div>
             </div>
           </form>
         </div>

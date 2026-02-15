@@ -10,13 +10,13 @@ export const sendTokens = (user, res) => {
   const accessToken = jwt.sign(
     { id: user._id, role: user.role },
     process.env.JWT_ACCESS_SECRET,
-    { expiresIn: "15m" },
+    { expiresIn: process.env.ACCESS_SECRET_EXPIRES_IN || "15m" },
   );
 
   const refreshToken = jwt.sign(
     { id: user._id },
     process.env.JWT_REFRESH_SECRET,
-    { expiresIn: "7d" },
+    { expiresIn: process.env.REFRESH_SECRET_EXPIRES_IN || "7d" },
   );
 
   // Set Refresh Token in a secure HTTP-only Cookie

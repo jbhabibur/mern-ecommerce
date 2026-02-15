@@ -18,7 +18,7 @@ export const registerSchema = Joi.object({
     "string.empty": "Password is required",
     "string.min": "Password must be at least 6 characters",
   }),
-  isSubscribed: Joi.boolean(),
+  isSubscribed: Joi.boolean().optional(),
 });
 
 // Login Schema

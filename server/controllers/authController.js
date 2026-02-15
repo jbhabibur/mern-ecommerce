@@ -16,48 +16,59 @@ import { sendResetPasswordEmail } from "../services/email.service.js";
  * @route   POST /api/auth/register
  */
 export const registerUser = asyncHandler(async (req, res) => {
-  const { firstName, lastName, email, password } = req.body;
+  const { firstName, lastName, email, password, isSubscribed } = req.body;
 
-  // 1. Check existence
   const userExists = await User.findOne({ email });
-  if (userExists)
-    return res.status(400).json({ message: "User already registered" });
 
-  // 2. Prep data using utilities
+  if (userExists) {
+    // 1. User exists and is already verified (Return direct error)
+    if (userExists.isVerified) {
+      return res.status(409).json({
+        message: "This email is already registered and verified. Please login.",
+      });
+    }
+
+    // 2. User exists but is not verified (Don't resend OTP here, just send a flag)
+    return res.status(403).json({
+      success: false,
+      unverified: true, // This flag allows the frontend to show a "Verify Now" button
+      email: userExists.email,
+      message: "This account exists but is not verified yet.",
+    });
+  }
+
+  // 3. New user flow (Save user and send initial verification email)
   const hashedPassword = await hashPassword(password);
   const otp = generateOTP();
-  const otpExpires = new Date(Date.now() + 10 * 60 * 1000);
-
-  // High-security verification token generation
   const verificationToken = crypto.randomBytes(32).toString("hex");
 
-  // 3. Database operation
   const newUser = await User.create({
     firstName,
     lastName,
     email,
     password: hashedPassword,
     otp,
-    otpExpires,
-    verificationToken, // Save this in your User Model
+    otpExpires: new Date(Date.now() + 10 * 60 * 1000), // OTP valid for 10 minutes
+    verificationToken,
+    verificationTokenExpires: new Date(Date.now() + 10 * 60 * 1000), // Magic link valid for 10 minutes
+    isSubscribed,
+    isVerified: false,
   });
 
-  // 4. Construct URL for the email
-  // In production, use your actual domain instead of localhost
-  const verificationUrl = `${process.env.CLIENT_URL || "http://localhost:5173"}/account/verify-otp?token=${verificationToken}&email=${newUser.email}`;
+  // Point the URL to your API route
+  const verificationUrl = `${process.env.BACKEND_URL || "http://localhost:5000"}/api/auth/verify-magic-link?email=${newUser.email}&token=${verificationToken}`;
 
-  // 5. Send Email with Link
   sendVerificationEmail({
     email: newUser.email,
     otp: otp,
     name: newUser.firstName,
-    verificationUrl: verificationUrl, // Pass this to your mail service
+    verificationUrl: verificationUrl,
   });
 
   res.status(201).json({
     success: true,
     message:
-      "Registration successful! Please click the link in your email to verify.",
+      "Registration successful! Please check your email to verify your account.",
   });
 });
 
@@ -82,7 +93,7 @@ export const verifyOTP = async (req, res) => {
 
     // 3. VERIFICATION CHECK: Prevent re-verifying an already active account
     if (user.isVerified) {
-      return res.status(400).json({
+      return res.status(409).json({
         success: false,
         message: "Account is already verified. Please login.",
       });
@@ -98,7 +109,7 @@ export const verifyOTP = async (req, res) => {
 
     // 5. EXPIRY CHECK: Ensure current time hasn't passed otpExpires
     if (new Date() > user.otpExpires) {
-      return res.status(400).json({
+      return res.status(410).json({
         success: false,
         message: "OTP has expired. Please request a new one.",
       });
@@ -137,13 +148,15 @@ export const verifyOTP = async (req, res) => {
 };
 
 /**
- * @desc    Resend OTP to user's email
- * @route   POST /api/auth/resend-otp
+ * @desc    Resend OTP and Magic Link to user's email
+ * @route   POST /api/auth//resend-verification
  */
-export const resendOTP = asyncHandler(async (req, res) => {
+export const resendVerification = asyncHandler(async (req, res) => {
   const { email } = req.body;
+  console.log("Resend verification called with:", email);
 
   // 1. DATABASE LOOKUP
+  // Check if the user exists in the system
   const user = await User.findOne({ email });
 
   if (!user) {
@@ -154,33 +167,47 @@ export const resendOTP = asyncHandler(async (req, res) => {
   }
 
   // 2. VERIFICATION CHECK
+  // If user is already verified, no need to send anything
   if (user.isVerified) {
     return res.status(400).json({
       success: false,
-      message: "This account is already verified.",
+      message: "This account is already verified. Please login.",
     });
   }
 
-  // 3. GENERATE NEW OTP (Clean way)
+  // 3. GENERATE NEW OTP & MAGIC TOKEN
+  // Consistency: Using the same logic as your registerUser function
   const newOtp = generateOTP();
-  const newOtpExpires = new Date(Date.now() + 10 * 60 * 1000);
+  const newVerificationToken = crypto.randomBytes(32).toString("hex");
 
-  // 4. UPDATE USER
+  // Set expiration (matching your 10-minute registration window)
+  const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+
+  // 4. UPDATE USER RECORD
   user.otp = newOtp;
-  user.otpExpires = newOtpExpires;
+  user.otpExpires = expiresAt;
+  user.verificationToken = newVerificationToken;
+  user.verificationTokenExpires = expiresAt;
+
   await user.save();
 
-  // 5. SEND EMAIL (Background task - No 'await' to keep response fast)
+  // 5. CONSTRUCT MAGIC LINK URL
+  // Matches the URL structure used in the registration flow
+  const verificationUrl = `${process.env.BACKEND_URL || "http://localhost:5000"}/api/auth/verify-magic-link?email=${user.email}&token=${newVerificationToken}`;
+
+  // 6. SEND EMAIL (Background task)
+  // Ensure your email helper can handle both 'otp' and 'verificationUrl'
   sendVerificationEmail({
     email: user.email,
     otp: newOtp,
     name: user.firstName,
+    verificationUrl: verificationUrl,
   });
 
-  // 6. SUCCESS RESPONSE
+  // 7. SUCCESS RESPONSE
   res.status(200).json({
     success: true,
-    message: "A new OTP has been sent to your email.",
+    message: "A new verification link and OTP have been sent to your email.",
   });
 });
 
@@ -191,26 +218,52 @@ export const resendOTP = asyncHandler(async (req, res) => {
 export const loginUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
-  // 1. Check User
+  // 1. Validation check
+  if (!email || !password) {
+    return res.status(400).json({
+      success: false,
+      message: "Please provide email and password",
+    });
+  }
+
+  // 2. Check if user exists (Explicitly select password)
   const user = await User.findOne({ email }).select("+password");
 
-  if (!user)
-    return res
-      .status(401)
-      .json({ success: false, message: "Invalid email or password" });
+  if (!user) {
+    return res.status(401).json({
+      success: false,
+      message: "Invalid email or password",
+    });
+  }
 
-  // 2. Check Password
+  // 3. Check if password is correct
   const isMatch = await bcrypt.compare(password, user.password);
 
-  if (!isMatch)
-    return res
-      .status(401)
-      .json({ success: false, message: "Invalid email or password" });
+  if (!isMatch) {
+    return res.status(401).json({
+      success: false,
+      message: "Invalid email or password",
+    });
+  }
 
-  // 3. Generate Tokens & Set Cookie
+  // 4. Check verification status
+  if (!user.isVerified) {
+    return res.status(403).json({
+      // Changed to 403 Forbidden
+      success: false,
+      unverified: true,
+      email: user.email,
+      message: "Your account is not verified. Please verify your email.",
+    });
+  }
+
+  // 5. Generate Tokens
+  // NOTE: Ensure sendTokens returns the token string and does NOT
+  // call res.send() or res.json() inside it.
   const accessToken = sendTokens(user, res);
 
-  res.status(200).json({
+  // 6. Final Response (Return to stop execution)
+  return res.status(200).json({
     success: true,
     accessToken,
     user: {
@@ -220,6 +273,33 @@ export const loginUser = asyncHandler(async (req, res) => {
       lastName: user.lastName,
       role: user.role,
     },
+  });
+});
+
+/**
+ * @desc    Logout user & clear refresh token cookie
+ * @route   POST /api/auth/logout
+ * @access  Public
+ */
+export const logoutUser = asyncHandler(async (req, res) => {
+  // 1. Clear the refreshToken cookie from the browser
+  // The options must match the ones used when the cookie was originally set
+  res.clearCookie("refreshToken", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production", // Enable secure in production (HTTPS)
+    sameSite: "none", // Required for cross-site cookie handling
+    path: "/", // Ensures the cookie is removed from the entire domain scope
+  });
+
+  // 2. Additional cleanup (If you store refresh tokens in the Database)
+  // If you use a database to track sessions, find the user and set their
+  // refreshToken field to null here before sending the response.
+
+  // 3. Final Success Response
+  // HTTP 200 OK is the industry standard for a successful logout
+  return res.status(200).json({
+    success: true,
+    message: "Logged out successfully",
   });
 });
 
@@ -300,7 +380,7 @@ export const resetPassword = asyncHandler(async (req, res) => {
 
   if (!user) {
     return res
-      .status(400)
+      .status(410)
       .json({ success: false, message: "Invalid or expired reset token" });
   }
 
@@ -317,4 +397,49 @@ export const resetPassword = asyncHandler(async (req, res) => {
     success: true,
     message: "Password reset successful! You can now log in.",
   });
+});
+
+/**
+ * @desc    Verify magic link from email and redirect to a success confirmation page
+ * @route   GET /api/auth/verify-magic-link
+ */
+export const verifyMagicLink = asyncHandler(async (req, res) => {
+  const { email, token } = req.query;
+
+  // DATABASE LOOKUP: Find user by email and matching verification token
+  const user = await User.findOne({
+    email,
+    verificationToken: token,
+  });
+
+  // VALIDATION: Redirect to login with error if user not found or already verified
+  if (!user || user.isVerified) {
+    return res.redirect(
+      `${process.env.CLIENT_URL}/account/login?error=invalid-link`,
+    );
+  }
+
+  // EXPIRY CHECK: Ensure the magic link hasn't expired
+  if (
+    user.verificationTokenExpires &&
+    new Date() > user.verificationTokenExpires
+  ) {
+    return res.redirect(
+      `${process.env.CLIENT_URL}/account/login?error=link-expired`,
+    );
+  }
+
+  // UPDATE STATUS: Mark user as verified and clear all temporary security tokens
+  user.isVerified = true;
+  user.otp = undefined;
+  user.otpExpires = undefined;
+  user.verificationToken = undefined;
+  user.verificationTokenExpires = undefined;
+
+  await user.save();
+
+  // PROFESSIONAL REDIRECT:
+  // Instead of direct login, send them to a success page.
+  // This page on your frontend will show the "Success" message for 3-5 seconds.
+  res.redirect(`${process.env.CLIENT_URL}/account/verify-success`);
 });

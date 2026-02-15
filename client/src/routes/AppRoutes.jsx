@@ -1,6 +1,7 @@
 import { createBrowserRouter } from "react-router";
 
 import { MainLayout } from "../layout/MainLayout";
+
 import { Home } from "../pages/Home";
 import { CategoriesPage } from "../pages/CategoriesPage";
 import { SingleProduct } from "../pages/SingleProduct";
@@ -11,6 +12,14 @@ import { RegisterPage } from "../pages/RegisterPage";
 import { VerifyOTPPage } from "../pages/VerifyOTPPage";
 import { LoginPage } from "../pages/LoginPage";
 import { ResetPasswordPage } from "../pages/ResetPasswordPage";
+import { UserLayout } from "../layout/UserLayout";
+
+import { AddressBook } from "../features/user/components/AddressBook";
+import { AddAddressForm } from "../features/user/components/AddAddressForm";
+
+import { ProtectedRoute } from "./ProtectedRoute";
+import { VerifySuccess } from "../pages/VerifySuccess";
+import { RecoverPage } from "../pages/RecoverPage";
 
 const router = createBrowserRouter([
   {
@@ -53,6 +62,14 @@ const router = createBrowserRouter([
         path: "/account/login",
         element: <LoginPage />,
       },
+      {
+        path: "/account/recover",
+        element: <RecoverPage />,
+      },
+      {
+        path: "/account/verify-success",
+        element: <VerifySuccess />,
+      },
 
       // --- Password Reset Routes ---
 
@@ -60,6 +77,30 @@ const router = createBrowserRouter([
         // This matches /account/reset-password/ANY_TOKEN
         path: "/account/reset-password/:token",
         element: <ResetPasswordPage />,
+      },
+
+      // --- Account/User Routes with Sidebar Layout ---
+      {
+        path: "/account",
+        element: (
+          <ProtectedRoute>
+            <UserLayout />
+          </ProtectedRoute>
+        ),
+        children: [
+          {
+            path: "/account/address",
+            element: <AddressBook />,
+          },
+          {
+            path: "/account/add-new-address",
+            element: <AddAddressForm />,
+          },
+          {
+            path: "/account/edit-address/:id",
+            element: <AddAddressForm />,
+          },
+        ],
       },
     ],
   },

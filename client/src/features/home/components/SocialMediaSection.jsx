@@ -25,7 +25,7 @@ export const SocialMediaSection = () => {
             <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
           </svg>
           <h2 className="text-lg! font-bold! text-gray-800 uppercase m-0">
-            DORJIBARI ON INSTAGRAM
+            MENS FASHION ON INSTAGRAM
           </h2>
         </div>
       </div>

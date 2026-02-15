@@ -128,7 +128,7 @@ export const NAVIGATION_DATA_MOBILE = [
   {
     id: 3,
     label: "❅WINTER WARDROBE❅",
-    slug: "winter-25-26", // Desktop slug-er sathe mil kora hoyeche
+    slug: "winter-25-26",
     hasArrow: true,
     children: [
       { label: "Go To ❅WINTER WARDROBE❅", slug: "winter-25-26" },
@@ -140,7 +140,7 @@ export const NAVIGATION_DATA_MOBILE = [
       { label: "POLO", slug: "polo" },
       { label: "CASUAL COAT", slug: "casual-coat" },
       { label: "CASUAL SHIRT", slug: "casual-shirt" },
-      { label: "SUIT/COAT/BLAZER", slug: "blazer-suit-coat" }, // Adjusted
+      { label: "SUIT/COAT/BLAZER", slug: "blazer-suit-coat" },
       { label: "FATUA", slug: "fatua" },
     ],
   },
@@ -166,8 +166,8 @@ export const NAVIGATION_DATA_MOBILE = [
         hasArrow: true,
         children: [
           { label: "Formal Shirt", slug: "formal-shirt" },
-          { label: "Casual Full Sleeve", slug: "trendy-fit-shirt" }, // Desktop slug follow kora hoyeche
-          { label: "Casual Short Sleeve", slug: "trendy-fit-short-sleeve" }, // Desktop slug follow kora hoyeche
+          { label: "Casual Full Sleeve", slug: "trendy-fit-shirt" },
+          { label: "Casual Short Sleeve", slug: "trendy-fit-short-sleeve" },
           { label: "Cuban Collar", slug: "cuban-collar" },
         ],
       },
@@ -176,8 +176,8 @@ export const NAVIGATION_DATA_MOBILE = [
         slug: "polo",
         hasArrow: true,
         children: [
-          { label: "Full Sleeve", slug: "full-sleeve-polo" }, // Updated
-          { label: "Short Sleeve", slug: "short-sleeve-polo" }, // Updated
+          { label: "Full Sleeve", slug: "full-sleeve-polo" },
+          { label: "Short Sleeve", slug: "short-sleeve-polo" },
         ],
       },
       {
@@ -185,8 +185,8 @@ export const NAVIGATION_DATA_MOBILE = [
         slug: "t-shirt",
         hasArrow: true,
         children: [
-          { label: "Full Sleeve", slug: "full-sleeve-t-shirt" }, // Updated
-          { label: "Short Sleeve", slug: "short-sleeve-t-shirt" }, // Updated
+          { label: "Full Sleeve", slug: "full-sleeve-t-shirt" },
+          { label: "Short Sleeve", slug: "short-sleeve-t-shirt" },
         ],
       },
       { label: "Fatua", slug: "fatua" },
@@ -219,13 +219,13 @@ export const NAVIGATION_DATA_MOBILE = [
         ],
       },
       { label: "Pajama", slug: "pajama" },
-      { label: "Joggers", slug: "joggers-pant" }, // Desktop follow kora hoyeche
+      { label: "Joggers", slug: "joggers-pant" },
     ],
   },
   {
     id: 6,
     label: "Outerware",
-    slug: "blazer-suit-coat", // Desktop follow kora hoyeche
+    slug: "blazer-suit-coat",
     hasArrow: true,
     children: [
       { label: "Blazer", slug: "blazer" },
@@ -233,7 +233,7 @@ export const NAVIGATION_DATA_MOBILE = [
       { label: "Coat", slug: "coat" },
     ],
   },
-  { id: 7, label: "Fragrance 30% OFF", slug: "fragrance" }, // Slug updated
+  { id: 7, label: "Fragrance 30% OFF", slug: "fragrance" },
   {
     id: 8,
     label: "Accessories",

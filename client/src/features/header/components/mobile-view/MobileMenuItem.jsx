@@ -1,4 +1,4 @@
-import { ChevronRight } from "lucide-react"; // You can use lucide-react for the icon
+import { ChevronRight } from "lucide-react";
 
 export const MobileMenuItem = ({
   label,

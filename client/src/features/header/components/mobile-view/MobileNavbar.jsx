@@ -16,7 +16,9 @@ export const MobileNavbar = ({
     </div>
 
     <div className="flex items-center font-bold text-xl tracking-tighter uppercase">
-      <img src={Logo} alt="Logo" className="h-8 w-auto ml-1" />
+      <a href="/">
+        <img src={Logo} alt="Logo" className="h-8 w-auto ml-1" />
+      </a>
     </div>
 
     <div className="flex items-center gap-4">

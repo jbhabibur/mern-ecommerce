@@ -13,6 +13,7 @@ import categoryRoutes from "./routes/categoryRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import promoslotRoutes from "./routes/promoslot.routes.js";
 import socialmediaRoutes from "./routes/socialmedia.routes.js";
+import addressRoutes from "./routes/addressRoutes.js";
 
 console.log("EMAIL ENV:", process.env.EMAIL_USER, process.env.EMAIL_PASS);
 
@@ -37,7 +38,6 @@ const allowedOrigins = [
 app.use(
   cors({
     origin: function (origin, callback) {
-      // origin check logic
       if (!origin || allowedOrigins.indexOf(origin) !== -1) {
         callback(null, true);
       } else {
@@ -45,6 +45,8 @@ app.use(
       }
     },
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   }),
 );
 
@@ -57,13 +59,16 @@ app.use("/uploads", express.static("uploads"));
  * API Routes mounting
  */
 app.use("/api/categories", categoryRoutes);
-app.use("/api/product", productRoutes);
+app.use("/api/products", productRoutes);
 app.use("/api/auth", authRoutes);
 
 // Promo Slots Routes
 app.use("/api/storefront/promo-slots", promoslotRoutes);
 // Social Feed Routes
 app.use("/api/storefront/social-feed", socialmediaRoutes);
+
+// Address routes
+app.use("/api/address", addressRoutes);
 
 /**
  * Health Check Route

@@ -9,7 +9,7 @@ import { API_URLS } from "../api/API_URLS";
 export const loginUser = async (credentials) => {
   try {
     const response = await apiInstance.post(API_URLS.LOGIN, credentials);
-    return response.data;
+    return response;
   } catch (error) {
     // Re-throwing the error so the UI can handle specific backend messages
     throw error;
@@ -24,7 +24,7 @@ export const loginUser = async (credentials) => {
 export const registerUser = async (userData) => {
   try {
     const response = await apiInstance.post(API_URLS.REGISTER, userData);
-    return response.data;
+    return response;
   } catch (error) {
     throw error;
   }
@@ -52,9 +52,13 @@ export const verifyOTP = async (verificationData) => {
  * @param {Object} resendData - Contains { email }
  * @returns {Promise} - Resolves with success message
  */
-export const resendOTP = async (resendData) => {
+export const resendVerification = async (resendData) => {
+  console.log("Resend verification called with:", resendData);
   try {
-    const response = await apiInstance.post(API_URLS.RESEND_OTP, resendData);
+    const response = await apiInstance.post(
+      API_URLS.RESEND_VERIFICATION,
+      resendData,
+    );
     return response.data;
   } catch (error) {
     throw error;

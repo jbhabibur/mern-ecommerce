@@ -13,7 +13,7 @@ export const SectionHeader = ({ title, linkText }) => {
         <div className="flex-grow h-[2.2px] bg-black"></div>
 
         {/* Increased horizontal margin (mx) to create the space shown in the image */}
-        <h2 className="mx-10 md:mx-20 lg:mx-32 uppercase font-bold! text-[14px] md:text-[16px]! leading-none! my-0! text-[#232323] flex items-center self-center whitespace-nowrap">
+        <h2 className="mx-10 md:mx-20 lg:mx-32 uppercase font-bold! text-[14px]! md:text-[16px]! leading-none! my-0! text-[#232323] flex items-center self-center whitespace-nowrap">
           {title}
         </h2>
 

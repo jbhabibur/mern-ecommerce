@@ -1,9 +1,9 @@
 import { BASE_URL } from "./apiConfig";
 
 export const API_URLS = {
-  NEW_ARRIVALS: `${BASE_URL}/api/product/new-arrivals`,
-  POPULAR_PRODUCTS: `${BASE_URL}/api/product/popular`,
-  ALL_PRODUCTS: `${BASE_URL}/api/product`,
+  NEW_ARRIVALS: `${BASE_URL}/api/products/new-arrivals`,
+  POPULAR_PRODUCTS: `${BASE_URL}/api/products/popular`,
+  ALL_PRODUCTS: `${BASE_URL}/api/products`,
   ALL_CATEGORIES: `${BASE_URL}/api/categories/all`,
   CATEGORY_PRODUCTS: (slug) => `${BASE_URL}/api/product/categories/${slug}`,
 
@@ -21,7 +21,7 @@ export const API_URLS = {
   LOGIN: `${BASE_URL}/api/auth/login`,
   REGISTER: `${BASE_URL}/api/auth/register`,
   VERIFY_OTP: `${BASE_URL}/api/auth/verify-otp`,
-  RESEND_OTP: `${BASE_URL}/api/auth/resend-otp`,
+  RESEND_VERIFICATION: `${BASE_URL}/api/auth/resend-verification`,
   FORGET_PASSWORD: `${BASE_URL}/api/auth/forgot-password`,
   RESET_PASSWORD: `${BASE_URL}/api/auth/reset-password`,
 

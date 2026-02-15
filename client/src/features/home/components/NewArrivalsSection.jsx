@@ -6,11 +6,14 @@ import { Navigation } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
 
-import { SectionLayout } from "../../../layout/SectionLayout"; // Adjust path as needed
+import { SectionLayout } from "../../../layout/SectionLayout";
 import { SectionHeader } from "../../../components/atoms/SectionHeader";
 import { ProductCard } from "../../../components/shared/ProductCard";
 import { PrimaryButton } from "../../../components/atoms/PrimaryButton";
 import { useNewArrivals } from "../hooks/useNewArrivals";
+import { ButtonSpinner } from "../../../components/loaders/ButtonSpinner";
+import { NewArrivalsSkeleton } from "./NewArrivalsSkeleton";
+import { NewArrivalsError } from "./NewArrivalsError";
 
 export const NewArrivalsSection = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -26,30 +29,14 @@ export const NewArrivalsSection = () => {
     totalProducts,
   } = useNewArrivals(8);
 
-  if (initialLoading) {
-    return (
-      <SectionLayout>
-        <div className="text-center py-20 font-medium text-gray-500">
-          Loading New Arrivals...
-        </div>
-      </SectionLayout>
-    );
-  }
+  if (initialLoading) return <NewArrivalsSkeleton />;
 
-  if (error) {
-    return (
-      <SectionLayout>
-        <div className="text-center py-20 text-red-500 font-medium">
-          Error: {error}
-        </div>
-      </SectionLayout>
-    );
-  }
+  if (error) return <NewArrivalsError error={error} />;
 
   return (
     <SectionLayout bgColor="bg-white">
       {/* Header Section */}
-      <div className="py-5">
+      <div className="mt-10">
         <SectionHeader title="New Arrivals" linkText="View All" />
       </div>
 
@@ -59,16 +46,29 @@ export const NewArrivalsSection = () => {
         <div className="hidden lg:block">
           <div className="grid grid-cols-4 gap-8">
             {products.slice(0, visibleCount).map((product, index) => (
-              <ProductCard key={index} product={product} />
+              <a
+                href={`/products/${product.slug}`}
+                className="no-underline! text-current! block!"
+                key={index}
+              >
+                <ProductCard key={index} product={product} />
+              </a>
             ))}
           </div>
 
           {visibleCount < totalProducts && (
-            <div className="mt-20 flex items-center justify-center">
+            /* mx-auto wrapper-ke horizontal center korbe */
+            <div className="mt-20 mx-auto max-w-[300px]">
               <PrimaryButton
-                label="Show More"
+                text={
+                  isMoreLoading ? (
+                    <ButtonSpinner color="white" text="Loading..." />
+                  ) : (
+                    "Show More"
+                  )
+                }
                 onClick={handleLoadMore}
-                hasLoad={isMoreLoading}
+                disabled={isMoreLoading}
               />
             </div>
           )}

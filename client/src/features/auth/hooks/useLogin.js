@@ -1,72 +1,122 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { loginUser } from "../../../services/authService";
+import { useDispatch } from "react-redux";
+import { loginUser, resendVerification } from "../../../services/authService";
+import { setLogin, setAppLoading } from "../../../redux/slices/authSlice";
 
 export const useLogin = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
-  // Initial state for login credentials
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-  });
-
+  const [formData, setFormData] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [statusMsg, setStatusMsg] = useState({
     type: "",
-    text: "",
+    message: "",
     field: null,
+    canVerify: false,
   });
 
-  // Handle input field changes
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-
-    // Clear error message when the user starts typing in the affected field
-    if (statusMsg.field === name) {
-      setStatusMsg({ type: "", text: "", field: null });
-    }
-  };
+  const handleChange = useCallback(
+    (e) => {
+      const { name, value } = e.target;
+      setFormData((prev) => ({ ...prev, [name]: value }));
+      // Don't reset everything here, just clear the specific field error
+      if (statusMsg.message) {
+        setStatusMsg({ type: "", message: "", field: null, canVerify: false });
+      }
+    },
+    [statusMsg.message],
+  );
 
   const executeLogin = async (e) => {
-    if (e) e.preventDefault();
+    // PROTECTION 1: Strongest event prevention
+    if (e) {
+      if (typeof e.preventDefault === "function") e.preventDefault();
+      if (typeof e.stopPropagation === "function") e.stopPropagation();
+    }
+
     setLoading(true);
-    setStatusMsg({ type: "", text: "", field: null });
+    // PROTECTION 2: Reset status message before the new attempt
+    setStatusMsg({ type: "", message: "", field: null, canVerify: false });
 
     try {
       const response = await loginUser(formData);
+      console.log(response);
 
-      if (response.success) {
-        // 1. Store authentication data in LocalStorage
-        localStorage.setItem("token", response.accessToken);
-        localStorage.setItem("user", JSON.stringify(response.user));
+      /* FIX: Based on your console screenshot, the server data is inside 'response.data'.
+       We destructure it here for cleaner access.
+    */
+      const { data } = response;
 
-        // 2. Update status to reflect success
+      // Now check 'data.success' instead of 'response.success'
+      if (data && data.success) {
+        dispatch(
+          setLogin({
+            user: data.user,
+            token: data.accessToken,
+          }),
+        );
+
+        // Store the token and user details in localStorage
+        localStorage.setItem("token", data.accessToken);
+        localStorage.setItem("user", JSON.stringify(data.user));
+
+        // Redirect to home page
+        navigate("/", { replace: true });
+      } else {
+        // Handle cases where the request finished but the server returned success: false
         setStatusMsg({
-          type: "success",
-          text: "Login Successful! Redirecting...",
+          type: "error",
+          message: data?.message || "Login failed",
+          field: "email",
         });
-
-        // 3. Redirect to the home page after a short delay
-        setTimeout(() => {
-          navigate("/");
-        }, 1500);
       }
     } catch (error) {
-      // Extract error message and specific field from backend response
-      const errorMessage =
-        error.response?.data?.message || "Invalid Email or Password";
-      const errorField = error.response?.data?.field || null;
+      /* PROTECTION 3: Error handling for network issues or 4xx/5xx status codes.
+       Axios puts server error details in error.response.data
+    */
+      const errorData = error?.response?.data;
 
-      setStatusMsg({ type: "error", text: errorMessage, field: errorField });
+      setStatusMsg({
+        type: "error",
+        message: errorData?.message || "Invalid Email or Password",
+        field: errorData?.field || "email",
+        canVerify: !!errorData?.unverified,
+      });
     } finally {
       setLoading(false);
     }
   };
 
-  return { formData, loading, statusMsg, handleChange, executeLogin };
+  // Handle manual verification trigger (unverified accounts)
+  const handleVerifyAndRedirect = async () => {
+    try {
+      const resendData = { email: formData.email };
+      const response = await resendVerification(resendData);
+
+      if (response.success) {
+        navigate("/account/verify-otp", {
+          state: {
+            allowed: true,
+            email: formData.email,
+            showToast: true,
+            toastMsg: response.message || "OTP sent successfully!",
+          },
+          replace: true,
+        });
+      }
+    } catch (error) {
+      console.error("Resend OTP failed:", error);
+    }
+  };
+
+  return {
+    formData,
+    loading,
+    statusMsg,
+    handleChange,
+    executeLogin,
+    handleVerifyAndRedirect,
+  };
 };

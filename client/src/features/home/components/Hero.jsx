@@ -1,6 +1,12 @@
 import React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
+
+// Import Components
+import { HeroSkeleton } from "./HeroSkeleton";
+import { HeroError } from "./HeroError";
+
+// Import hooks
 import { useHeroData } from "../hooks/useHeroData";
 
 export const Hero = () => {
@@ -16,14 +22,9 @@ export const Hero = () => {
 
   const headerHeight = "125px";
 
-  if (loading)
-    return (
-      <div className="w-full h-[400px] md:h-[500px] bg-gray-100 animate-pulse flex items-center justify-center">
-        <span className="text-gray-400 font-medium">Loading Hero...</span>
-      </div>
-    );
+  if (loading) return <HeroSkeleton />;
 
-  if (error || categories.length === 0) return null;
+  if (error) return <HeroError />;
 
   return (
     <section

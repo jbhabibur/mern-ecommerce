@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { verifyOTP, resendOTP } from "../services/authService";
+import { verifyOTP, resendVerification } from "../services/authService";
 
 export const useVerifyOTP = (email) => {
   const [otp, setOtp] = useState(new Array(6).fill(""));
@@ -9,22 +8,19 @@ export const useVerifyOTP = (email) => {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [isVerified, setIsVerified] = useState(false);
-  const navigate = useNavigate();
 
-  // --- Timer Logic ---
   useEffect(() => {
     let interval;
     if (timer > 0) {
       interval = setInterval(() => setTimer((prev) => prev - 1), 1000);
     } else {
       setCanResend(true);
-      clearInterval(interval);
+      if (interval) clearInterval(interval);
     }
     return () => clearInterval(interval);
   }, [timer]);
 
-  // --- API: Verify OTP ---
-  const handleVerify = async (e) => {
+  const handleVerify = async (e, token = null) => {
     if (e) e.preventDefault();
     const finalOtp = otp.join("");
 
@@ -37,30 +33,56 @@ export const useVerifyOTP = (email) => {
     setErrorMsg("");
 
     try {
-      const data = await verifyOTP({ email, otp: finalOtp });
+      // Parallel execution of OTP verification and a minimum 2-second delay for UX
+      const [data] = await Promise.all([
+        verifyOTP({ email, otp: finalOtp, token }),
+        new Promise((resolve) => setTimeout(resolve, 2000)),
+      ]);
+
       if (data.success) {
-        setIsVerified(true);
-        setTimeout(() => navigate("/account/login"), 2000);
+        // Hard reload and redirect with a flag in the URL
+        window.location.replace("/account/login?verified=true");
+      } else {
+        // If success is false but the message indicates the account is already verified
+        if (
+          data.message &&
+          data.message.toLowerCase().includes("already verified")
+        ) {
+          window.location.replace("/account/login?verified=true");
+        } else {
+          setLoading(false);
+          setErrorMsg(data.message || "Something went wrong");
+        }
       }
     } catch (err) {
-      setErrorMsg(err.response?.data?.message || "Invalid OTP");
-      setOtp(new Array(6).fill(""));
-    } finally {
-      setLoading(false);
+      // Check the same logic in the catch block because API error status codes (like 400/409) trigger this block
+      const errorResponseMsg = err.response?.data?.message || "";
+
+      if (errorResponseMsg.toLowerCase().includes("already verified")) {
+        window.location.replace("/account/login?verified=true");
+      } else {
+        console.log(err);
+        // Handle errors, show message, reset OTP input, and stop loading
+        setErrorMsg(errorResponseMsg || "Invalid OTP");
+        setOtp(new Array(6).fill(""));
+        setLoading(false);
+      }
     }
   };
 
-  // --- API: Resend OTP ---
   const handleResend = async () => {
     try {
       setErrorMsg("");
-      const data = await resendOTP({ email });
+      const data = await resendVerification({ email });
       if (data.success) {
         setTimer(60);
         setCanResend(false);
+        return true;
       }
+      return false;
     } catch (err) {
       setErrorMsg(err.response?.data?.message || "Resend failed");
+      return false;
     }
   };
 
@@ -68,9 +90,7 @@ export const useVerifyOTP = (email) => {
     otp,
     setOtp,
     timer,
-    setTimer,
     canResend,
-    setCanResend,
     loading,
     errorMsg,
     isVerified,

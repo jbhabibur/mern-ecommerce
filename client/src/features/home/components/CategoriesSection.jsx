@@ -1,29 +1,20 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { SectionLayout } from "../../../layout/SectionLayout";
+import { CategorySkeleton } from "../components/CategoriesSectionSkeleton";
+import { CategoryError } from "../components/CategoriesSectionError";
+
 import { useCategoriesData } from "../hooks/useCategoriesData";
 
 export const CategoriesSection = () => {
   const { categories, loading, error } = useCategoriesData();
 
   // Loading State: Skeleton cards
-  if (loading) {
-    return (
-      <SectionLayout bgColor="bg-white">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-[10px] md:gap-8 py-10">
-          {[1, 2, 3, 4].map((n) => (
-            <div
-              key={n}
-              className="aspect-[4/3] bg-gray-200 animate-pulse rounded-sm"
-            />
-          ))}
-        </div>
-      </SectionLayout>
-    );
-  }
+  if (loading) return <CategorySkeleton />;
 
   // Error handle
-  if (error || categories.length === 0) return null;
+  if (error || !categories || categories.length === 0)
+    return <CategoryError error={error} />;
 
   return (
     <SectionLayout bgColor="bg-white">

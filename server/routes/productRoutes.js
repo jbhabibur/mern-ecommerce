@@ -5,7 +5,7 @@ import {
   getProductsByCategory,
   getNewArrivals,
   createProduct,
-  getSingleProduct,
+  getSingleProductBySlug,
   getPopularProducts,
 } from "../controllers/productController.js";
 
@@ -44,7 +44,7 @@ router.get("/popular", getPopularProducts);
 
 // @route   GET /api/products/:slug
 // @desc    Retrieve a single product details by slug
-router.get("/:slug", getSingleProduct);
+router.get("/:slug", getSingleProductBySlug);
 
 /**
  * @route   POST /api/products/add

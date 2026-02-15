@@ -7,6 +7,18 @@ export const ProductCard = ({ product, view }) => {
   const [isHovered, setIsHovered] = useState(false);
   const isDesktop = useMediaQuery("(min-width: 1024px)");
 
+  // Find the Primary Image (isPrimary: true)
+  const primaryImage = product.images?.find(
+    (img) => img.isPrimary === true,
+  )?.url;
+
+  // Find the Zoom View Image (isZoomView: true)
+  const secondaryImage = product.images?.find(
+    (img) => img.isZoomView === true,
+  )?.url;
+
+  console.log(product);
+
   const isList = view === "list";
 
   // Gallery-r moto BASE_URL variable ti nite hobe
@@ -60,7 +72,7 @@ export const ProductCard = ({ product, view }) => {
 
         {/* ✅ Primary Image */}
         <img
-          src={product.images?.[0]?.url || product.images?.[0]}
+          src={primaryImage || product.images?.[0]?.url || product.images?.[0]}
           alt={product.name}
           className={`w-full h-full object-cover transition-opacity duration-500 ${
             isHovered && !isList ? "opacity-0" : "opacity-100"
@@ -70,7 +82,7 @@ export const ProductCard = ({ product, view }) => {
         {/* ✅ Secondary Image */}
         {product.images?.[1] && (
           <img
-            src={product.images?.[1]?.url || product.images?.[1]}
+            src={secondaryImage}
             alt={product.name}
             className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${
               isHovered ? "opacity-100" : "opacity-0"
@@ -79,17 +91,21 @@ export const ProductCard = ({ product, view }) => {
         )}
 
         {/* Action Buttons */}
-        <div className="absolute right-2 top-2 z-30 flex flex-col gap-2 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-300">
-          <RoundActionButton
-            icon={Heart}
-            expandable={isDesktop}
-            expandableText="Add to Wishlist"
-          />
-          <RoundActionButton
-            icon={Eye}
-            expandable={isDesktop}
-            expandableText="Quick View"
-          />
+        <div>
+          <div className="absolute right-2 top-2 z-30 flex flex-col gap-2 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-300">
+            <RoundActionButton
+              icon={Heart}
+              expandable={isDesktop}
+              expandableText="Add to Wishlist"
+            />
+          </div>
+          <div className="absolute right-2 top-12 z-30 flex flex-col gap-2 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-300">
+            <RoundActionButton
+              icon={Eye}
+              expandable={isDesktop}
+              expandableText="Quick View"
+            />
+          </div>
         </div>
 
         {/* Size Tags */}

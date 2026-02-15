@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Eye } from "lucide-react";
-import { PurchaseActions } from "./PurchaseActions";
-import { StockProgressBar } from "../atoms/StockProgressBar";
+import { PurchaseActions } from "../../../components/shared/PurchaseActions";
+import { StockProgressBar } from "../../../components/atoms/StockProgressBar";
 
 export const ProductInfoSection = ({ product }) => {
   const [quantity, setQuantity] = useState(1);

@@ -1,12 +1,16 @@
-// Local ebong Production switch korar logic
-export const BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+// Environment-based API URL logic
+export const BASE_URL = (
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:5000"
+).replace(/\/$/, "");
 
-// Image path handle korar utility
+// Safe image path utility
 export const getFullImagePath = (path) => {
-  if (!path) return "/placeholder.jpg";
+  // Handle non-string or empty inputs
+  if (!path || typeof path !== "string") return "/placeholder.jpg";
+
   if (path.startsWith("http")) return path;
 
-  const cleanPath = path.startsWith("/") ? path.substring(1) : path;
+  // Normalize path by removing leading slash
+  const cleanPath = path.startsWith("/") ? path.slice(1) : path;
   return `${BASE_URL}/${cleanPath}`;
 };

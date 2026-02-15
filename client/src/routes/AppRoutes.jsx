@@ -4,7 +4,7 @@ import { MainLayout } from "../layout/MainLayout";
 
 import { Home } from "../pages/Home";
 import { CategoriesPage } from "../pages/CategoriesPage";
-import { SingleProduct } from "../pages/SingleProduct";
+import { ProductOverview } from "../pages/ProductOverview";
 import { ViewCart } from "../pages/ViewCart";
 import { AllCategories } from "../pages/AllCategories";
 import { ContactPage } from "../pages/ContactPage";
@@ -36,7 +36,7 @@ const router = createBrowserRouter([
       },
       {
         path: "/products/:slug",
-        element: <SingleProduct />,
+        element: <ProductOverview />,
       },
       {
         path: "/cart",

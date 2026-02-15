@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
-import { SHIPPING_POLICY } from "../../constants/shippingPolicy";
+import { SHIPPING_POLICY } from "../../../constants/shippingPolicy";
 
 export const ProductExtraInfo = ({ product }) => {
   const [activeTab, setActiveTab] = useState("description");

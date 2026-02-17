@@ -5,7 +5,6 @@ export const StockProgressBar = ({ stockLimit = 50, currentStock = 10 }) => {
   const [progress, setProgress] = useState(100);
 
   useEffect(() => {
-    // পেজ লোড হওয়ার সামান্য পরে অ্যানিমেশন শুরু হবে
     const timer = setTimeout(() => {
       const stockPercentage = (currentStock / stockLimit) * 100;
       setProgress(stockPercentage);
@@ -15,7 +14,7 @@ export const StockProgressBar = ({ stockLimit = 50, currentStock = 10 }) => {
   }, [currentStock, stockLimit]);
 
   return (
-    <div className="w-full max-w-sm my-4">
+    <div className="w-full max-w-xs my-4">
       {/* Stock Text */}
       <p className="text-[#d62828] font-medium mb-2 text-sm! md:text-base">
         Please hurry! Only {currentStock} left in stock

@@ -8,6 +8,7 @@ import { getFullImagePath } from "../../api/apiConfig";
 // Redux hooks and actions
 import { useSelector, useDispatch } from "react-redux";
 import { cartActions } from "../../redux/slices/cartSlice";
+import { useCustomCursor } from "../../hooks/useCustomCursor";
 
 // Swiper styles
 import "swiper/css";
@@ -16,21 +17,42 @@ import "swiper/css/navigation";
 export const CartDrawer = () => {
   const dispatch = useDispatch();
 
-  // ১. রিডাক্স স্টোর থেকে ডায়নামিক ডেটা নেওয়া
   const cartItems = useSelector((state) => state.cart.items);
   const totalAmount = useSelector((state) => state.cart.totalAmount);
   const totalQuantity = useSelector((state) => state.cart.totalQuantity);
   const isOpen = useSelector((state) => state.cart.isCartOpen);
+
+  const { mousePos } = useCustomCursor(isOpen);
 
   return (
     <>
       {/* Overlay */}
       <div
         className={`fixed inset-0 bg-black/40 z-[100] transition-opacity duration-300 ${
+          isOpen
+            ? "opacity-100 visible md:cursor-none"
+            : "opacity-0 invisible pointer-events-none"
+        }`}
+        onClick={() => dispatch(cartActions.setCartOpen(false))}
+      >
+        {/* 2. Floating Close Button */}
+        <div
+          className="fixed pointer-events-none z-[110] hidden md:flex items-center justify-center bg-white rounded-full w-12 h-12 shadow-xl transition-transform duration-100 ease-out"
+          style={{
+            left: mousePos.x,
+            top: mousePos.y,
+            transform: "translate(-50%, -50%)",
+          }}
+        >
+          <X className="w-6 h-6 text-black" />
+        </div>
+      </div>
+      {/* <div
+        className={`fixed inset-0 bg-black/40 z-[100] transition-opacity duration-300 ${
           isOpen ? "opacity-100 visible" : "opacity-0 invisible"
         }`}
         onClick={() => dispatch(cartActions.setCartOpen(false))}
-      />
+      /> */}
 
       {/* Main Drawer Container */}
       <div
@@ -63,7 +85,7 @@ export const CartDrawer = () => {
               cartItems.map((item) => (
                 <CartItem
                   key={`${item.id}-${item.size}`}
-                  item={item} // পুরো অবজেক্ট পাঠানো হলো ক্লিন কোডের জন্য
+                  item={item}
                   dispatch={dispatch}
                 />
               ))

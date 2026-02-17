@@ -29,7 +29,6 @@ export const fetchProductBySlug = async (slug) => {
  */
 export const fetchNewArrivals = async () => {
   try {
-    // apiInstance use kora hoyeche jate interceptors (auth/error) thikmoto kaj kore
     const response = await apiInstance.get(API_URLS.NEW_ARRIVALS);
 
     if (response.data && response.data.success) {

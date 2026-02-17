@@ -5,6 +5,7 @@ import { HeaderController } from "../features/header/components/HeaderController
 import { Footer } from "../features/footer/components/Footer";
 import { GlobalLoader } from "../components/atoms/GlobalLoader";
 import { AuthDrawer } from "../features/auth/components/AuthDrawer";
+import { CartDrawer } from "../components/Cart/CartDrawer";
 import { BottomNavigation } from "../components/shared/BottomNavigation";
 
 import { useScrollToTop } from "../hooks/useScrollToTop";
@@ -19,10 +20,13 @@ export const MainLayout = () => {
 
   // Access global application and drawer states from Redux
   const { isAppLoading } = useSelector((state) => state.auth);
-  const { isOpen } = useSelector((state) => state.authDrawer);
+  const { isOpen: isAuthOpen } = useSelector((state) => state.authDrawer);
+  const { isCartOpen } = useSelector((state) => state.cart);
+
+  const isAnyDrawerOpen = isAuthOpen || isCartOpen;
 
   return (
-    <div className="relative min-h-screen flex flex-col overflow-x-hidden">
+    <div className="relative min-h-screen flex flex-col">
       {/* App-wide loading overlay */}
       {isAppLoading && <GlobalLoader />}
 
@@ -32,7 +36,7 @@ export const MainLayout = () => {
       */}
       <div
         className={`flex flex-col flex-grow transition-transform duration-500 ease-in-out ${
-          isOpen ? "-translate-x-[20px]" : "translate-x-0"
+          isAnyDrawerOpen ? "-translate-x-[20px]" : "translate-x-0"
         }`}
       >
         {/* Navigation Header */}
@@ -48,11 +52,8 @@ export const MainLayout = () => {
       </div>
 
       {/* --------------- Global Components --------------- */}
-
-      {/* AuthDrawer: Handled as a separate layer so it can open fully 
-          while the background content only shifts slightly.
-      */}
       <AuthDrawer />
+      <CartDrawer />
 
       {/* Mobile-only navigation bar */}
       <BottomNavigation />

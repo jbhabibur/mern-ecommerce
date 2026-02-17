@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from "react"; // Added useRef
 import { useDispatch, useSelector } from "react-redux";
 import { closeAuthDrawer } from "../../../redux/slices/authDrawerSlice";
 import { X, Eye, EyeOff } from "lucide-react";
-import { useCustomCursor } from "../hooks/useCustomCursor";
+import { useCustomCursor } from "../../../hooks/useCustomCursor";
 import { useLogin } from "../hooks/useLogin";
 import { ButtonSpinner } from "../../../components/loaders/ButtonSpinner";
 import { PrimaryButton } from "../../../components/atoms/PrimaryButton";

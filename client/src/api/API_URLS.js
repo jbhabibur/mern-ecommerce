@@ -1,12 +1,12 @@
 import { BASE_URL } from "./apiConfig";
 
 export const API_URLS = {
+  // Product endpoints
   NEW_ARRIVALS: `${BASE_URL}/api/products/new-arrivals`,
   POPULAR_PRODUCTS: `${BASE_URL}/api/products/popular`,
   ALL_PRODUCTS: `${BASE_URL}/api/products`,
   ALL_CATEGORIES: `${BASE_URL}/api/categories/all`,
   CATEGORY_PRODUCTS: (slug) => `${BASE_URL}/api/product/categories/${slug}`,
-
   SINGLE_PRODUCT: `${BASE_URL}/api/products`,
 
   // Categories endpoints

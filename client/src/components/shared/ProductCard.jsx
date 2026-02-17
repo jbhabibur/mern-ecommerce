@@ -1,11 +1,19 @@
 import { Heart, Eye } from "lucide-react";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { RoundActionButton } from "../atoms/RoundActionButton";
 import { useMediaQuery } from "../../hooks/useMediaQuery";
+
+// Import redux
+import { useDispatch } from "react-redux";
+import { setSize } from "../../redux/slices/selectionSlice";
 
 export const ProductCard = ({ product, view }) => {
   const [isHovered, setIsHovered] = useState(false);
   const isDesktop = useMediaQuery("(min-width: 1024px)");
+
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   // Find the Primary Image (isPrimary: true)
   const primaryImage = product.images?.find(
@@ -17,12 +25,7 @@ export const ProductCard = ({ product, view }) => {
     (img) => img.isZoomView === true,
   )?.url;
 
-  console.log(product);
-
   const isList = view === "list";
-
-  // Gallery-r moto BASE_URL variable ti nite hobe
-  const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
   // --- STOCK LOGIC ---
   const getStockStatus = () => {
@@ -45,8 +48,34 @@ export const ProductCard = ({ product, view }) => {
 
   const isFullySoldOut = getStockStatus();
 
+  /**
+   * Navigates to the product details page.
+   * Triggered when the user clicks on the product card, image, or title.
+   */
+  const handleNavigate = () => {
+    navigate(`/products/${product.slug}`);
+  };
+
+  /**
+   * Handles size selection, updates the global state/local storage,
+   * and then redirects to the product page.
+   * Uses stopPropagation to prevent the parent card's click event from firing twice.
+   */
+  const handleSizeClick = (size) => (e) => {
+    e.stopPropagation(); // Prevents bubbling to the parent handleNavigate
+    e.preventDefault();
+
+    // Store selection for the product details page context
+    dispatch(setSize(size));
+    localStorage.setItem("selectedSize", size);
+
+    // Redirect to product page with the pre-selected size context
+    navigate(`/products/${product.slug}`);
+  };
+
   return (
     <div
+      onClick={handleNavigate}
       className={`group relative cursor-pointer bg-white ${
         isList ? "flex flex-row gap-6 border-b pb-6" : "flex flex-col"
       }`}
@@ -117,8 +146,9 @@ export const ProductCard = ({ product, view }) => {
                 .filter((v) => v.stock > 0)
                 .map((v) => (
                   <span
+                    onClick={handleSizeClick(v.size)}
                     key={v.size}
-                    className="bg-white text-[10px] font-bold py-2 px-3 rounded-full border border-gray-100 shadow-sm text-black"
+                    className="bg-white hover:bg-black! text-[10px] font-bold py-2 px-3 rounded-full border border-gray-100 hover:border-black! shadow-sm text-black hover:text-white! cursor-pointer z-40"
                   >
                     {v.size}
                   </span>

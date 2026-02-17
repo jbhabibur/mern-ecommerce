@@ -3,10 +3,8 @@ import { createPortal } from "react-dom";
 import { Expand, ChevronLeft, ChevronRight } from "lucide-react";
 
 // Import components
+import { ProductThumbnails } from "./ProductThumbnails";
 import { ProductLightbox } from "./ProductLightbox";
-
-// Import hooks
-import {} from "../hooks/useImagePan";
 
 // Import others
 import { getFullImagePath } from "../../../api/apiConfig";
@@ -29,7 +27,7 @@ export const ProductImageGallery = ({ images = [], productName }) => {
   const closeLightbox = () => setIsLightboxOpen(false);
 
   return (
-    <div className="w-full md:w-[60%] flex-shrink">
+    <div className="w-full">
       {/* Main Feature Image Container */}
       <div
         className={`relative aspect-square overflow-hidden bg-gray-100 group rounded-sm`}
@@ -85,27 +83,12 @@ export const ProductImageGallery = ({ images = [], productName }) => {
         </div>
       </div>
 
-      {/* Navigation Thumbnails Bar */}
-      <div className="flex gap-4 mt-6 justify-center overflow-x-auto pb-2 scrollbar-hide">
-        {productImages.map((img, i) => (
-          <button
-            key={img._id || i}
-            onClick={() => setCurrentIndex(i)}
-            className={`w-20 md:w-24 aspect-square border-2 transition-all duration-300 overflow-hidden rounded-sm ${
-              currentIndex === i
-                ? "border-black scale-105 shadow-sm"
-                : "border-transparent opacity-60 hover:opacity-100"
-            }`}
-          >
-            <img
-              src={getFullImagePath(img.url)}
-              className="w-full h-full object-cover"
-              alt={`${productName} view ${i + 1}`}
-            />
-          </button>
-        ))}
-      </div>
-
+      <ProductThumbnails
+        productImages={productImages}
+        currentIndex={currentIndex}
+        setCurrentIndex={setCurrentIndex}
+        productName={productName}
+      />
       {/* --- Lightbox with React Portal --- */}
       {isLightboxOpen &&
         createPortal(

@@ -12,6 +12,7 @@ export const PrimaryButton = ({
   loadingComponent,
   className = "",
   responsive = true,
+  showTextOnMobile = true,
 }) => {
   const [isHovered, setIsHovered] = useState(false);
 
@@ -66,7 +67,9 @@ export const PrimaryButton = ({
         <>
           {Icon && <Icon size={18} />}
           {/* Hidden on mobile, visible on small screens and up */}
-          <span className="hidden sm:inline">{text}</span>
+          <span className={showTextOnMobile ? "inline" : "hidden sm:inline"}>
+            {text}
+          </span>
         </>
       )}
     </button>

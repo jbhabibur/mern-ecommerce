@@ -8,7 +8,7 @@ import { SectionLayout } from "../layout/SectionLayout";
 import { Breadcrumb } from "../components/atoms/Breadcrumb";
 import { ProductDetailsView } from "../features/product-details/components/ProductDetailsView";
 
-import { RelatedProducts } from "../components/shared/RelatedProducts";
+import { RelatedProducts } from "../features/product-details/components/RelatedProducts";
 
 export const ProductOverview = () => {
   const { slug } = useParams();

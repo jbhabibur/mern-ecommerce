@@ -8,11 +8,10 @@ import { ViewerCount } from "../../../components/atoms/ViewerCount";
 
 // Import redux
 import { useSelector, useDispatch } from "react-redux";
-import { setSize } from "../../../redux/slices/selectionSlice";
+import { setSize, setProductInfo } from "../../../redux/slices/selectionSlice";
 
 export const ProductInfoSection = ({ product }) => {
   const dispatch = useDispatch();
-  const [quantity, setQuantity] = useState(1);
 
   // Read selected size from Redux
   const { selectedSize } = useSelector((state) => state.selection);
@@ -54,6 +53,22 @@ export const ProductInfoSection = ({ product }) => {
   const isFullySoldOut = hasVariants
     ? variants.every((v) => v.stock === 0)
     : product.stock === 0;
+
+  // Dispatch all info to redux
+  useEffect(() => {
+    if (product) {
+      dispatch(
+        setProductInfo({
+          id: product._id || product.id,
+          name: product.name,
+          unitPrice: product.price,
+          image: product?.images?.[0] || "",
+          isSoldOut: isFullySoldOut,
+          noSizeRequired: !hasVariants,
+        }),
+      );
+    }
+  }, [product, isFullySoldOut, hasVariants, dispatch]);
 
   return (
     <div className="flex flex-col w-full min-w-0 font-sans text-[#1a1a1a]">
@@ -114,8 +129,6 @@ export const ProductInfoSection = ({ product }) => {
           name={product.name}
           unitPrice={unitPrice}
           selectedSize={selectedSize}
-          quantity={quantity}
-          setQuantity={setQuantity}
           productImage={product?.images?.[0] || ""}
           isSoldOut={isFullySoldOut}
           noSizeRequired={!hasVariants}

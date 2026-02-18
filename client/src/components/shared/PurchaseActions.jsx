@@ -5,22 +5,33 @@ import { Heart, Share2, Plus, Minus } from "lucide-react";
 import { PrimaryButton } from "../../components/atoms/PrimaryButton";
 
 // Import hooks
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { cartActions } from "../../redux/slices/cartSlice";
+import {
+  incrementQuantity,
+  decrementQuantity,
+} from "../../redux/slices/selectionSlice";
 
 export const PurchaseActions = ({
   id,
   name,
   unitPrice,
   selectedSize,
-  quantity,
-  setQuantity,
   productImage,
   isSoldOut,
   noSizeRequired,
 }) => {
   const dispatch = useDispatch();
 
+  /**
+   * Sync quantity with Redux store instead of local state
+   * to ensure Sticky Bar and Main Section stay aligned.
+   */
+  const { quantity } = useSelector((state) => state.selection);
+
+  /**
+   * Handle adding product to cart with size validation
+   */
   const handleAddToCart = () => {
     // Logic: Only show alert if sizes are required AND none are selected
     if (!noSizeRequired && !selectedSize) {
@@ -44,17 +55,27 @@ export const PurchaseActions = ({
     dispatch(cartActions.setCartOpen(true));
   };
 
-  const handleIncrement = () => setQuantity((q) => q + 1);
-  const handleDecrement = () => setQuantity((q) => (q > 1 ? q - 1 : 1));
+  /**
+   * Increment/Decrement quantity using Redux actions
+   */
+  const handleIncrement = () => dispatch(incrementQuantity());
+  const handleDecrement = () => dispatch(decrementQuantity());
 
   const handleBuyItNow = () => {};
+
+  /**
+   * Safe calculation for subtotal to prevent NaN
+   */
+  const safeUnitPrice = Number(unitPrice) || 0;
+  const safeQuantity = Number(quantity) || 1;
+  const subtotal = safeUnitPrice * safeQuantity;
 
   return (
     <div className="flex flex-col gap-2.5 mt-8 w-full relative">
       <div className="text-base">
         <span className="text-gray-600! font-medium!">Subtotal: </span>
         <span className="text-gray-600! font-medium!">
-          Tk {(unitPrice * quantity).toLocaleString()}.00
+          Tk {subtotal.toLocaleString()}.00
         </span>
       </div>
 
@@ -68,18 +89,22 @@ export const PurchaseActions = ({
             {/* Main Qty Selector */}
             <div className="flex items-center border border-gray-300 h-12 w-fit">
               <button
+                type="button"
                 onClick={handleDecrement}
                 className="px-1.5 h-full hover:bg-gray-50 text-gray-500 transition-colors"
               >
+                <span className="sr-only">Decrease quantity</span>
                 <Minus size={16} />
               </button>
               <div className="w-12 flex items-center justify-center font-medium text-gray-600">
                 {quantity}
               </div>
               <button
+                type="button"
                 onClick={handleIncrement}
                 className="px-1.5 h-full hover:bg-gray-50 text-gray-500 transition-colors"
               >
+                <span className="sr-only">Increase quantity</span>
                 <Plus size={16} />
               </button>
             </div>

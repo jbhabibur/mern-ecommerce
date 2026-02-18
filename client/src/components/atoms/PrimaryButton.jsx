@@ -31,7 +31,7 @@ export const PrimaryButton = ({
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    gap: responsive ? "0px" : "50px",
+    gap: Icon && text ? "12px" : "0px",
     outline: "none",
     opacity: disabled || loading ? 0.7 : 1,
     minHeight: responsive ? "36px" : "42px",

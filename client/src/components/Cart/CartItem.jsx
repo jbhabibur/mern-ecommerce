@@ -8,8 +8,6 @@ import { cartActions } from "../../redux/slices/cartSlice";
 export const CartItem = ({ item, dispatch, handleEditItem }) => {
   const { id, image, name, size, price, quantity } = item;
 
-  console.log(item);
-
   const imageUrl = image?.url || "";
 
   return (

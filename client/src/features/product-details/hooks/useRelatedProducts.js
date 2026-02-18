@@ -1,10 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { fetchPopularProducts } from "../../../services/productService";
 
-export const useRelatedProducts = (productId) => {
+export const useRelatedProducts = () => {
   return useQuery({
-    queryKey: ["related-products", productId],
-    queryFn: () => fetchPopularProducts(productId),
+    queryKey: ["related-products"],
+    queryFn: () => fetchPopularProducts(),
     staleTime: 1000 * 60 * 5,
     retry: 2,
   });

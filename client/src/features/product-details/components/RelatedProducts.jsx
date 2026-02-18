@@ -4,11 +4,12 @@ import { MultiItemCarousel } from "../../../components/shared/MultiItemCarousel"
 // Import hooks
 import { useRelatedProducts } from "../hooks/useRelatedProducts";
 
-export const RelatedProducts = ({ productId }) => {
-  const { data, isLoading, isError, error } = useRelatedProducts(productId);
+export const RelatedProducts = ({ product }) => {
+  const { data, isLoading, isError, error } = useRelatedProducts();
 
   // If there is no data or an empty array, we can handle it gracefully
   const slides = data || [];
+  const filteredSlides = slides.filter((item) => item._id !== product?._id);
 
   return (
     /* 1. Use 'mt' (margin-top) to pull the border closer to the previous section.
@@ -21,12 +22,12 @@ export const RelatedProducts = ({ productId }) => {
         </h2>
 
         <MultiItemCarousel
-          slides={slides}
+          slides={filteredSlides}
           loading={isLoading}
           error={isError ? error : null}
         />
 
-        {!isLoading && !isError && slides.length === 0 && (
+        {!isLoading && !isError && filteredSlides.length === 0 && (
           <p className="text-center text-gray-400 mt-10">
             No related products found.
           </p>

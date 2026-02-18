@@ -1,5 +1,6 @@
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
+import { AnimatePresence, motion } from "framer-motion";
 
 // Layout & Global Components
 import { HeaderController } from "../features/header/components/HeaderController";
@@ -9,45 +10,56 @@ import { AuthDrawer } from "../features/auth/components/AuthDrawer";
 import { CartDrawer } from "../components/Cart/CartDrawer";
 import { BottomNavigation } from "../components/shared/BottomNavigation";
 import { StickyPurchaseBar } from "../features/product-details/components/StickyPurchaseBar";
+import { Preloader } from "../components/loaders/Preloader";
 
 // Hooks
 import { useScrollToTop } from "../hooks/useScrollToTop";
+import { usePreloader } from "../hooks/usePreloader";
 
 /**
  * MainLayout Component
- * Serves as the primary shell for the application, managing global
- * navigation, drawers, loaders, and the conditional Sticky Purchase Bar.
+ * Manages the global shell. Includes a "Silent Scroll" reset logic
+ * using pathname keys and Framer Motion transitions.
  */
 export const MainLayout = () => {
-  // Automatically scroll to the top of the page on route changes
+  const { pathname } = useLocation();
+
+  // Initialize hooks
   useScrollToTop();
+  const { showLoader, handleLoaderComplete } = usePreloader();
 
   // --- Redux State Selection ---
-
-  // App-wide loading state
   const { isAppLoading } = useSelector((state) => state.auth);
-
-  // Drawer visibility states
   const { isOpen: isAuthOpen } = useSelector((state) => state.authDrawer);
   const { isCartOpen } = useSelector((state) => state.cart);
-
-  // Product data and scroll visibility controlled via Redux (from ProductOverview)
   const { activeProduct, isStickyVisible } = useSelector(
     (state) => state.products,
   );
 
-  // Helper constant to check if any side drawer is currently active
+  // Helper constant to check if any side drawer is active
   const isAnyDrawerOpen = isAuthOpen || isCartOpen;
 
   return (
-    <div className="relative min-h-screen flex flex-col">
-      {/* Global overlay loader */}
+    <div className="relative min-h-screen flex flex-col overflow-x-hidden">
+      {/* 1. Entrance Preloader: Higher z-index to mask initial load scroll */}
+      <AnimatePresence mode="wait">
+        {showLoader && (
+          <Preloader key="preloader" onFinish={handleLoaderComplete} />
+        )}
+      </AnimatePresence>
+
+      {/* 2. Global Overlay Loader: For async state changes */}
       {isAppLoading && <GlobalLoader />}
 
-      {/* Main Content Wrapper: 
-          Includes transition logic to shift content when a drawer opens.
+      {/* 3. Main Content Wrapper: 
+          'key={pathname}' triggers a re-render/animation on route change,
+          effectively masking the instant scroll jump with a fade.
       */}
-      <div
+      <motion.div
+        key={pathname}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.4, ease: "easeInOut" }}
         className={`flex flex-col flex-grow transition-transform duration-500 ease-in-out ${
           isAnyDrawerOpen ? "-translate-x-[20px]" : "translate-x-0"
         }`}
@@ -60,16 +72,13 @@ export const MainLayout = () => {
         </main>
 
         <Footer />
-      </div>
+      </motion.div>
 
       {/* --- Global Overlays & Modals --- */}
       <AuthDrawer />
       <CartDrawer />
 
-      {/* Sticky Purchase Bar: 
-          Renders only if a product is active and its scroll threshold is met.
-          Hidden automatically if a drawer is open to avoid UI overlap.
-      */}
+      {/* Sticky Purchase Bar: Renders only for active products */}
       {activeProduct && (
         <StickyPurchaseBar
           product={activeProduct}

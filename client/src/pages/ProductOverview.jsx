@@ -20,6 +20,7 @@ import {
   clearActiveProduct,
   setStickyVisibility,
 } from "../redux/slices/productSlice";
+import { resetSelection } from "../redux/slices/selectionSlice";
 
 export const ProductOverview = () => {
   const { slug } = useParams();
@@ -32,12 +33,16 @@ export const ProductOverview = () => {
   const dispatch = useDispatch();
 
   useEffect(() => {
+    dispatch(resetSelection());
     if (product) {
       dispatch(setActiveProduct(product));
     }
     // Cleanup: Page theke ber hoye gele clear hobe
-    return () => dispatch(clearActiveProduct());
-  }, [product, dispatch]);
+    return () => {
+      dispatch(clearActiveProduct());
+      dispatch(resetSelection());
+    };
+  }, [product, slug, dispatch]);
 
   useEffect(() => {
     // isVisible true/false holei Redux update hobe
@@ -70,7 +75,7 @@ export const ProductOverview = () => {
           Supplementary Content: 
           Displays related items to drive cross-selling and engagement 
         */}
-          <RelatedProducts />
+          <RelatedProducts product={product} />
         </div>
       </SectionLayout>
     </>

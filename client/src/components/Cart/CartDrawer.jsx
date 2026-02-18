@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { X, ShoppingBag, Gift, Tag } from "lucide-react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation } from "swiper/modules";
@@ -8,6 +8,7 @@ import { getFullImagePath } from "../../api/apiConfig";
 // Import components
 import { CartItem } from "./CartItem";
 import { EditItemModal } from "./EditItemModal";
+import { YouMayAlsoLike } from "./YouMayAlsoLike";
 
 // Redux hooks and actions
 import { useSelector, useDispatch } from "react-redux";
@@ -34,6 +35,24 @@ export const CartDrawer = () => {
     setSelectedItem(item);
     setIsEditModalOpen(true);
   };
+
+  // Auto-close on mount/reload logic
+  useEffect(() => {
+    dispatch(cartActions.setCartOpen(false));
+  }, [dispatch]);
+
+  // Background scroll off
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [isOpen]);
 
   return (
     <>
@@ -110,43 +129,7 @@ export const CartDrawer = () => {
 
           {/* Slider Section */}
           <div className="pt-6 border-t border-gray-100">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="font-bold! text-gray-800 text-sm! uppercase tracking-wide">
-                You May Also Like
-              </h3>
-              <div className="flex gap-2">
-                <button className="prev-btn w-6 h-6 flex items-center justify-center border rounded-full hover:bg-black hover:text-white transition-all text-[10px]">
-                  ❮
-                </button>
-                <button className="next-btn w-6 h-6 flex items-center justify-center border rounded-full hover:bg-black hover:text-white transition-all text-[10px]">
-                  ❯
-                </button>
-              </div>
-            </div>
-
-            <Swiper
-              modules={[Navigation]}
-              navigation={{ prevEl: ".prev-btn", nextEl: ".next-btn" }}
-              spaceBetween={12}
-              slidesPerView={1}
-            >
-              {[1, 2, 3].map((id) => (
-                <SwiperSlide key={id}>
-                  <div className="flex gap-3 border p-2 rounded-sm bg-gray-50/50 group cursor-pointer">
-                    <div className="w-18 h-18 bg-gray-200 object-cover shadow-sm" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[10px] font-medium text-gray-700 truncate leading-tight">
-                        Full Sleeve Blue Door_Regular Fit
-                      </p>
-                      <p className="text-xs font-bold mt-1">Tk 2,490.00</p>
-                      <button className="text-[9px] font-bold underline uppercase mt-1 group-hover:text-blue-600 transition-colors">
-                        Quick Add
-                      </button>
-                    </div>
-                  </div>
-                </SwiperSlide>
-              ))}
-            </Swiper>
+            <YouMayAlsoLike />
           </div>
         </div>
 

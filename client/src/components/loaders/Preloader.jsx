@@ -5,28 +5,35 @@ export const Preloader = () => {
   const [count, setCount] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
   const [showBrand, setShowBrand] = useState(false);
+  const [isDismissed, setIsDismissed] = useState(false);
 
   useEffect(() => {
     if (count < 100) {
       const timer = setTimeout(() => {
         setCount((prev) => prev + 1);
-      }, 25); // Speed of count
+      }, 25);
       return () => clearTimeout(timer);
     } else {
-      // Logic for showing brand name after count
+      // 1. Counter fades out
       setTimeout(() => setIsComplete(true), 400);
+
+      // 2. Brand title appears at 700ms
       setTimeout(() => setShowBrand(true), 700);
+
+      // 3. Slide starts 2 seconds after the title appears
+      // 700ms (appearance) + 2000ms (waiting time) = 2700ms
+      setTimeout(() => setIsDismissed(true), 2700);
     }
   }, [count]);
 
   return (
     <motion.div
       initial={{ y: 0 }}
-      exit={{ y: "-100%" }} // Smooth slide from bottom to top
+      // Smoothly slides the entire window from bottom to top
+      animate={{ y: isDismissed ? "-100%" : 0 }}
       transition={{
         duration: 1.2,
-        ease: [0.76, 0, 0.24, 1], // Premium Bezier curve
-        delay: 2,
+        ease: [0.76, 0, 0.24, 1], // Premium curtain-like ease
       }}
       className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#05070a] overflow-hidden"
     >

@@ -1,39 +1,41 @@
 import { useSelector, useDispatch } from "react-redux";
 import { useLocation, Navigate } from "react-router-dom";
-import { jwtDecode } from "jwt-decode"; // Install using: npm install jwt-decode
-import { setLogout } from "../redux/slices/authSlice"; // Ensure the path is correct
+import { jwtDecode } from "jwt-decode";
+import { setLogout } from "../redux/slices/authSlice";
 
 export const ProtectedRoute = ({ children }) => {
   const dispatch = useDispatch();
   const location = useLocation();
 
-  // Access auth state from Redux store
   const { isLoggedIn, token } = useSelector((state) => state.auth);
+
+  // Current path capture koro (e.g., /checkouts/cn/...)
+  const currentPath = encodeURIComponent(location.pathname + location.search);
+  const loginUrlWithRedirect = `/account/login?return_to=${currentPath}`;
 
   // 1. Check if the user is logged in via Redux
   if (!isLoggedIn || !token) {
-    return <Navigate to="/account/login" state={{ from: location }} replace />;
+    // Navigate korar somoy query parameter shoho login page-e pathao
+    return <Navigate to={loginUrlWithRedirect} replace />;
   }
 
   // 2. Verify if the token is expired
   try {
     const decoded = jwtDecode(token);
-    const currentTime = Date.now() / 1000; // Convert to seconds
+    const currentTime = Date.now() / 1000;
 
     if (decoded.exp < currentTime) {
-      // Token has expired!
       localStorage.removeItem("token");
-      dispatch(setLogout()); // This clears the Redux state and removes "My Account"
-      return (
-        <Navigate to="/account/login" state={{ from: location }} replace />
-      );
+      localStorage.removeItem("user");
+      dispatch(setLogout());
+
+      return <Navigate to={loginUrlWithRedirect} replace />;
     }
   } catch (error) {
-    // If decoding fails, treat it as an invalid token
-    dispatch(logout());
-    return <Navigate to="/account/login" state={{ from: location }} replace />;
+    localStorage.removeItem("token");
+    dispatch(setLogout());
+    return <Navigate to={loginUrlWithRedirect} replace />;
   }
 
-  // Render children if token is valid and authenticated
   return children;
 };

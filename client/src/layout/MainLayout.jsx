@@ -56,7 +56,7 @@ export const MainLayout = () => {
           effectively masking the instant scroll jump with a fade.
       */}
       <motion.div
-        key={pathname}
+        // key={pathname}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.4, ease: "easeInOut" }}

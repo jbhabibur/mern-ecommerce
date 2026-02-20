@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
-import { fetchCategoryProducts } from "../api/productApi";
+import { fetchCategoryProducts } from "../services/productService";
 
 import { NAVIGATION_DATA_DESKTOP } from "../constants/navigationData";
 

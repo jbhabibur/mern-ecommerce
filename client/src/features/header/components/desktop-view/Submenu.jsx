@@ -30,6 +30,7 @@ export const SubMenu = ({ item }) => {
       // For any other slug (e.g., "men-top", "accessories"),
       // it routes to the categories section.
       else {
+        console.log("hello");
         targetPath = `/categories/${slugValue}`;
       }
 

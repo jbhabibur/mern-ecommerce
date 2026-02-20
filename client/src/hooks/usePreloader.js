@@ -1,30 +1,34 @@
 import { useState, useEffect } from "react";
 
-/**
- * Custom hook to manage the one-hour session-based preloader logic.
- */
 export const usePreloader = () => {
-  const ONE_HOUR = 1 * 60 * 60 * 1000;
+  const ONE_HOUR = 60 * 60 * 1000;
 
   const [showLoader, setShowLoader] = useState(() => {
-    // Check localStorage immediately to prevent layout flashing
     const lastSeen = localStorage.getItem("last_preloader_time");
     const now = Date.now();
 
-    // Show loader if it's the first visit or if the 1-hour window has expired
-    return !lastSeen || now - parseInt(lastSeen) > ONE_HOUR;
+    // Show if never seen or if 1 hour passed
+    const isExpired = !lastSeen || now - parseInt(lastSeen) > ONE_HOUR;
+    return isExpired;
   });
 
   useEffect(() => {
+    // Only set timestamp once when the loader is first shown
     if (showLoader) {
-      // Update the timestamp as soon as the loader is triggered
-      localStorage.setItem("last_preloader_time", Date.now().toString());
+      const lastSeen = localStorage.getItem("last_preloader_time");
+      const now = Date.now();
+
+      if (!lastSeen || now - parseInt(lastSeen) > ONE_HOUR) {
+        localStorage.setItem("last_preloader_time", now.toString());
+      }
+
+      // Auto-hide loader after animation (e.g., 2s)
+      const timer = setTimeout(() => setShowLoader(false), 2000);
+      return () => clearTimeout(timer);
     }
   }, [showLoader]);
 
-  const handleLoaderComplete = () => {
-    setShowLoader(false);
-  };
+  const handleLoaderComplete = () => setShowLoader(false);
 
   return { showLoader, handleLoaderComplete };
 };

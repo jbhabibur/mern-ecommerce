@@ -1,117 +1,231 @@
-import React, { useState } from "react";
+import { useState, useEffect } from "react";
 import { X, Plus, Minus } from "lucide-react";
-
+import { useDispatch } from "react-redux";
+import { cartActions } from "../../redux/slices/cartSlice";
 import { getFullImagePath } from "../../api/apiConfig";
+import { motion, AnimatePresence } from "framer-motion";
+import { FloatingCloseButton } from "./FloatingCloseButton";
 
 export const EditItemModal = ({ isOpen, onClose, item }) => {
-  const [quantity, setQuantity] = useState(2);
-  const [selectedSize, setSelectedSize] = useState("M");
+  const dispatch = useDispatch();
+  const [quantity, setQuantity] = useState(1);
+  const [selectedSize, setSelectedSize] = useState("");
 
-  if (!isOpen) return null;
+  const isMobile =
+    typeof window !== "undefined" ? window.innerWidth < 768 : false;
 
-  console.log(item?.name);
+  useEffect(() => {
+    if (item && isOpen) {
+      setQuantity(item.quantity);
+      setSelectedSize(item.size);
+    }
+  }, [item, isOpen]);
+
+  const handleUpdateCart = () => {
+    dispatch(cartActions.removeFromCart({ id: item.id, size: item.size }));
+    dispatch(
+      cartActions.addToCart({
+        ...item,
+        quantity: quantity,
+        size: selectedSize,
+      }),
+    );
+    onClose();
+  };
+
+  const sizes = ["M", "L", "XL", "XXL"];
+
+  // --- Shared Components for DRYness inside the return ---
+  const QuantitySelector = () => (
+    <div className="flex items-center border border-gray-200 w-32 h-11">
+      <button
+        onClick={() => setQuantity(Math.max(1, quantity - 1))}
+        className="flex-1 flex justify-center items-center hover:bg-gray-50"
+      >
+        <Minus size={16} />
+      </button>
+      <span className="flex-1 text-center font-bold text-sm">{quantity}</span>
+      <button
+        onClick={() => setQuantity(quantity + 1)}
+        className="flex-1 flex justify-center items-center hover:bg-gray-50"
+      >
+        <Plus size={16} />
+      </button>
+    </div>
+  );
+
+  const SizePicker = () => (
+    <div className="flex flex-wrap gap-2">
+      {sizes.map((size) => (
+        <button
+          key={size}
+          onClick={() => setSelectedSize(size)}
+          className={`w-11 h-11 flex items-center justify-center text-xs font-bold border transition-all ${
+            selectedSize === size
+              ? "border-black bg-white text-black ring-1 ring-black"
+              : "border-gray-200 text-gray-400"
+          }`}
+        >
+          {size}
+        </button>
+      ))}
+    </div>
+  );
 
   return (
-    <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/60 backdrop-blur-[2px] p-4">
-      {/* Rectangular Compact Container */}
-      <div className="relative w-full max-w-[52rem] bg-white shadow-2xl flex flex-col overflow-hidden">
-        {/* Header - Height Reduced */}
-        <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
-          <h2 className="text-[11px]! font-bold! uppercase text-gray-900">
-            Edit Option
-          </h2>
-          <button
+    <AnimatePresence>
+      {isOpen && (
+        <div className="fixed inset-0 z-[120] flex items-end md:items-center justify-center overflow-hidden">
+          {/* Overlay */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             onClick={onClose}
-            className="bg-black text-white p-1.5 hover:bg-gray-800 transition-colors"
+            className="fixed inset-0 bg-black/60 backdrop-blur-[2px] z-[121]"
           >
-            <X size={18} />
-          </button>
-        </div>
+            <FloatingCloseButton isOpen={isOpen} />
+          </motion.div>
 
-        {/* Content Area - Padding & Gap Reduced */}
-        <div className="p-6">
-          <div className="flex flex-col md:flex-row gap-8 items-start">
-            {/* Left: Product Image - Smaller Width */}
-            <div className="w-full md:w-[180px] shrink-0">
-              <img
-                src={getFullImagePath(item?.image)}
-                alt="Product"
-                className="w-full aspect-[3/4] object-cover border border-gray-100"
-              />
-            </div>
-
-            {/* Right: Product Details */}
-            <div className="w-full flex flex-col pt-1">
-              <h3 className="text-[13px]! font-bold text-gray-800 uppercase tracking-wide">
-                {item?.name}
-              </h3>
-
-              <div className="flex items-center gap-4 mt-1">
-                <p className="text-gray-400 text-[10px] uppercase tracking-widest font-medium">
-                  Size: {selectedSize}
-                </p>
+          {/* --- MOBILE UI (Bottom Sheet) --- */}
+          <div className="md:hidden w-full z-[122]">
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="bg-white flex flex-col max-h-[65vh]"
+            >
+              <div className="px-2 py-2.5 border-b border-gray-100 flex justify-between items-center">
+                <h2 className="text-sm! font-bold! uppercase m-0">
+                  Edit Option
+                </h2>
+                <button onClick={onClose}>
+                  <X size={22} />
+                </button>
               </div>
-              <p className="text-[14px] font-black text-gray-900">
-                Tk 1,690.00
-              </p>
 
-              {/* Selection Grid - Compact Layout */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-6">
-                {/* Quantity Section */}
-                <div>
-                  <label className="text-[10px] font-bold uppercase tracking-wider mb-2 block text-gray-400">
-                    Quantity
-                  </label>
-                  <div className="flex items-center border border-gray-200 w-32 h-9">
-                    <button
-                      onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                      className="flex-1 h-full hover:bg-gray-50 flex items-center justify-center border-r border-gray-200 transition-colors"
+              <div className="p-2 overflow-y-auto">
+                <div className="flex gap-4 mb-6">
+                  <img
+                    src={getFullImagePath(item?.image?.url)}
+                    className="w-24 h-24 object-cover border"
+                    alt=""
+                  />
+                  <div className="max-w-full overflow-hidden">
+                    {/* Title with Truncate and Smooth Fade */}
+                    <h3
+                      className="text-[15px]! font-medium! text-gray-700 leading-tight truncate 
+                 relative [mask-image:linear-gradient(to_right,black_70%,transparent_100%)]"
                     >
-                      <Minus size={14} />
-                    </button>
-                    <span className="flex-1 text-center text-xs font-bold">
-                      {quantity}
+                      {item?.name}
+                    </h3>
+
+                    <p className="text-gray-400 text-[10px] uppercase mb-4 tracking-tight">
+                      Current Selection: {item?.size}
+                    </p>
+
+                    <p className="mt-6 text-lg font-black text-gray-900">
+                      Tk {item?.price?.toLocaleString()}
+                    </p>
+
+                    <div className="mt-4">
+                      <p className="text-[11px] font-bold mb-2 uppercase text-gray-500">
+                        Quantity
+                      </p>
+                      <QuantitySelector />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mb-6">
+                  <p className="text-[11px] font-bold mb-3 uppercase">
+                    Select Size:{" "}
+                    <span className="text-gray-400 font-medium">
+                      {selectedSize}
                     </span>
-                    <button
-                      onClick={() => setQuantity(quantity + 1)}
-                      className="flex-1 h-full hover:bg-gray-50 flex items-center justify-center border-l border-gray-200 transition-colors"
-                    >
-                      <Plus size={14} />
-                    </button>
+                  </p>
+                  <SizePicker />
+                </div>
+              </div>
+
+              <div className="px-2.5 py-2">
+                <button
+                  onClick={handleUpdateCart}
+                  className="w-full bg-black text-white py-2.5 font-bold uppercase text-xs tracking-widest"
+                >
+                  Update Cart
+                </button>
+              </div>
+            </motion.div>
+          </div>
+
+          {/* --- DESKTOP UI (Center Modal) --- */}
+          <div className="hidden md:block z-[122]">
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="w-[850px] bg-white shadow-2xl relative"
+            >
+              <button
+                onClick={onClose}
+                className="absolute top-4 right-4 bg-black text-white  hover:rotate-90 transition-transform"
+              >
+                <X size={20} />
+              </button>
+
+              <div className="px-8 py-3 border-b border-gray-100">
+                <h2 className="text-sm! font-bold! uppercase m-0">
+                  Edit Product Options
+                </h2>
+              </div>
+
+              <div className="p-8 grid grid-cols-[220px_1fr_200px] gap-10">
+                <img
+                  src={getFullImagePath(item?.image?.url)}
+                  className="w-full aspect-square object-cover border"
+                  alt=""
+                />
+
+                <div className="flex flex-col justify-between">
+                  <div>
+                    <h3 className="text-lg! font-medium! text-gray-800 mb-2">
+                      {item?.name}
+                    </h3>
+                    <p className="text-gray-400 text-xs uppercase mb-4">
+                      Current Selection: {item?.size}
+                    </p>
+                    <p>Tk {item?.price?.toLocaleString()}</p>
+                  </div>
+                  <div className="mt-6">
+                    <p className="text-[11px] font-bold mb-2 uppercase">
+                      Quantity
+                    </p>
+                    <QuantitySelector />
                   </div>
                 </div>
 
-                {/* Size Section */}
-                <div>
-                  <label className="text-[10px] font-bold uppercase tracking-wider mb-2 block text-gray-400">
-                    Select Size
-                  </label>
-                  <div className="flex flex-wrap gap-1.5">
-                    {["M", "L", "XL", "XXL"].map((size) => (
-                      <button
-                        key={size}
-                        onClick={() => setSelectedSize(size)}
-                        className={`w-9 h-9 flex items-center justify-center text-[10px] font-bold border transition-all ${
-                          selectedSize === size
-                            ? "border-black bg-black text-white"
-                            : "border-gray-200 hover:border-black text-gray-400"
-                        }`}
-                      >
-                        {size}
-                      </button>
-                    ))}
-                  </div>
+                <div className="flex flex-col">
+                  <p className="text-[11px] font-bold text-gray-800 mb-4 uppercase">
+                    Size: <span className="text-gray-400">{selectedSize}</span>
+                  </p>
+                  <SizePicker />
                 </div>
               </div>
-            </div>
+
+              <div>
+                <button
+                  onClick={handleUpdateCart}
+                  className="w-full bg-[#1c1c1c] text-white py-3 font-bold uppercase! hover:bg-black transition-all"
+                >
+                  Update Cart Content
+                </button>
+              </div>
+            </motion.div>
           </div>
         </div>
-
-        {/* Bottom Button - Slimmer height */}
-        <button className="w-full bg-[#1c1c1c] text-white py-2 font-bold text-md! hover:bg-black transition-colors uppercase! border-t border-white/10">
-          Update Cart
-        </button>
-      </div>
-    </div>
+      )}
+    </AnimatePresence>
   );
 };

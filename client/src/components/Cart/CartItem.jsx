@@ -26,7 +26,7 @@ export const CartItem = ({ item, dispatch, handleEditItem }) => {
         <div className="flex items-center gap-2 text-[11px] text-gray-500 mb-2 uppercase tracking-wider">
           <span>{size}</span>
           <button className="hover:text-black transition-colors">
-            <SquarePen onClick={handleEditItem} size={15} />
+            <SquarePen onClick={() => handleEditItem(item)} size={15} />
           </button>
         </div>
         <p className="text-sm font-bold mb-3 font-mono tracking-tighter">

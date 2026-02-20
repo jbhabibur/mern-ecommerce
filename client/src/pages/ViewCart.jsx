@@ -2,19 +2,23 @@ import React from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { cartActions } from "../redux/slices/cartSlice";
 import { X, Minus, Plus, Edit2, Info, Gift, ShieldCheck } from "lucide-react";
-import { Link } from "react-router-dom";
 import { Breadcrumb } from "../components/atoms/Breadcrumb";
+
+// Import components
+import { SectionLayout } from "../layout/SectionLayout";
+import { TimerAlert } from "../features/cart/components/TimerAlert";
+import { OrderSummary } from "../features/cart/components/OrderSummary";
+import { PrimaryButton } from "../components/atoms/PrimaryButton";
 
 // REUSE: Project specific imports
 import { getFullImagePath } from "../api/apiConfig";
-import { useCartTimer } from "../hooks/useCartTimer";
 
 export const ViewCart = () => {
   const dispatch = useDispatch();
   const { items: cartItems, totalAmount } = useSelector((state) => state.cart);
+  console.log(cartItems);
 
   // REUSE: Custom timer hook
-  const { formattedTime } = useCartTimer(40);
 
   const updateQtyHandler = (id, size, type) => {
     dispatch(cartActions.updateQuantity({ id, size, type }));
@@ -25,38 +29,30 @@ export const ViewCart = () => {
   };
 
   return (
-    <div className="w-full max-w-[76rem] mx-auto px-4 mb-4 md:px-10 py-8 font-sans text-[#1c1c1c]">
+    <SectionLayout bgColor="bg-white">
       <Breadcrumb />
 
-      <h1 className="text-2xl! font-bold! mt-4 tracking-widest uppercase">
-        Your Cart
-      </h1>
+      <h1 className="text-xl! font-bold! mt-4 uppercase">Your Cart</h1>
+
+      {/* Timer Alert */}
+      {cartItems.length === 0 ? <TimerAlert isEmpty={true} /> : <TimerAlert />}
 
       {cartItems.length === 0 ? (
-        <div className="text-center py-24">
-          <p className="font-['Poppins'] font-normal text-[12px] leading-[22px] text-[#969696] tracking-[0.02em]">
+        <div className="flex flex-col items-center justify-center gap-5 py-5">
+          <p className="font-['Poppins'] font-normal text-[12px] text-[#969696] m-0">
             Your cart is empty
           </p>
-          <a
-            href={"/collections"}
-            className="no-underline! inline-block border border-black px-8 py-2 text-[16px]! text-black! font-bold uppercase tracking-[0.2em] hover:bg-black hover:text-white! transition duration-500"
-          >
-            Continue Shopping
-          </a>
+          <PrimaryButton
+            text="Continue Shopping"
+            initialBg="#FFFFFF"
+            initialText="#000000"
+            onClick={() => (window.location.href = "/collections")}
+            responsive={false}
+            className="w-auto px-8 text-sm!"
+          />
         </div>
       ) : (
         <>
-          {/* Timer Alert */}
-          <div className="bg-[#fcf3e1] py-3 px-4 flex items-center justify-center gap-2 mb-8 border border-[#faebcc]/30">
-            <Info size={18} className="text-[#3c3c3c] shrink-0" />
-            <p className="text-[#3c3c3c] text-[13px] md:text-[14px] leading-none mb-0">
-              Please, hurry! Someone has placed an order on one of the items you
-              have in the cart. We'll keep it for you for{" "}
-              <span className="font-bold text-black">{formattedTime}</span>{" "}
-              minutes.
-            </p>
-          </div>
-
           <div className="flex flex-col lg:flex-row gap-8 xl:gap-12 items-start">
             {/* ================= LEFT COLUMN (Items List) ================= */}
             <div className="lg:w-[85%] w-full flex-grow">
@@ -92,7 +88,7 @@ export const ViewCart = () => {
                   <div className="col-span-1 min-[425px]:col-span-8 min-[765px]:col-span-5 flex gap-4">
                     <div className="w-20 h-24 bg-gray-50 overflow-hidden shrink-0 border">
                       <img
-                        src={getFullImagePath(item.image)}
+                        src={getFullImagePath(item?.image?.url)}
                         alt={item.name}
                         className="w-full h-full object-cover"
                       />
@@ -295,55 +291,13 @@ export const ViewCart = () => {
               </div>
             </div>
 
-            {/* ================= ORDER SUMMARY ================= */}
-            <div className="lg:w-[380px] w-full lg:sticky lg:top-10">
-              <div className="bg-white border p-6">
-                <h2 className="text-[13px]! font-black uppercase tracking-widest border-b-2 border-black pb-2 mb-6">
-                  Order Summary
-                </h2>
-                <div className="flex justify-between items-center mb-6">
-                  <span className="text-[14px] font-bold">Subtotal</span>
-                  <span className="font-bold text-[16px]">
-                    Tk {totalAmount.toLocaleString()}.00
-                  </span>
-                </div>
-                <div className="mb-8">
-                  <label className="block text-[13px] font-bold mb-3 uppercase tracking-widest">
-                    Coupon Code
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Enter Coupon Code"
-                    className="w-full border border-gray-300 p-3 text-[13px] focus:outline-none focus:border-black transition mb-2"
-                  />
-                  <p className="text-[12px] text-gray-500 mb-0">
-                    Coupon code will be applied on the checkout page
-                  </p>
-                </div>
-                <div className="flex justify-between items-center mb-6 pt-6 border-t border-gray-100">
-                  <span className="font-bold text-[13px] uppercase tracking-widest">
-                    Total:
-                  </span>
-                  <span className="font-black text-[18px]">
-                    Tk {totalAmount.toLocaleString()}.00
-                  </span>
-                </div>
-                <p className="text-[12px] text-gray-400 mb-6">
-                  Tax included and shipping calculated at checkout
-                </p>
-                <div className="space-y-3!">
-                  <button className="w-full bg-[#1c1c1c] hover:bg-white border border-black text-white hover:text-black! py-3 text-[12px]! font-black uppercase! tracking-[0.2em] transition-all duration-500 ease-in-out">
-                    Proceed to Checkout
-                  </button>
-                  <button className="w-full bg-white hover:bg-[#1c1c1c] border border-black text-[#1c1c1c] hover:text-white! py-3 text-[12px]! font-black uppercase! tracking-[0.2em] transition-all duration-500 ease-in-out">
-                    Continue Shopping
-                  </button>
-                </div>
-              </div>
-            </div>
+            {/* --------------- Order summary section ------------------ */}
+            <OrderSummary cartItems={cartItems} totalAmount={totalAmount} />
           </div>
         </>
       )}
-    </div>
+
+      {/* Common New Arrivals Section */}
+    </SectionLayout>
   );
 };

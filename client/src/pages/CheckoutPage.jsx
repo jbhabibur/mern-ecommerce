@@ -4,6 +4,7 @@ import { FormSection } from "../features/checkout/components/FormSection";
 import { OrderSummary } from "../features/checkout/components/OrderSummary";
 import { FullPageLoader } from "../components/loaders/FullPageLoader";
 import { useSelector, useDispatch } from "react-redux";
+import axios from "axios"; // Ensure axios is imported
 
 import logo from "../assets/logo.svg";
 
@@ -12,11 +13,19 @@ import { useScrollToTop } from "../hooks/useScrollToTop";
 import { useNavigate } from "react-router-dom";
 import { useAddressForm } from "../features/checkout/hooks/useAddressForm";
 import { useAddress } from "../features/checkout/hooks/useAddress";
+import { BASE_URL } from "../config/apiConfig";
+
+// Redux
+import { cartActions } from "../redux/slices/cartSlice";
 
 export const CheckoutPage = () => {
   useScrollToTop();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  // Redux Selectors
   const { isLoggedIn, user } = useSelector((state) => state.auth);
+  const checkoutStore = useSelector((state) => state.checkout); // Accessing items and financials from Redux
 
   const [isLoginLoading, setIsLoginLoading] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("ssl");
@@ -73,12 +82,28 @@ export const CheckoutPage = () => {
       billingOption,
     );
 
+    // Constructing Payload based on Mongoose Schema
     const orderPayload = {
+      // 1. Customer Identification
       customer: {
         email: isLoggedIn ? user?.email : contact.email,
         userId: isLoggedIn ? user?.id : null,
         isGuest: !isLoggedIn,
       },
+
+      // 2. Product Snapshots (Mapping from Redux store)
+      items: checkoutStore.items.map((item) => ({
+        productId: item.productId._id || item.productId,
+        name: item.productId.name,
+        image: item.image,
+        priceAtCheckout: item.priceAtCheckout,
+        quantity: item.quantity,
+        size: item.size,
+        color: item.color || "",
+        sku: item.sku || "",
+      })),
+
+      // 3. Address Snapshots
       shippingAddress: isActuallyLoggedIn
         ? {
             fullName: selectedAddressObject?.fullName,
@@ -93,19 +118,47 @@ export const CheckoutPage = () => {
       billingAddress:
         billingOption === "same"
           ? isActuallyLoggedIn
-            ? { ...shippingAddress } // Use the mapped object
+            ? { ...shippingAddress } // Use mapped object if logged in
             : shippingAddress
           : billingAddress,
+
+      // 4. Financial Breakdown (Taken directly from Redux)
+      financials: checkoutStore.financials,
+
+      // 5. Payment Details
       payment: {
         method: paymentMethod,
         status: "pending",
+        transactionId: `TXN-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
       },
     };
 
     try {
       console.log("🚀 Final Order Payload:", orderPayload);
+
+      // API call to create order
+      const response = await axios.post(`${BASE_URL}/api/orders`, orderPayload);
+
+      if (response.data.success) {
+        // If order success, clear cart items
+        dispatch(cartActions.clearCart());
+
+        // If payment by SSL
+        if (response.data.paymentUrl) {
+          window.location.href = response.data.paymentUrl;
+        }
+        // If payment by cod
+        else {
+          // Success page-e redirect korbe
+          navigate(`/order-success?orderId=${response.data.orderId}`);
+        }
+      }
     } catch (error) {
       console.error("Order failed:", error);
+      alert(
+        error.response?.data?.message ||
+          "Failed to place order. Please try again.",
+      );
     }
   };
 
@@ -148,14 +201,12 @@ export const CheckoutPage = () => {
                   setIsLoginLoading={setIsLoginLoading}
                   showSignOut={showSignOut}
                   setShowSignOut={setShowSignOut}
-                  // Pass lifted state down
                   selectedAddressId={selectedAddressId}
                   setSelectedAddressId={setSelectedAddressId}
                   billingOption={billingOption}
                   setBillingOption={setBillingOption}
                   isEditing={isEditing}
                   setIsEditing={setIsEditing}
-                  // Pass form helpers
                   formData={formData}
                   errors={errors}
                   handleChange={handleChange}

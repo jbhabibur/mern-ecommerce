@@ -1,65 +1,18 @@
-import { PrimaryButton } from "../../../components/atoms/PrimaryButton";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
 
-import axios from "axios";
-import { BASE_URL } from "../../../api/apiConfig";
+// Import components
+import { PrimaryButton } from "../../../components/atoms/PrimaryButton";
+
+// Import hooks
+import { useCheckoutInitiate } from "../../../hooks/useCheckoutInitiate";
 
 export const OrderSummary = ({ cartItems, totalAmount }) => {
   const navigate = useNavigate();
 
-  // STATE: Track if the checkout request is currently loading
-  const [isProcessing, setIsProcessing] = useState(false);
-
-  const onProceed = async () => {
-    // PREVENT: Do nothing if already processing to avoid duplicate requests
-    if (isProcessing) return;
-
-    const payload = {
-      items: cartItems.map((item) => ({
-        productId: item.id,
-        image: item?.image?.url,
-        quantity: item.quantity,
-        priceAtCheckout: item.price,
-        size: item.size,
-      })),
-      totalAmount: totalAmount,
-    };
-
-    // START LOADING: Disable the button and show loading status
-    setIsProcessing(true);
-
-    // Get token to check whether checkout from user or guest
-    const token = localStorage.getItem("token");
-
-    try {
-      const response = await axios.post(
-        `${BASE_URL}/api/checkouts/initiate`,
-        payload,
-        {
-          withCredentials: true,
-          headers: {
-            "Content-Type": "application/json",
-            ...(token && { Authorization: `Bearer ${token}` }),
-          },
-        },
-      );
-
-      if (response.data.success && response.data.data.token) {
-        const token = response.data.data.token;
-        navigate(`/checkouts/cn/${token}`);
-      }
-    } catch (error) {
-      console.error(
-        "Checkout Initiation Failed:",
-        error.response?.data?.message || error.message,
-      );
-      // NOTE: We don't need to manually reset loading here because finally block handles it
-    } finally {
-      // END LOADING: Enable the button again regardless of success or failure
-      setIsProcessing(false);
-    }
-  };
+  const { onProceed, isProcessing } = useCheckoutInitiate(
+    cartItems,
+    totalAmount,
+  );
 
   return (
     <div className="lg:w-[380px] w-full lg:sticky lg:top-10">

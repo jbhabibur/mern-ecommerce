@@ -22,6 +22,7 @@ import { VerifySuccess } from "../pages/VerifySuccess";
 import { RecoverPage } from "../pages/RecoverPage";
 
 import { CheckoutPage } from "../pages/CheckoutPage";
+import { OrderSuccess } from "../pages/OrderSuccess";
 
 const router = createBrowserRouter([
   {
@@ -110,6 +111,10 @@ const router = createBrowserRouter([
   {
     path: "/checkouts/cn/:token/*",
     element: <CheckoutPage />,
+  },
+  {
+    path: "/order-success",
+    element: <OrderSuccess />, // Header/Footer charai dekhabe
   },
 ]);
 

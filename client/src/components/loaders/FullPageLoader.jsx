@@ -16,16 +16,16 @@ export const FullPageLoader = () => {
       </div>
 
       {/* Inline Style for Custom Animation */}
-      <style jsx>{`
-        @keyframes loading {
-          0% {
-            left: -50%;
-          }
-          100% {
-            left: 100%;
-          }
-        }
-      `}</style>
+      <style>{`
+  @keyframes loading {
+    0% {
+      left: -50%;
+    }
+    100% {
+      left: 100%;
+    }
+  }
+`}</style>
     </div>
   );
 };

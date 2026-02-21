@@ -4,6 +4,7 @@ import axios from "axios";
 import { HelpCircle, ChevronDown, ChevronUp } from "lucide-react";
 import { FullPageLoader } from "../../../components/loaders/FullPageLoader";
 import { BASE_URL } from "../../../config/apiConfig";
+import { PrimaryButton } from "../../../components/atoms/PrimaryButton";
 
 export const OrderSummary = () => {
   const { token } = useParams();
@@ -38,38 +39,49 @@ export const OrderSummary = () => {
 
   const products = checkoutData.items || [];
   const total = checkoutData.totalAmount || 0;
-
-  // Logical calculations based on your snapshot data
-  // Note: If VAT is included in totalAmount from backend, adjust this logic.
-  const vat = Math.round(total * 0.05); // Standard 5% calculation if not from backend
+  const vat = Math.round(total * 0.05);
   const subtotal = total - vat;
 
   return (
-    <div className="w-full lg:max-w-[38rem] lg:sticky lg:top-0">
+    <div className="w-full lg:max-w-[39rem] lg:sticky lg:top-0">
       {/* --- MOBILE VIEW --- */}
       <div className="lg:hidden">
+        {/* Header Toggle (Visible when closed) */}
         {!isOpen && (
           <div
-            className="bg-[#FAFAFA] border-b border-gray-200 p-4 cursor-pointer"
+            className="bg-white md:bg-[#FAFAFA] cursor-pointer mb-4"
             onClick={() => setIsOpen(true)}
           >
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="relative border border-gray-200 rounded-lg bg-white p-0.5 w-12 h-12">
-                  <img
-                    src={products[0]?.image} // Using Snapshot Image
-                    alt="order-thumb"
-                    className="w-full h-full object-cover rounded-md"
-                  />
-                  <span className="absolute -top-2 -right-2 bg-black text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full">
-                    {products.length}
+              <div className="flex items-center gap-4">
+                <div className="relative w-12 h-12">
+                  <div className="absolute top-0 left-1 w-full h-full bg-[#A0AEB9] border border-gray-300 rounded-lg translate-x-1.5 rotate-4"></div>
+                  <div className="relative border border-gray-200 rounded-lg bg-white p-0.5 w-full h-full z-10">
+                    <img
+                      src={products[0]?.image}
+                      alt="order-thumb"
+                      className="w-full h-full object-cover rounded-md"
+                    />
+                    <span className="absolute -top-2 -right-2 bg-black text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full z-20">
+                      {products.length}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex flex-col">
+                  <h3 className="text-base! font-bold text-gray-900 m-0">
+                    Total
+                  </h3>
+                  <span className="text-sm text-gray-500 font-normal">
+                    {products.length} {products.length > 1 ? "items" : "item"}
                   </span>
                 </div>
-                <h3 className="text-sm font-medium text-blue-600">
-                  Show order summary
-                </h3>
               </div>
+
               <div className="flex items-center gap-2">
+                <span className="text-[11px] text-gray-500 font-bold tracking-tight">
+                  BDT
+                </span>
                 <span className="text-lg font-bold">
                   ৳{total.toLocaleString()}
                 </span>
@@ -79,15 +91,18 @@ export const OrderSummary = () => {
           </div>
         )}
 
+        {/* Expandable Content Area */}
         <div
-          className={`overflow-hidden transition-all duration-500 bg-white ${isOpen ? "max-h-[1500px] opacity-100" : "max-h-0 opacity-0"}`}
+          className={`overflow-hidden transition-all duration-500 ease-in-out bg-white ${
+            isOpen ? "max-h-[1500px] opacity-100 mb-6" : "max-h-0 opacity-0"
+          }`}
         >
-          <div className="p-6 space-y-6">
+          <div className="p3 md:p-6 space-y-6">
             <div
               className="flex justify-between items-center"
               onClick={() => setIsOpen(false)}
             >
-              <h2 className="text-xl font-semibold">Order summary</h2>
+              <h2 className="text-xl! font-semibold">Order summary</h2>
               <ChevronUp size={22} className="text-blue-600" />
             </div>
             <SummaryContent
@@ -97,6 +112,19 @@ export const OrderSummary = () => {
               total={total}
             />
           </div>
+        </div>
+
+        {/* Fixed Position Button (Always at the bottom of the component) */}
+        <div className="mt-2">
+          <PrimaryButton
+            type="submit"
+            text="Pay now"
+            initialBg="#0066CC"
+            initialText="#FFFFFF"
+            className="w-full rounded-sm py-3 text-lg"
+            responsive={false}
+            showTextOnMobile={true}
+          />
         </div>
       </div>
 
@@ -120,7 +148,7 @@ const SummaryContent = ({ products, subtotal, vat, total }) => (
         <div key={index} className="flex items-center gap-4">
           <div className="relative border border-gray-200 rounded-xl bg-white flex-shrink-0 p-1">
             <img
-              src={item.image} // ✅ Using the snapshot image from your API response
+              src={item.image}
               alt={item.productId?.name || "Product"}
               className="w-16 h-16 object-cover rounded-lg"
             />
@@ -143,7 +171,6 @@ const SummaryContent = ({ products, subtotal, vat, total }) => (
       ))}
     </div>
 
-    {/* Promo Code Section */}
     <div className="flex gap-3 pt-2">
       <input
         type="text"
@@ -155,7 +182,6 @@ const SummaryContent = ({ products, subtotal, vat, total }) => (
       </button>
     </div>
 
-    {/* Pricing Logic */}
     <div className="space-y-2.5 pt-2">
       <div className="flex justify-between text-[14px]">
         <span className="text-gray-600">Subtotal</span>
@@ -180,7 +206,6 @@ const SummaryContent = ({ products, subtotal, vat, total }) => (
       </div>
     </div>
 
-    {/* Final Total */}
     <div className="pt-4 border-t border-gray-100 flex justify-between items-center">
       <span className="text-[18px] font-bold text-black">Total</span>
       <div className="flex items-center gap-2">

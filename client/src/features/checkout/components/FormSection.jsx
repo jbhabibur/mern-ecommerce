@@ -76,7 +76,7 @@ export const FormSection = ({
     `w-full border ${error ? "border-red-500" : "border-gray-300"} rounded-sm px-3 py-2 text-sm focus:border-cyan-500 outline-none transition-colors`;
 
   return (
-    <div className="w-full max-w-[55rem] lg:max-w-[40rem] p-1 md:p-10 space-y-10">
+    <div className="w-full max-w-[60rem] lg:max-w-[40rem] p-1 lg:p-10 space-y-10">
       <section>
         <div className="flex justify-between items-center mb-3">
           {isLoggedIn ? (
@@ -238,7 +238,7 @@ export const FormSection = ({
         </div>
       </section>
 
-      <div className="hidden md:block">
+      <div className="hidden lg:block">
         <PrimaryButton
           type="submit"
           text="Pay now"

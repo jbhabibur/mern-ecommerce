@@ -11,6 +11,9 @@ import { YouMayAlsoLike } from "./YouMayAlsoLike";
 import { PrimaryButton } from "../atoms/PrimaryButton";
 import { FloatingCloseButton } from "./FloatingCloseButton";
 
+// Import hooks
+import { useCheckoutInitiate } from "../../hooks/useCheckoutInitiate";
+
 // Redux hooks and actions
 import { useSelector, useDispatch } from "react-redux";
 import { cartActions } from "../../redux/slices/cartSlice";
@@ -24,6 +27,8 @@ export const CartDrawer = () => {
   const navigate = useNavigate();
   const [selectedItem, setSelectedItem] = useState(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
+  const { onProceed, isProcessing } = useCheckoutInitiate();
 
   const cartItems = useSelector((state) => state.cart.items);
   const totalAmount = useSelector((state) => state.cart.totalAmount);
@@ -141,8 +146,14 @@ export const CartDrawer = () => {
               </div>
 
               <div className="space-y-3!">
-                <button className="w-full bg-black hover:bg-white! text-white hover:text-black! border border-gray-200! py-2 font-bold text-[11px] transition-all duration-500! uppercase!">
-                  Checkout
+                <button
+                  onClick={onProceed}
+                  disabled={isProcessing}
+                  className={`w-full bg-black hover:bg-white! text-white hover:text-black! border border-gray-200! py-2 font-bold text-[11px] transition-all duration-500! uppercase! ${
+                    isProcessing ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
+                >
+                  {isProcessing ? "Processing..." : "Checkout"}
                 </button>
                 <a
                   href={"/cart"}

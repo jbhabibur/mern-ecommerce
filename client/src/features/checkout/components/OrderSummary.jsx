@@ -6,12 +6,17 @@ import { FullPageLoader } from "../../../components/loaders/FullPageLoader";
 import { BASE_URL } from "../../../config/apiConfig";
 import { PrimaryButton } from "../../../components/atoms/PrimaryButton";
 
+// Redux
+import { useDispatch } from "react-redux";
+import { syncCheckoutData } from "../../../redux/slices/checkoutSlice";
+
 export const OrderSummary = () => {
   const { token } = useParams();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [checkoutData, setCheckoutData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const dispatch = useDispatch();
 
   useEffect(() => {
     const getCheckoutDetails = async () => {
@@ -20,8 +25,18 @@ export const OrderSummary = () => {
         const response = await axios.get(
           `${BASE_URL}/api/checkouts/cn/${token}`,
         );
+
+        console.log("Hello", response);
         if (response.data.success) {
-          setCheckoutData(response.data.data);
+          const fetchedData = response.data.data;
+          setCheckoutData(fetchedData);
+
+          dispatch(
+            syncCheckoutData({
+              items: fetchedData.items,
+              totalAmount: fetchedData.totalAmount,
+            }),
+          );
         }
       } catch (error) {
         console.error("Error fetching checkout summary:", error);
@@ -32,7 +47,9 @@ export const OrderSummary = () => {
     };
 
     if (token) getCheckoutDetails();
-  }, [token, navigate]);
+  }, [token, navigate, dispatch]);
+
+  console.log(checkoutData);
 
   if (loading) return <FullPageLoader />;
   if (!checkoutData) return null;

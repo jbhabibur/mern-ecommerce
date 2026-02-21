@@ -15,6 +15,8 @@ import promoslotRoutes from "./routes/promoslot.routes.js";
 import socialmediaRoutes from "./routes/socialmedia.routes.js";
 import addressRoutes from "./routes/addressRoutes.js";
 import checkoutRoutes from "./routes/checkout.route.js";
+import orderRoutes from "./routes/order.routes.js";
+import paymentRoutes from "./routes/payment.routes.js";
 
 console.log("EMAIL ENV:", process.env.EMAIL_USER, process.env.EMAIL_PASS);
 
@@ -71,8 +73,14 @@ app.use("/api/storefront/social-feed", socialmediaRoutes);
 // Address routes
 app.use("/api/address", addressRoutes);
 
-// testing er jonno
+// Checkout routes
 app.use("/api/checkouts/", checkoutRoutes);
+
+// Order routes
+app.use("/api/orders", orderRoutes);
+
+// Payment routes
+app.use("/api/payment", paymentRoutes);
 
 /**
  * Health Check Route

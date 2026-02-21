@@ -1,10 +1,27 @@
 import { createSlice } from "@reduxjs/toolkit";
+import { jwtDecode } from "jwt-decode"; // Used to decode the JWT token
 
-// Initial state checks localStorage so login persists on refresh
+// Function to check if the token is valid and not expired
+const isTokenValid = (token) => {
+  if (!token) return false;
+  try {
+    const decoded = jwtDecode(token);
+    const currentTime = Date.now() / 1000;
+    // Returns true if token is not expired, false otherwise
+    return decoded.exp > currentTime;
+  } catch (error) {
+    return false;
+  }
+};
+
+const token = localStorage.getItem("token");
+const isValid = isTokenValid(token);
+
+// Initial state validates the token from localStorage on app load
 const initialState = {
-  isLoggedIn: !!localStorage.getItem("token"),
-  user: JSON.parse(localStorage.getItem("user")) || null,
-  token: localStorage.getItem("token") || null,
+  isLoggedIn: isValid, // Ensures the user is only logged in if the token is valid
+  user: isValid ? JSON.parse(localStorage.getItem("user")) : null,
+  token: isValid ? token : null,
   isAppLoading: false,
 };
 
@@ -17,7 +34,7 @@ const authSlice = createSlice({
       state.user = action.payload.user;
       state.token = action.payload.token;
 
-      // Save to localStorage
+      // Persist authentication data to localStorage
       localStorage.setItem("token", action.payload.token);
       localStorage.setItem("user", JSON.stringify(action.payload.user));
     },
@@ -29,6 +46,7 @@ const authSlice = createSlice({
       state.isLoggedIn = false;
       state.user = null;
       state.token = null;
+      // Clear all stored data on logout
       localStorage.clear();
     },
   },

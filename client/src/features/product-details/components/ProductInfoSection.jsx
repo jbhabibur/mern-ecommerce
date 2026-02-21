@@ -1,32 +1,77 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Eye } from "lucide-react";
+
+// Import hooks
 import { PurchaseActions } from "../../../components/shared/PurchaseActions";
 import { StockProgressBar } from "../../../components/atoms/StockProgressBar";
+import { ViewerCount } from "../../../components/atoms/ViewerCount";
+
+// Import redux
+import { useSelector, useDispatch } from "react-redux";
+import { setSize, setProductInfo } from "../../../redux/slices/selectionSlice";
 
 export const ProductInfoSection = ({ product }) => {
-  const [quantity, setQuantity] = useState(1);
+  const dispatch = useDispatch();
+
+  // Read selected size from Redux
+  const { selectedSize } = useSelector((state) => state.selection);
 
   const unitPrice = product?.price || 0;
   const variants = product?.variants || [];
-
-  // 1. Check if product has sizes/variants
   const hasVariants = variants.length > 0;
 
-  // 2. Logic: If it has sizes, find the first available size.
-  // If it's a belt (no sizes), selectedSize remains null or empty.
-  const initialSize = hasVariants
-    ? variants.find((v) => v.stock > 0)?.size || ""
-    : "";
+  // Total Stock Calculation
+  const totalStock = hasVariants
+    ? variants.reduce((acc, variant) => acc + (Number(variant.stock) || 0), 0)
+    : Number(product?.stock) || 0;
 
-  const [selectedSize, setSelectedSize] = useState(initialSize);
+  // Logic: Handle initial size selection and cleanup
+  useEffect(() => {
+    // 1. Check if there's a size in localStorage (from ProductCard click)
+    const savedSize = localStorage.getItem("selectedSize");
 
-  // 3. Determine if the product is sold out
+    if (hasVariants) {
+      if (savedSize) {
+        // If user clicked a specific size from ProductCard, use that
+        dispatch(setSize(savedSize));
+      } else if (!selectedSize) {
+        // Otherwise, auto-select the first available size in stock
+        const initialSize = variants.find((v) => v.stock > 0)?.size || "";
+        if (initialSize) {
+          dispatch(setSize(initialSize));
+        }
+      }
+    }
+
+    // Cleanup: Clear localStorage when user leaves this product page
+    return () => {
+      localStorage.removeItem("selectedSize");
+    };
+  }, [hasVariants, variants, dispatch, selectedSize]);
+
+  // Determine if the product is sold out
   const isFullySoldOut = hasVariants
     ? variants.every((v) => v.stock === 0)
     : product.stock === 0;
 
+  // Dispatch all info to redux
+  useEffect(() => {
+    if (product) {
+      dispatch(
+        setProductInfo({
+          id: product._id || product.id,
+          name: product.name,
+          unitPrice: product.price,
+          image: product?.images?.[0] || "",
+          isSoldOut: isFullySoldOut,
+          noSizeRequired: !hasVariants,
+        }),
+      );
+    }
+  }, [product, isFullySoldOut, hasVariants, dispatch]);
+
   return (
-    <div className="flex flex-col w-full max-w-md font-sans text-[#1a1a1a]">
+    <div className="flex flex-col w-full min-w-0 font-sans text-[#1a1a1a]">
       {/* Product Title & Price */}
       <h1 className="text-lg! md:text-2xl font-bold leading-tight mb-2">
         {product?.name}
@@ -36,9 +81,9 @@ export const ProductInfoSection = ({ product }) => {
       </p>
 
       {/* Stock Status Progress Bar */}
-      <StockProgressBar />
+      <StockProgressBar currentStock={totalStock} />
 
-      {/* 4. Size Selector: Hide completely for items without variants (like belts) */}
+      {/* Size Selector */}
       {hasVariants && (
         <div className="mb-6">
           <span className="text-sm font-bold block mb-3">
@@ -56,8 +101,8 @@ export const ProductInfoSection = ({ product }) => {
                 <button
                   key={variant.size}
                   disabled={isOutOfStock}
-                  onClick={() => setSelectedSize(variant.size)}
-                  className={`w-12 h-11 border text-sm flex items-center justify-center transition-all 
+                  onClick={() => dispatch(setSize(variant.size))}
+                  className={`w-10 h-9 border text-sm flex items-center justify-center transition-all 
                     ${
                       isOutOfStock
                         ? "bg-gray-100 text-gray-300 cursor-not-allowed border-dashed"
@@ -65,7 +110,7 @@ export const ProductInfoSection = ({ product }) => {
                     } 
                     ${
                       selectedSize === variant.size && !isOutOfStock
-                        ? "border-black border-2 font-bold"
+                        ? "border-black border"
                         : "border-gray-200 text-gray-600 hover:border-gray-400"
                     }`}
                 >
@@ -79,27 +124,20 @@ export const ProductInfoSection = ({ product }) => {
 
       {/* Quantity Selector & Action Buttons */}
       <div className="space-y-3">
-        {!isFullySoldOut && (
-          <div className="text-sm font-medium mb-2">Quantity:</div>
-        )}
-
         <PurchaseActions
           id={product._id || product.id}
           name={product.name}
           unitPrice={unitPrice}
-          selectedSize={selectedSize} // This will be empty for belts, which is correct
-          quantity={quantity}
-          setQuantity={setQuantity}
+          selectedSize={selectedSize}
           productImage={product?.images?.[0] || ""}
           isSoldOut={isFullySoldOut}
-          noSizeRequired={!hasVariants} // Tell PurchaseActions that size isn't needed
+          noSizeRequired={!hasVariants}
         />
       </div>
 
       {/* Viewer Count */}
-      <div className="mt-6 flex items-center gap-2 text-gray-600 text-sm">
-        <Eye size={18} />
-        <span>250 customers are viewing this product</span>
+      <div className="mt-3 flex items-center gap-2 text-gray-600 text-sm">
+        <ViewerCount />
       </div>
     </div>
   );

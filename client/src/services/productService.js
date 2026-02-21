@@ -29,7 +29,6 @@ export const fetchProductBySlug = async (slug) => {
  */
 export const fetchNewArrivals = async () => {
   try {
-    // apiInstance use kora hoyeche jate interceptors (auth/error) thikmoto kaj kore
     const response = await apiInstance.get(API_URLS.NEW_ARRIVALS);
 
     if (response.data && response.data.success) {
@@ -60,4 +59,10 @@ export const fetchPopularProducts = async () => {
     );
     throw error.response?.data?.message || "Failed to load popular products.";
   }
+};
+
+export const fetchCategoryProducts = async (slug) => {
+  // Use the dynamic function from API_URLS for environmental compatibility
+  const response = await apiInstance.get(API_URLS.CATEGORY_PRODUCTS(slug));
+  return response.data;
 };

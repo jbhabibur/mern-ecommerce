@@ -12,6 +12,7 @@ export const PrimaryButton = ({
   loadingComponent,
   className = "",
   responsive = true,
+  showTextOnMobile = true,
 }) => {
   const [isHovered, setIsHovered] = useState(false);
 
@@ -30,7 +31,7 @@ export const PrimaryButton = ({
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    gap: responsive ? "0px" : "50px",
+    gap: Icon && text ? "12px" : "0px",
     outline: "none",
     opacity: disabled || loading ? 0.7 : 1,
     minHeight: responsive ? "36px" : "42px",
@@ -66,7 +67,9 @@ export const PrimaryButton = ({
         <>
           {Icon && <Icon size={18} />}
           {/* Hidden on mobile, visible on small screens and up */}
-          <span className="hidden sm:inline">{text}</span>
+          <span className={showTextOnMobile ? "inline" : "hidden sm:inline"}>
+            {text}
+          </span>
         </>
       )}
     </button>

@@ -40,6 +40,7 @@ export const getCategoryListOnly = async (req, res) => {
 export const getCategory = async (req, res) => {
   try {
     const { slug } = req.params;
+    console.log("hello");
 
     const categoryDetails = await Category.findOne({ slug }).lean();
 

@@ -2,6 +2,7 @@ import React from "react";
 import { Home, Search, LayoutGrid, User, ShoppingBag } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { openAuthDrawer } from "../../redux/slices/authDrawerSlice";
+import { cartActions } from "../../redux/slices/cartSlice";
 
 export const BottomNavigation = () => {
   const dispatch = useDispatch();
@@ -9,10 +10,16 @@ export const BottomNavigation = () => {
   // 1. Get cart count from Redux state
   const totalQuantity = useSelector((state) => state.cart.totalQuantity);
 
+  const { isCartOpen } = useSelector((state) => state.cart);
+
   // 2. Handle navigation item clicks
   const handleItemClick = (label) => {
     if (label === "Account") {
       dispatch(openAuthDrawer());
+    }
+
+    if (label === "Cart") {
+      dispatch(cartActions.setCartOpen(!isCartOpen));
     }
     // You can add other navigation logic here (e.g., using useNavigate)
   };

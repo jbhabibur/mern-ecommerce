@@ -1,9 +1,10 @@
-import { useEffect, useState, useRef } from "react"; // Added useRef
+import { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { closeAuthDrawer } from "../../../redux/slices/authDrawerSlice";
 import { X, Eye, EyeOff } from "lucide-react";
-import { useCustomCursor } from "../hooks/useCustomCursor";
+import { useCustomCursor } from "../../../hooks/useCustomCursor";
 import { useLogin } from "../hooks/useLogin";
+import { useRegister } from "../hooks/useRegister";
 import { ButtonSpinner } from "../../../components/loaders/ButtonSpinner";
 import { PrimaryButton } from "../../../components/atoms/PrimaryButton";
 
@@ -21,12 +22,14 @@ export const AuthDrawer = () => {
   const { mousePos } = useCustomCursor(isOpen);
   const {
     formData,
-    loading,
+    loading: loginLoading,
     statusMsg,
     handleChange,
     executeLogin,
     handleVerifyAndRedirect,
-  } = useLogin(() => dispatch(closeAuthDrawer()));
+  } = useLogin();
+
+  const { loading: registerLogin } = useRegister();
 
   const showGlobalBanner = statusMsg.type === "error" && !statusMsg.field;
 
@@ -180,8 +183,8 @@ export const AuthDrawer = () => {
               <PrimaryButton
                 type="submit"
                 text="Sign In"
-                loading={loading}
-                disabled={loading}
+                loading={loginLoading}
+                disabled={loginLoading}
                 initialBg="#18181b"
                 initialText="#FFFFFF"
                 loadingComponent={
@@ -219,8 +222,8 @@ export const AuthDrawer = () => {
                   <PrimaryButton
                     type="button"
                     text="Create Account"
-                    loading={loading}
-                    disabled={loading}
+                    loading={registerLogin}
+                    disabled={registerLogin}
                     initialBg="#FFFFFF"
                     initialText="#18181b"
                     className="border border-zinc-200"

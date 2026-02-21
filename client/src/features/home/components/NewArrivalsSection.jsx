@@ -45,14 +45,8 @@ export const NewArrivalsSection = () => {
         {/* --- Desktop Grid Layout --- */}
         <div className="hidden lg:block">
           <div className="grid grid-cols-4 gap-8">
-            {products.slice(0, visibleCount).map((product, index) => (
-              <a
-                href={`/products/${product.slug}`}
-                className="no-underline! text-current! block!"
-                key={index}
-              >
-                <ProductCard key={index} product={product} />
-              </a>
+            {products.slice(0, visibleCount).map((product) => (
+              <ProductCard key={product._id} product={product} />
             ))}
           </div>
 
@@ -94,12 +88,7 @@ export const NewArrivalsSection = () => {
           >
             {products.slice(0, 8).map((product) => (
               <SwiperSlide key={product._id}>
-                <a
-                  href={`/products/${product.slug}`}
-                  className="no-underline! text-current! block!"
-                >
-                  <ProductCard product={product} />
-                </a>
+                <ProductCard product={product} />
               </SwiperSlide>
             ))}
           </Swiper>

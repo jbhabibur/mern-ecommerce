@@ -47,6 +47,7 @@ export const AddressBook = () => {
             icon={Plus}
             responsive={true}
             onClick={() => navigate("/account/add-new-address")}
+            showTextOnMobile={false}
           />
         </div>
       </div>

@@ -1,12 +1,14 @@
 import { useState, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 import { loginUser, resendVerification } from "../../../services/authService";
 import { setLogin, setAppLoading } from "../../../redux/slices/authSlice";
+import { closeAuthDrawer } from "../../../redux/slices/authDrawerSlice";
 
 export const useLogin = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const location = useLocation();
 
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
@@ -51,6 +53,18 @@ export const useLogin = () => {
 
       // Now check 'data.success' instead of 'response.success'
       if (data && data.success) {
+        const searchParams = new URLSearchParams(location.search);
+        const returnTo = searchParams.get("return_to");
+
+        const redirectPath = returnTo ? decodeURIComponent(returnTo) : "/";
+
+        // Artificial Delay (1.5s)
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+
+        // Clear from data
+        setFormData({ email: "", password: "" });
+
+        // Dispatch Login State
         dispatch(
           setLogin({
             user: data.user,
@@ -58,12 +72,14 @@ export const useLogin = () => {
           }),
         );
 
+        // CLOSE DRAWER HERE
+        dispatch(closeAuthDrawer());
+
         // Store the token and user details in localStorage
         localStorage.setItem("token", data.accessToken);
         localStorage.setItem("user", JSON.stringify(data.user));
 
-        // Redirect to home page
-        navigate("/", { replace: true });
+        navigate(redirectPath, { replace: true });
       } else {
         // Handle cases where the request finished but the server returned success: false
         setStatusMsg({

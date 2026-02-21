@@ -52,9 +52,11 @@ export const LoginPage = () => {
    * Runs only once on mount to check for verification or errors in URL
    */
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
+    const params = new URLSearchParams(location.search);
+
     const errorType = params.get("error");
     const isVerified = params.get("verified") === "true";
+    const returnTo = params.get("return_to");
 
     if (isVerified) {
       setActiveToast({
@@ -72,11 +74,23 @@ export const LoginPage = () => {
       setUrlError(messages[errorType] || "An error occurred.");
     }
 
-    // CLEANUP: If there are params, clear them using navigate to avoid hard reloads
-    if (params.toString()) {
-      navigate(location.pathname, { replace: true });
+    // Remove ONLY error and verified params
+    if (errorType || isVerified) {
+      const newParams = new URLSearchParams();
+
+      if (returnTo) {
+        newParams.set("return_to", returnTo);
+      }
+
+      navigate(
+        {
+          pathname: location.pathname,
+          search: newParams.toString() ? `?${newParams.toString()}` : "",
+        },
+        { replace: true },
+      );
     }
-  }, []); // Empty array ensures this only runs once
+  }, []);
 
   /**
    * EFFECT: Sync Hook Status to Toast

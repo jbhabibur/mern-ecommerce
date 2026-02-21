@@ -1,8 +1,12 @@
 import React from "react";
 import { SectionLayout } from "../../../layout/SectionLayout";
 import { MultiItemCarousel } from "../../../components/shared/MultiItemCarousel";
+import { useSocialMediaData } from "../../../hooks/useSocialMediaData";
 
 export const SocialMediaSection = () => {
+  const { posts: slides, loading, error } = useSocialMediaData();
+  console.log("Social", slides);
+
   return (
     <SectionLayout bgColor="bg-[#FAFAFA] py-5">
       {/* Instagram Header */}
@@ -30,7 +34,12 @@ export const SocialMediaSection = () => {
         </div>
       </div>
 
-      <MultiItemCarousel />
+      <MultiItemCarousel
+        slides={slides}
+        loading={loading}
+        error={error}
+        isSocial={true}
+      />
 
       {/* Footer Button */}
       <div className="flex justify-center mt-10">

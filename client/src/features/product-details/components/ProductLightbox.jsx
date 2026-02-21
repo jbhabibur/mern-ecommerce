@@ -14,8 +14,8 @@ import {
 import { ShareModal } from "./ShareModal";
 
 // Import hooks
-import { useLightboxControls } from "../hooks/useLightboxControls";
-import { useImagePan } from "../hooks/useImagePan";
+import { useLightboxControls } from "../hooks/useLightboxControls.js";
+import { useImagePan } from "../hooks/useImagePan.js";
 
 // Import helpers
 import { getFullImagePath } from "../../../api/apiConfig";

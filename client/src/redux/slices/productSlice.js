@@ -1,6 +1,8 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
-// 1. Thunk তৈরি করা (Data fetch করার জন্য)
+/**
+ * Async Thunk to fetch all products from API
+ */
 export const fetchProducts = createAsyncThunk(
   "products/fetchProducts",
   async (_, { rejectWithValue }) => {
@@ -8,7 +10,7 @@ export const fetchProducts = createAsyncThunk(
       const response = await fetch("http://localhost:5000/products");
       if (!response.ok) throw new Error("Failed to fetch");
       const data = await response.json();
-      return data; // এটি payload হিসেবে extraReducers-এ যাবে
+      return data;
     } catch (error) {
       return rejectWithValue(error.message);
     }
@@ -20,10 +22,26 @@ const productSlice = createSlice({
   initialState: {
     items: [],
     newArrivals: [],
+    activeProduct: null, // Used for StickyPurchaseBar in MainLayout
+    isStickyVisible: false, // New state to track scroll visibility globally
     loading: false,
     error: null,
   },
-  reducers: {},
+  reducers: {
+    // Set the currently viewed product
+    setActiveProduct: (state, action) => {
+      state.activeProduct = action.payload;
+    },
+    // Set sticky bar visibility based on scroll
+    setStickyVisibility: (state, action) => {
+      state.isStickyVisible = action.payload;
+    },
+    // Clear the active product and reset visibility
+    clearActiveProduct: (state) => {
+      state.activeProduct = null;
+      state.isStickyVisible = false;
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchProducts.pending, (state) => {
@@ -33,7 +51,7 @@ const productSlice = createSlice({
       .addCase(fetchProducts.fulfilled, (state, action) => {
         state.loading = false;
         state.items = action.payload;
-        // Filter করে New Arrivals সেট করা
+        // Filter New Arrivals
         state.newArrivals = action.payload.filter(
           (item) => item.isNewArrival === true,
         );
@@ -44,5 +62,8 @@ const productSlice = createSlice({
       });
   },
 });
+
+export const { setActiveProduct, clearActiveProduct, setStickyVisibility } =
+  productSlice.actions;
 
 export default productSlice.reducer;

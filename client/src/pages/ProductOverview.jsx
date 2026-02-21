@@ -1,57 +1,83 @@
-import React from "react";
+import { useEffect } from "react";
 import { useParams } from "react-router-dom";
 
-import { useProduct } from "../hooks/useProduct";
-
-// Modules: Modularized UI Components
+// Import components
 import { SectionLayout } from "../layout/SectionLayout";
 import { Breadcrumb } from "../components/atoms/Breadcrumb";
 import { ProductDetailsView } from "../features/product-details/components/ProductDetailsView";
+import { RelatedProducts } from "../features/product-details/components/RelatedProducts";
+import { ComponentLoader } from "../components/loaders/ComponentLoader";
+import { ErrorState } from "../components/shared/ErrorState";
 
-import { RelatedProducts } from "../components/shared/RelatedProducts";
+// Import hooks
+import { useProduct } from "../hooks/useProduct";
+import { useScrollThreshold } from "../features/product-details/hooks/useScrollThreshold";
+
+// Import redux
+import { useDispatch } from "react-redux";
+import {
+  setActiveProduct,
+  clearActiveProduct,
+  setStickyVisibility,
+} from "../redux/slices/productSlice";
+import { resetSelection } from "../redux/slices/selectionSlice";
 
 export const ProductOverview = () => {
   const { slug } = useParams();
 
+  const isVisible = useScrollThreshold(730);
+
   // Data Fetching
   const { data: product, isLoading, isError } = useProduct(slug);
-  console.log("Fetched Product:", product); // Debug log to verify fetched data
+
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(resetSelection());
+    if (product) {
+      dispatch(setActiveProduct(product));
+    }
+    // Cleanup: Page theke ber hoye gele clear hobe
+    return () => {
+      dispatch(clearActiveProduct());
+      dispatch(resetSelection());
+    };
+  }, [product, slug, dispatch]);
+
+  useEffect(() => {
+    // isVisible true/false holei Redux update hobe
+    dispatch(setStickyVisibility(isVisible));
+  }, [isVisible, dispatch]);
 
   // LOADING & ERROR STATES
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px] text-lg font-medium">
-        Loading product details...
-      </div>
-    );
+    return <ComponentLoader />;
   }
 
   if (isError || !product) {
-    return (
-      <div className="text-center py-20 text-red-500 font-medium">
-        Product not found or server error!
-      </div>
-    );
+    return <ErrorState />;
   }
 
   return (
-    <SectionLayout>
-      <div className="max-w-7xl mx-auto p-2 md:p-8 lg:px-12">
-        {/* Navigation aid for user path tracking */}
-        <Breadcrumb />
+    <>
+      <SectionLayout>
+        <div className="max-w-7xl mx-auto p-2 md:p-8 lg:px-12">
+          {/* 1. Navigation */}
+          <Breadcrumb />
 
-        {/* 
+          {/* 
           Main Product Section: 
           Renders core product details including Gallery, Pricing, and CTA 
         */}
-        <ProductDetailsView product={product} />
+          <ProductDetailsView product={product} />
 
-        {/* 
+          {/* 
           Supplementary Content: 
           Displays related items to drive cross-selling and engagement 
         */}
-        <RelatedProducts />
-      </div>
-    </SectionLayout>
+          <RelatedProducts product={product} />
+        </div>
+      </SectionLayout>
+    </>
   );
 };

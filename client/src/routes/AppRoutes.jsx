@@ -21,6 +21,8 @@ import { ProtectedRoute } from "./ProtectedRoute";
 import { VerifySuccess } from "../pages/VerifySuccess";
 import { RecoverPage } from "../pages/RecoverPage";
 
+import { CheckoutPage } from "../pages/CheckoutPage";
+
 const router = createBrowserRouter([
   {
     path: "/",
@@ -89,20 +91,25 @@ const router = createBrowserRouter([
         ),
         children: [
           {
-            path: "/account/address",
+            path: "address",
             element: <AddressBook />,
           },
           {
-            path: "/account/add-new-address",
+            path: "add-new-address",
             element: <AddAddressForm />,
           },
           {
-            path: "/account/edit-address/:id",
+            path: "edit-address/:id",
             element: <AddAddressForm />,
           },
         ],
       },
     ],
+  },
+  // Checkout route stays outside MainLayout for a clean, distraction-free UI
+  {
+    path: "/checkouts/cn/:token/*",
+    element: <CheckoutPage />,
   },
 ]);
 

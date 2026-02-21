@@ -29,7 +29,8 @@ export const ProductExtraInfo = ({ product }) => {
               <strong>Color Name:</strong> {product?.color}
             </p>
             <p className="italic text-gray-400 text-xs mt-2">
-              [Note: Color may vary due to lighting.]
+              [Note: The color of the product may vary slightly due to lighting
+              or display settings.]
             </p>
           </div>
         </div>
@@ -47,20 +48,25 @@ export const ProductExtraInfo = ({ product }) => {
   ];
 
   return (
-    <div className="w-full mt-10">
+    <div className="w-full">
       {/* Desktop Tabs Header */}
-      <div className="hidden md:flex justify-center border-b">
+      <div className="hidden md:flex justify-center border-b border-[#E6E6E6] gap-12">
+        {" "}
+        {/* Added gap-12 here */}
         {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`py-4 px-8 text-sm font-bold uppercase tracking-widest border-b-2 b-[#E8E8E8] transition-all ${
-              activeTab === tab.id
-                ? "border-black text-black"
-                : "border-transparent text-gray-400"
-            }`}
+            className={`relative py-4 px-2 text-sm font-bold uppercase tracking-widest transition-all duration-300
+              ${activeTab === tab.id ? "text-black" : "text-gray-400 hover:text-black"}`}
           >
             {tab.title}
+
+            {/* Red Underline with 0 to 100% sliding effect */}
+            <span
+              className={`absolute bottom-[-1px] left-0 h-[2px] bg-black transition-all duration-500 ease-in-out
+                ${activeTab === tab.id ? "w-full opacity-100" : "w-0 opacity-0"}`}
+            />
           </button>
         ))}
       </div>
@@ -86,7 +92,7 @@ export const ProductExtraInfo = ({ product }) => {
 
             {/* Tab Content */}
             <div
-              className={`${activeTab === tab.id ? "block" : "hidden md:hidden"} pb-4 md:pb-0`}
+              className={`transition-all duration-500 ${activeTab === tab.id ? "block animate-in fade-in slide-in-from-top-1" : "hidden md:hidden"} pb-4 md:pb-0`}
             >
               {tab.content}
             </div>

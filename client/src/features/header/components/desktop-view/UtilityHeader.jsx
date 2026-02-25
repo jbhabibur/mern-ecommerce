@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import Logo from "../../../../assets/logo.svg";
 import { Link } from "react-router-dom";
 import { ShoppingBag, Heart, Search } from "lucide-react";
@@ -16,12 +16,31 @@ import { SectionLayout } from "../../../../layout/SectionLayout";
 
 export const UtilityHeader = () => {
   const dispatch = useDispatch();
+  const dropdownRef = useRef(null);
+
+  // Local states
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
+  // Data from redux
   const { isLoggedIn, user } = useSelector((state) => state.auth);
+  const totalQuantity = useSelector((state) => state.cart.totalQuantity);
+
+  // Data from hooks
   const logout = useLogout();
 
-  const totalQuantity = useSelector((state) => state.cart.totalQuantity);
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      // If the dropdown is open and the click is NOT inside the dropdownRef area, close it
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   return (
     <SectionLayout>
@@ -92,7 +111,7 @@ export const UtilityHeader = () => {
                 <span>{isLoggedIn ? "/" : "or"}</span>
 
                 {isLoggedIn ? (
-                  <div className="relative">
+                  <div className="relative" ref={dropdownRef}>
                     <button
                       className="no-underline! text-black! link-underline bg-transparent border-none cursor-pointer"
                       onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -101,11 +120,11 @@ export const UtilityHeader = () => {
                     </button>
 
                     {isDropdownOpen && (
-                      <div className="absolute right-0 z-10">
-                        <AccountDropdown
-                          onClose={() => setIsDropdownOpen(false)}
-                        />
-                      </div>
+                      // <div className="absolute right-0 z-10">
+                      <AccountDropdown
+                        onClose={() => setIsDropdownOpen(false)}
+                      />
+                      // </div>
                     )}
                   </div>
                 ) : (

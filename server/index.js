@@ -17,8 +17,7 @@ import addressRoutes from "./routes/addressRoutes.js";
 import checkoutRoutes from "./routes/checkout.route.js";
 import orderRoutes from "./routes/order.routes.js";
 import paymentRoutes from "./routes/payment.routes.js";
-
-console.log("EMAIL ENV:", process.env.EMAIL_USER, process.env.EMAIL_PASS);
+import userRoutes from "./routes/user.routes.js";
 
 // Initialize Database Connection
 connectDB();
@@ -81,6 +80,9 @@ app.use("/api/orders", orderRoutes);
 
 // Payment routes
 app.use("/api/payment", paymentRoutes);
+
+// Profile routes
+app.use("/api/profile", userRoutes);
 
 /**
  * Health Check Route

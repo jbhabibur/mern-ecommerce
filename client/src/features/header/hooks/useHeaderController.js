@@ -21,7 +21,8 @@ export const useHeaderController = () => {
   // Handle window resize and initial mobile detection
   useEffect(() => {
     const handleUpdate = () => {
-      setIsMobile(window.innerWidth < 1024);
+      const width = document.documentElement.clientWidth;
+      setIsMobile(width <= 1024);
     };
 
     handleUpdate();

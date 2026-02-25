@@ -33,7 +33,7 @@ export const AddressBook = () => {
   }
 
   return (
-    <div className="w-full bg-white p-4 md:p-6 rounded-sm">
+    <div className="w-full bg-white rounded-sm">
       {/* Header Section */}
       <div className="flex justify-between items-center mb-6 md:mb-8 gap-4">
         <h2 className="text-lg md:text-2xl font-normal text-gray-800">

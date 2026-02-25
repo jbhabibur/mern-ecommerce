@@ -10,6 +10,13 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    phone: { type: String, default: "" },
+    birthday: { type: String, default: "" },
+    gender: {
+      type: String,
+      enum: ["Male", "Female", "Other", "Select Gender"],
+      default: "Select Gender",
+    },
     email: {
       type: String,
       required: true,
@@ -40,6 +47,7 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    photo: String,
   },
   { timestamps: true },
 );

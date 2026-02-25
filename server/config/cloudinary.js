@@ -33,6 +33,8 @@ const storage = new CloudinaryStorage({
       folderName = "mensfashion_promos";
     } else if (req.originalUrl.includes("social-feed")) {
       folderName = "mensfashion_social_feed";
+    } else if (req.originalUrl.includes("profile")) {
+      folderName = "mensfashion_profiles";
     }
 
     // Sanitize filename: Remove extension and replace special characters/spaces with dashes

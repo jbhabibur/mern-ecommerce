@@ -14,8 +14,12 @@ import { LoginPage } from "../pages/LoginPage";
 import { ResetPasswordPage } from "../pages/ResetPasswordPage";
 import { UserLayout } from "../layout/UserLayout";
 
+import { ManageAccount } from "../features/user/components/ManageAccount";
+import { OrderTrackingDetails } from "../features/user/components/OrderTrackingDetails";
+import { MyOrders } from "../features/user/components/MyOrders";
 import { AddressBook } from "../features/user/components/AddressBook";
 import { AddAddressForm } from "../features/user/components/AddAddressForm";
+import { UserProfile } from "../features/user/components/UserProfile";
 
 import { ProtectedRoute } from "./ProtectedRoute";
 import { VerifySuccess } from "../pages/VerifySuccess";
@@ -23,6 +27,9 @@ import { RecoverPage } from "../pages/RecoverPage";
 
 import { CheckoutPage } from "../pages/CheckoutPage";
 import { OrderSuccess } from "../pages/OrderSuccess";
+
+// Comming soon
+import { ComingSoon } from "../components/shared/ComingSoon";
 
 const router = createBrowserRouter([
   {
@@ -92,6 +99,18 @@ const router = createBrowserRouter([
         ),
         children: [
           {
+            index: true,
+            element: <ManageAccount />,
+          },
+          {
+            path: "orders/:id/track",
+            element: <OrderTrackingDetails />,
+          },
+          {
+            path: "orders",
+            element: <MyOrders />,
+          },
+          {
             path: "address",
             element: <AddressBook />,
           },
@@ -102,6 +121,30 @@ const router = createBrowserRouter([
           {
             path: "edit-address/:id",
             element: <AddAddressForm />,
+          },
+          {
+            path: "profile",
+            element: <UserProfile />,
+          },
+          {
+            path: "payment",
+            element: <ComingSoon />,
+          },
+          {
+            path: "cancellations",
+            element: <ComingSoon />,
+          },
+          {
+            path: "returns",
+            element: <ComingSoon />,
+          },
+          {
+            path: "wishlist",
+            element: <ComingSoon />,
+          },
+          {
+            path: "reviews",
+            element: <ComingSoon />,
           },
         ],
       },

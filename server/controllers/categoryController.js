@@ -33,42 +33,58 @@ export const getCategoryListOnly = async (req, res) => {
 };
 
 /**
- * @desc    Fetch category details and associated products by slug
+ * @desc    Fetch products based on hierarchical category levels (Parent, Category, or Sub-category)
  * @route   GET /api/categories/:slug
  * @access  Public
  */
 export const getCategory = async (req, res) => {
   try {
     const { slug } = req.params;
-    console.log("hello");
 
-    const categoryDetails = await Category.findOne({ slug }).lean();
+    // 1. Frontend theke comma separated slugs asle array banano
+    // Example: "eid-collection-26,panjabi,formal-shirt"
+    const slugList = slug.split(",");
 
-    if (!categoryDetails) {
+    // 2. Metadata-r jonno prothom slug ti check kora (eid-collection-26)
+    const currentCategory = await Category.findOne({
+      slug: slugList[0],
+    }).lean();
+
+    if (!currentCategory) {
       return res
         .status(404)
         .json({ success: false, message: "Category not found" });
     }
 
-    const products = await Product.find({ category: categoryDetails._id })
-      .select("name price images variants description slug")
-      .lean();
+    // 3. Sob gulo category slug-er ID collect kora
+    const allCategoriesInList = await Category.find({
+      slug: { $in: slugList },
+    }).select("_id");
+    const categoryIds = allCategoriesInList.map((cat) => cat._id);
+
+    // 4. Ebar logic holo: Product-er subcategory, category, ba parentCategory
+    // er moddhe jodi kono ekta categoryIds array-te thake, tobei sheta dekhabe.
+    const products = await Product.find({
+      $or: [
+        { subcategory: { $in: categoryIds } },
+        { category: { $in: categoryIds } },
+        { parentCategory: { $in: categoryIds } },
+      ],
+    }).lean();
 
     res.status(200).json({
       success: true,
       categoryData: {
-        title: categoryDetails.name,
-        slug: categoryDetails.slug,
-        thumbnail: categoryDetails.thumbnail,
-        banner: categoryDetails.bannerImage,
-        carousel: categoryDetails.carouselImage,
-        description: categoryDetails.description,
-        showInCarousel: categoryDetails.showInCarousel,
-        showInCategories: categoryDetails.showInCategories,
+        id: currentCategory._id,
+        title: currentCategory.name,
+        slug: currentCategory.slug,
+        banner: currentCategory.bannerImage || "",
+        description: currentCategory.description || "",
       },
       products,
     });
   } catch (error) {
+    console.error("Fetch Category Error:", error);
     res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 };

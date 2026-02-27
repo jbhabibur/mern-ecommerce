@@ -7,6 +7,7 @@ export const ProductItemType = ({ formData, handleInputChange }) => {
     { value: "men-bottom", label: "Men Bottom", icon: "👖" },
     { value: "outware", label: "Outware", icon: "🧥" },
     { value: "accessories", label: "Accessories", icon: "🕶️" },
+    { value: "others", label: "Others", icon: "📦" },
   ];
 
   return (

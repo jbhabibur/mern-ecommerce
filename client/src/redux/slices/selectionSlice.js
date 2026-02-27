@@ -2,10 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
   // Initialize size from localStorage if available
-  selectedSize:
-    typeof window !== "undefined"
-      ? localStorage.getItem("selectedSize") || ""
-      : "",
+  selectedSize: "",
   quantity: 1,
   productInfo: null,
 };
@@ -19,7 +16,6 @@ const selectionSlice = createSlice({
     },
     setSize: (state, action) => {
       state.selectedSize = action.payload;
-      localStorage.setItem("selectedSize", action.payload);
     },
 
     setQuantity: (state, action) => {
@@ -38,14 +34,10 @@ const selectionSlice = createSlice({
 
     resetSelection: (state) => {
       state.selectedSize = "";
-      state.selectedSize = "";
       state.quantity = 1;
-      localStorage.removeItem("selectedSize");
     },
-
     clearSize: (state) => {
       state.selectedSize = "";
-      localStorage.removeItem("selectedSize");
     },
   },
 });

@@ -10,7 +10,7 @@ export const ItemsPerPage = ({ selected, onChange }) => {
   const dropdownRef = useRef(null);
 
   // Pagination options
-  const options = [2, 4, 6, 8];
+  const options = [10, 15, 20, 25, 30];
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -48,7 +48,7 @@ export const ItemsPerPage = ({ selected, onChange }) => {
         </button>
 
         {isOpen && (
-          <div className="absolute top-full right-0 w-full border border-t-0 border-gray-300 z-50 shadow-lg animate-in fade-in slide-in-from-top-1 duration-200">
+          <div className="absolute top-full right-0 w-full bg-white border border-t-0 border-gray-300 z-50 shadow-lg animate-in fade-in slide-in-from-top-1 duration-200">
             {options.map((opt) => (
               <div
                 key={opt}

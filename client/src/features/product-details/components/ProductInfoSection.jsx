@@ -93,7 +93,7 @@ export const ProductInfoSection = ({ product }) => {
             </span>
           </span>
 
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             {variants.map((variant) => {
               const isOutOfStock = variant.stock === 0;
 
@@ -102,19 +102,19 @@ export const ProductInfoSection = ({ product }) => {
                   key={variant.size}
                   disabled={isOutOfStock}
                   onClick={() => dispatch(setSize(variant.size))}
-                  className={`w-10 h-9 border text-sm flex items-center justify-center transition-all 
-                    ${
-                      isOutOfStock
-                        ? "bg-gray-100 text-gray-300 cursor-not-allowed border-dashed"
-                        : ""
-                    } 
-                    ${
-                      selectedSize === variant.size && !isOutOfStock
-                        ? "border-black border"
-                        : "border-gray-200 text-gray-600 hover:border-gray-400"
-                    }`}
+                  className={`h-9 min-w-[40px] px-2 border text-[13px] flex items-center justify-center transition-all 
+              ${
+                isOutOfStock
+                  ? "bg-gray-100 text-gray-300 cursor-not-allowed border-dashed"
+                  : "cursor-pointer"
+              } 
+              ${
+                selectedSize === variant.size && !isOutOfStock
+                  ? "border-black ring-1 ring-black"
+                  : "border-gray-200 text-gray-600 hover:border-gray-400"
+              }`}
                 >
-                  {variant.size}
+                  <span className="whitespace-nowrap">{variant.size}</span>
                 </button>
               );
             })}

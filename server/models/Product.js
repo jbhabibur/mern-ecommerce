@@ -13,7 +13,7 @@ const productSchema = new mongoose.Schema(
     itemType: {
       type: String,
       required: [true, "Item type is required"],
-      enum: ["men-top", "men-bottom", "outware", "accessories"],
+      enum: ["men-top", "men-bottom", "outware", "accessories", "others"],
     },
 
     // Category Fields

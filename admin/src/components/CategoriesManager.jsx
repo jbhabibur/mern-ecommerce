@@ -1,5 +1,4 @@
-import React from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import {
   Eye,
@@ -9,201 +8,227 @@ import {
   AlertCircle,
   RefreshCw,
   LayoutGrid,
+  Layers,
 } from "lucide-react";
 
-/** CONFIGURATION */
 const BASE_URL = "http://localhost:5000";
 
-/** API: Fetch categories */
-const fetchCategories = async () => {
-  const res = await axios.get(`${BASE_URL}/api/categories/list-all`, {
-    headers: { "Cache-Control": "no-cache" },
-  });
-  if (!res.data.success) throw new Error("Failed to fetch categories");
-  return res.data.data;
-};
+export const CategoriesManager = () => {
+  const [categories, setCategories] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isError, setIsError] = useState(false);
+  const [isFetching, setIsFetching] = useState(false);
+  const [pendingId, setPendingId] = useState(null);
 
-/** API: Update category status using showInCategories */
-const updateCategoryStatus = async ({ id, newStatus }) => {
-  const res = await axios.patch(`${BASE_URL}/api/categories/${id}`, {
-    showInCategories: newStatus, // স্ক্রিনশট অনুযায়ী ফিল্ডের নাম আপডেট করা হলো
-  });
-  if (!res.data.success) throw new Error("Failed to update category");
-  return res.data.data;
-};
+  const loadCategories = useCallback(async (showLoading = true) => {
+    if (showLoading) setIsLoading(true);
+    setIsFetching(true);
+    setIsError(false);
 
-const CategoriesManager = () => {
-  const queryClient = useQueryClient();
-
-  /** 1️⃣ Fetch Data */
-  const {
-    data: categories,
-    isLoading,
-    isError,
-    refetch,
-    isFetching,
-  } = useQuery({
-    queryKey: ["categories"],
-    queryFn: fetchCategories,
-    staleTime: 1000 * 60 * 5,
-  });
-
-  /** 2️⃣ Mutation Logic (Optimistic Updates) */
-  const toggleMutation = useMutation({
-    mutationFn: updateCategoryStatus,
-    onMutate: async ({ id, newStatus }) => {
-      await queryClient.cancelQueries({ queryKey: ["categories"] });
-      const previous = queryClient.getQueryData(["categories"]);
-
-      queryClient.setQueryData(["categories"], (old) =>
-        old?.map((cat) =>
-          cat._id === id ? { ...cat, showInCategories: newStatus } : cat,
-        ),
-      );
-      return { previous };
-    },
-    onError: (err, variables, context) => {
-      if (context?.previous) {
-        queryClient.setQueryData(["categories"], context.previous);
+    try {
+      const res = await axios.get(`${BASE_URL}/api/categories/list-all`);
+      if (res.data.success) {
+        setCategories(res.data.data);
+      } else {
+        throw new Error("Failed to fetch");
       }
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["categories"] });
-    },
-  });
+    } catch (err) {
+      setIsError(true);
+      console.error("Fetch Error:", err);
+    } finally {
+      setIsLoading(false);
+      setIsFetching(false);
+    }
+  }, []);
 
-  const handleToggle = (id) => {
-    const currentCat = categories?.find((cat) => cat._id === id);
+  useEffect(() => {
+    loadCategories();
+  }, [loadCategories]);
+
+  const handleToggle = async (id) => {
+    const currentCat = categories.find((cat) => cat._id === id);
     if (!currentCat) return;
-    // showInCategories টগল করা হচ্ছে
-    toggleMutation.mutate({ id, newStatus: !currentCat.showInCategories });
+
+    const newStatus = !currentCat.showInCategories;
+    const previousCategories = [...categories];
+
+    // Optimistic UI Update
+    setCategories((prev) =>
+      prev.map((cat) =>
+        cat._id === id ? { ...cat, showInCategories: newStatus } : cat,
+      ),
+    );
+
+    setPendingId(id);
+
+    try {
+      const res = await axios.patch(`${BASE_URL}/api/categories/${id}`, {
+        showInCategories: newStatus,
+      });
+      if (!res.data.success) throw new Error("Update failed");
+    } catch (err) {
+      setCategories(previousCategories);
+      alert("Failed to update status.");
+    } finally {
+      setPendingId(null);
+    }
   };
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[400px]">
-        <Loader2 className="w-10 h-10 animate-spin text-indigo-600" />
-        <p className="mt-4 text-slate-500 font-medium">Loading categories...</p>
+      <div className="flex flex-col items-center justify-center min-h-[60vh] bg-theme-base">
+        <div className="relative">
+          <Loader2 className="w-12 h-12 animate-spin text-theme-act" />
+          <div className="absolute inset-0 blur-xl bg-theme-act/20 animate-pulse"></div>
+        </div>
+        <p className="mt-6 text-theme-muted font-black uppercase tracking-widest text-xs">
+          Syncing Catalog...
+        </p>
       </div>
     );
   }
 
   if (isError) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] text-center">
-        <AlertCircle className="w-12 h-12 text-red-500 mb-2" />
-        <h3 className="text-lg font-bold text-slate-800">Connection Error</h3>
+      <div className="flex flex-col items-center justify-center min-h-[400px] text-center p-6">
+        <div className="bg-theme-error/10 p-4 rounded-full mb-4">
+          <AlertCircle className="w-10 h-10 text-theme-error" />
+        </div>
+        <h3 className="text-xl font-black text-theme-front">
+          System Sync Error
+        </h3>
+        <p className="text-theme-muted mb-6 text-sm">
+          We couldn't reach the category database.
+        </p>
         <button
-          onClick={() => refetch()}
-          className="mt-4 text-indigo-600 font-semibold underline"
+          onClick={() => loadCategories()}
+          className="px-8 py-3 bg-theme-act text-theme-actfg rounded-2xl font-bold shadow-lg shadow-theme-act/30"
         >
-          Try refreshing
+          Retry Connection
         </button>
       </div>
     );
   }
 
   return (
-    <div className="p-4 md:p-8 bg-slate-50 min-h-screen">
-      <header className="mb-10 flex justify-between items-end max-w-6xl mx-auto">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <LayoutGrid className="text-indigo-600" size={24} />
-            <h1 className="text-2xl font-black text-slate-800 tracking-tight">
-              Categories Manager
-            </h1>
+    <div className="p-4 md:p-10 bg-theme-base min-h-screen">
+      <div className="max-w-7xl mx-auto">
+        {/* Header Section */}
+        <header className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <div className="space-y-2">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-theme-act/10 rounded-xl">
+                <Layers className="text-theme-act" size={28} />
+              </div>
+              <h1 className="text-3xl md:text-4xl font-black text-theme-front tracking-tighter">
+                Inventory <span className="text-theme-act">Scope</span>
+              </h1>
+            </div>
+            <p className="text-theme-muted text-sm font-medium ml-1">
+              Toggle visibility for storefront category navigation
+            </p>
           </div>
-          <p className="text-slate-500 text-sm">
-            Control which categories are visible on the categories page.
-          </p>
-        </div>
 
-        <button
-          onClick={() => refetch()}
-          disabled={isFetching}
-          className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-all shadow-sm active:scale-95 disabled:opacity-50"
-        >
-          <RefreshCw size={16} className={isFetching ? "animate-spin" : ""} />
-          <span className="text-sm font-bold text-slate-700">Sync</span>
-        </button>
-      </header>
+          <button
+            onClick={() => loadCategories(false)}
+            disabled={isFetching}
+            className="group flex items-center gap-3 px-6 py-3 bg-theme-sub border border-theme-line rounded-2xl hover:border-theme-act transition-all active:scale-95 disabled:opacity-50"
+          >
+            <RefreshCw
+              size={18}
+              className={`${isFetching ? "animate-spin" : "group-hover:rotate-180 transition-transform duration-500"} text-theme-act`}
+            />
+            <span className="text-sm font-black text-theme-front uppercase tracking-tight">
+              Refresh Grid
+            </span>
+          </button>
+        </header>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 max-w-6xl mx-auto">
-        {categories?.map((cat) => {
-          const thumbnailImg = cat.thumbnail || cat.bannerImage || cat.icon;
-          const isPending =
-            toggleMutation.isPending &&
-            toggleMutation.variables?.id === cat._id;
+        {/* Categories Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {categories.map((cat) => {
+            const thumbnailImg = cat.thumbnail || cat.bannerImage;
+            const isPending = pendingId === cat._id;
+            const isActive = cat.showInCategories;
 
-          // এখানে showInCategories চেক করা হচ্ছে
-          const isActive = cat.showInCategories;
-
-          return (
-            <div
-              key={cat._id}
-              className={`group relative bg-white rounded-2xl border transition-all duration-300 hover:shadow-md ${
-                isActive
-                  ? "border-indigo-100 ring-2 ring-indigo-500/5"
-                  : "border-slate-200"
-              }`}
-            >
-              <div className="aspect-square p-3 relative">
-                <div className="w-full h-full rounded-xl bg-slate-100 overflow-hidden flex items-center justify-center border border-slate-50">
+            return (
+              <div
+                key={cat._id}
+                className={`group relative bg-theme-sub rounded-[2rem] border-2 transition-all duration-500 overflow-hidden ${
+                  isActive
+                    ? "border-theme-act/20 shadow-xl shadow-theme-act/5"
+                    : "border-theme-line grayscale opacity-80"
+                }`}
+              >
+                {/* Visual Preview */}
+                <div className="aspect-[4/3] relative overflow-hidden bg-theme-base">
                   {thumbnailImg ? (
                     <img
                       src={thumbnailImg}
                       alt={cat.name}
-                      className={`w-full h-full object-cover transition-all duration-500 ${
-                        !isActive && "grayscale opacity-40 scale-95"
+                      className={`w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 ${
+                        !isActive && "opacity-40"
                       }`}
                     />
                   ) : (
-                    <ImageIcon size={28} className="text-slate-300" />
+                    <div className="w-full h-full flex items-center justify-center text-theme-line">
+                      <ImageIcon size={48} strokeWidth={1} />
+                    </div>
                   )}
+
+                  {/* Status Badge */}
+                  <div
+                    className={`absolute top-4 right-4 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest backdrop-blur-md border ${
+                      isActive
+                        ? "bg-theme-success/10 text-theme-success border-theme-success/20"
+                        : "bg-theme-base/50 text-theme-muted border-theme-line"
+                    }`}
+                  >
+                    {isActive ? "Online" : "Offline"}
+                  </div>
                 </div>
-                <div
-                  className={`absolute top-5 right-5 w-2.5 h-2.5 rounded-full border-2 border-white shadow-sm ${
-                    isActive ? "bg-green-500" : "bg-slate-300"
-                  }`}
-                />
-              </div>
 
-              <div className="px-3 pb-3 text-center">
-                <h3
-                  className="font-bold text-slate-800 text-sm truncate mb-3"
-                  title={cat.name}
-                >
-                  {cat.name}
-                </h3>
+                {/* Content */}
+                <div className="p-6">
+                  <div className="mb-4">
+                    <h3 className="font-black text-theme-front text-lg leading-tight truncate">
+                      {cat.name}
+                    </h3>
+                    <p className="text-[10px] text-theme-muted font-bold uppercase tracking-wider mt-1">
+                      {cat.parent ? "Sub-Category" : "Primary Category"}
+                    </p>
+                  </div>
 
-                <button
-                  disabled={isPending}
-                  onClick={() => handleToggle(cat._id)}
-                  className={`w-full py-2 rounded-lg font-bold text-[11px] flex items-center justify-center gap-2 transition-all active:scale-95 ${
-                    isActive
-                      ? "bg-indigo-50 text-indigo-600 hover:bg-indigo-100"
-                      : "bg-slate-100 text-slate-500 hover:bg-slate-200"
-                  }`}
-                >
-                  {isPending ? (
-                    <Loader2 size={14} className="animate-spin" />
-                  ) : isActive ? (
-                    <>
-                      <Eye size={14} /> Visible
-                    </>
-                  ) : (
-                    <>
-                      <EyeOff size={14} /> Hidden
-                    </>
-                  )}
-                </button>
+                  <button
+                    disabled={isPending}
+                    onClick={() => handleToggle(cat._id)}
+                    className={`w-full py-3.5 rounded-xl font-black text-xs uppercase tracking-widest flex items-center justify-center gap-3 transition-all ${
+                      isActive
+                        ? "bg-theme-act text-theme-actfg shadow-lg shadow-theme-act/20"
+                        : "bg-theme-base text-theme-front border border-theme-line hover:border-theme-act"
+                    }`}
+                  >
+                    {isPending ? (
+                      <Loader2 size={16} className="animate-spin" />
+                    ) : isActive ? (
+                      <>
+                        <Eye size={16} /> Hide from Store
+                      </>
+                    ) : (
+                      <>
+                        <EyeOff size={16} /> Show in Store
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                {/* Hover Glow Effect */}
+                <div className="absolute inset-0 pointer-events-none border-2 border-transparent group-hover:border-theme-act/30 rounded-[2rem] transition-colors" />
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
     </div>
   );
 };
-
-export default CategoriesManager;

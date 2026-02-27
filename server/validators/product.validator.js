@@ -17,7 +17,7 @@ export const productSchema = Joi.object({
 
   // --- Classification Validation ---
   itemType: Joi.string()
-    .valid("men-top", "men-bottom", "outware", "accessories")
+    .valid("men-top", "men-bottom", "outware", "accessories", "others")
     .required()
     .messages({
       "any.only": "Invalid Item Type selected",

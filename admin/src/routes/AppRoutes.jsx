@@ -5,6 +5,9 @@ import { AddProduct } from "../features/products/AddProduct";
 import { PromoManager } from "../features/storefront/PromoManager";
 import { SocialMediaManager } from "../features/storefront/SocialMediaManager";
 
+import { CategoriesManager } from "../components/CategoriesManager";
+import { AddCategory } from "../components/AddCategory";
+
 const router = createBrowserRouter([
   {
     path: "/",
@@ -21,6 +24,14 @@ const router = createBrowserRouter([
       {
         path: "/website/social",
         element: <SocialMediaManager />,
+      },
+      {
+        path: "categories",
+        element: <CategoriesManager />,
+      },
+      {
+        path: "categories/add",
+        element: <AddCategory />,
       },
     ],
   },

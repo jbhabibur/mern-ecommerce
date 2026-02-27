@@ -152,6 +152,7 @@ export const getSingleProductBySlug = asyncHandler(async (req, res, next) => {
  * @access  Admin / Private
  */
 export const createProduct = asyncHandler(async (req, res, next) => {
+  console.log("Hello 2");
   // 1. Basic Fields Extraction
   const {
     name,

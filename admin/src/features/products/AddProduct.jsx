@@ -64,7 +64,7 @@ export const AddProduct = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-indigo-600 text-white py-4 rounded-2xl font-bold shadow-xl disabled:bg-gray-400"
+            className="w-full bg-indigo-600 text-white py-4 rounded-2xl font-bold shadow-xl disabled:bg-gray-400 cursor-pointer"
           >
             {loading ? "Syncing..." : "🚀 Publish Product"}
           </button>

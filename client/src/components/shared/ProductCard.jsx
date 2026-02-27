@@ -62,15 +62,13 @@ export const ProductCard = ({ product, view }) => {
    * Uses stopPropagation to prevent the parent card's click event from firing twice.
    */
   const handleSizeClick = (size) => (e) => {
-    e.stopPropagation(); // Prevents bubbling to the parent handleNavigate
+    e.stopPropagation();
     e.preventDefault();
 
-    // Store selection for the product details page context
-    dispatch(setSize(size));
-    localStorage.setItem("selectedSize", size);
-
-    // Redirect to product page with the pre-selected size context
-    navigate(`/products/${product.slug}`);
+    // Redux setSize will be handled in ProductOverview
+    navigate(`/products/${product.slug}`, {
+      state: { selectedSize: size },
+    });
   };
 
   return (
@@ -141,18 +139,35 @@ export const ProductCard = ({ product, view }) => {
         {!isFullySoldOut &&
           product.variants?.length > 0 &&
           product.variants[0].size && (
-            <div className="hidden absolute left-0 bottom-16 right-0 items-center justify-center gap-2 transition-opacity duration-300 bg-black/5 py-2 lg:flex lg:opacity-0 lg:group-hover:opacity-100 pointer-events-none lg:group-hover:pointer-events-auto">
-              {product.variants
-                .filter((v) => v.stock > 0)
-                .map((v) => (
-                  <span
-                    onClick={handleSizeClick(v.size)}
-                    key={v.size}
-                    className="bg-white hover:bg-black! text-[10px] font-bold py-2 px-3 rounded-full border border-gray-100 hover:border-black! shadow-sm text-black hover:text-white! cursor-pointer z-40"
-                  >
-                    {v.size}
-                  </span>
-                ))}
+            <div className="hidden absolute left-0 bottom-16 right-0 items-center justify-center gap-1 transition-opacity duration-300 bg-black/5 py-2 lg:flex lg:opacity-0 lg:group-hover:opacity-100 pointer-events-none lg:group-hover:pointer-events-auto">
+              {/* Filter out of stock first */}
+              {(() => {
+                const inStockVariants = product.variants.filter(
+                  (v) => v.stock > 0,
+                );
+                const displayLimit = 4; // Koita size dekhate chan
+                const hasMore = inStockVariants.length > displayLimit;
+
+                return (
+                  <>
+                    {inStockVariants.slice(0, displayLimit).map((v) => (
+                      <span
+                        onClick={handleSizeClick(v.size)}
+                        key={v.size}
+                        className="bg-white hover:bg-black! text-[10px] font-bold py-2 px-2 min-w-[32px] text-center rounded-full border border-gray-100 hover:border-black! shadow-sm text-black hover:text-white! cursor-pointer z-40"
+                      >
+                        {v.size}
+                      </span>
+                    ))}
+
+                    {hasMore && (
+                      <span className="bg-gray-200 text-[10px] font-bold py-2 px-2 rounded-full border border-gray-300 text-gray-700">
+                        +{inStockVariants.length - displayLimit}
+                      </span>
+                    )}
+                  </>
+                );
+              })()}
             </div>
           )}
 

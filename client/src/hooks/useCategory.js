@@ -35,7 +35,7 @@ export const useCategory = (slug) => {
     return [gte, lte];
   }, [searchParams, maxPriceInRange]);
 
-  const itemsPerPage = parseInt(searchParams.get("limit")) || 12;
+  const itemsPerPage = parseInt(searchParams.get("limit")) || 10;
   const sortOption = searchParams.get("sort") || "featured";
 
   /* -------------------- Update Filters -------------------- */
@@ -80,17 +80,56 @@ export const useCategory = (slug) => {
     const fetchData = async () => {
       setDataLoading(true);
       try {
-        const data = await fetchCategoryProducts(slug);
-        console.log("DB Category Data:", data.categoryData);
-        if (!mounted) return;
+        const navItem = NAVIGATION_DATA_DESKTOP.find(
+          (item) => item.slug === slug,
+        );
 
-        if (data.success) {
-          setProducts(data.products || []);
+        // Check korchi eta Eid Collection (ba kono Parent) kina
+        if (navItem && navItem.children) {
+          // 1. Sob gulo child slug collect kora
+          const childrenSlugs = navItem.children.map((child) => child.slug);
+
+          // 2. Protiটি slug er jonno alada alada API call kora (Parallel execution)
+          const responses = await Promise.all(
+            childrenSlugs.map((s) => fetchCategoryProducts(s)),
+          );
+
+          if (!mounted) return;
+
+          // 3. Sob gulo response theke product gulo niye ekta single array banano
+          const allProducts = responses.reduce((acc, curr) => {
+            if (curr.success && curr.products) {
+              return [...acc, ...curr.products];
+            }
+            return acc;
+          }, []);
+
+          // 4. Duplicate product remove kora (Jodi thake) ID diye
+          const uniqueProducts = Array.from(
+            new Map(allProducts.map((p) => [p._id, p])).values(),
+          );
+
+          setProducts(uniqueProducts);
+
+          // Metadata local theke set kora
           setCategoryInfo({
-            title: data.categoryData?.title || "",
-            description: data.categoryData?.description || "",
-            banner: data.categoryData?.banner || "",
+            title: navItem.label,
+            description: "Explore our latest Eid collection.",
+            banner: "", // Apni chaile static banner link dite paren
           });
+        } else {
+          // Jodi eta sadharon category hoy (Jemon: Panjabi), tobe ager motoi fetch kora
+          const data = await fetchCategoryProducts(slug);
+          if (!mounted) return;
+
+          if (data.success) {
+            setProducts(data.products || []);
+            setCategoryInfo({
+              title: data.categoryData?.title || "",
+              description: data.categoryData?.description || "",
+              banner: data.categoryData?.banner || "",
+            });
+          }
         }
       } catch (err) {
         if (mounted) setError(err.message);
@@ -103,7 +142,6 @@ export const useCategory = (slug) => {
 
     return () => {
       mounted = false;
-      if (debounceTimer.current) clearTimeout(debounceTimer.current);
     };
   }, [slug]);
 

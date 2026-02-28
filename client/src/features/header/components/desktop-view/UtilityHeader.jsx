@@ -1,11 +1,11 @@
 import { useState, useRef, useEffect } from "react";
 import Logo from "../../../../assets/logo.svg";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ShoppingBag, Heart, Search } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { setFocus, setQuery } from "../../../../redux/slices/searchSlice";
 
-import { DesktopSearchOverlay } from "../../../../components/search/DesktopSearchOverlay";
+import { DesktopSearchOverlay } from "../../../search/components/DesktopSearchOverlay";
 import { cartActions } from "../../../../redux/slices/cartSlice";
 import { openAuthDrawer } from "../../../../redux/slices/authDrawerSlice";
 
@@ -16,6 +16,7 @@ import { SectionLayout } from "../../../../layout/SectionLayout";
 
 export const UtilityHeader = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const dropdownRef = useRef(null);
 
   // Local states
@@ -24,6 +25,7 @@ export const UtilityHeader = () => {
   // Data from redux
   const { isLoggedIn, user } = useSelector((state) => state.auth);
   const totalQuantity = useSelector((state) => state.cart.totalQuantity);
+  const { query } = useSelector((state) => state.search);
 
   // Data from hooks
   const logout = useLogout();
@@ -41,6 +43,14 @@ export const UtilityHeader = () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" && query.trim()) {
+      dispatch(setFocus(false));
+      navigate(`/search?q=${encodeURIComponent(query)}`);
+      e.target.blur();
+    }
+  };
 
   return (
     <SectionLayout>
@@ -68,7 +78,9 @@ export const UtilityHeader = () => {
                       e.stopPropagation();
                       dispatch(setFocus(true));
                     }}
+                    onKeyDown={handleKeyDown}
                     onChange={(e) => dispatch(setQuery(e.target.value))}
+                    value={query || ""}
                     className="outline-none focus:placeholder-transparent w-full bg-transparent"
                     type="search"
                     placeholder="Search"

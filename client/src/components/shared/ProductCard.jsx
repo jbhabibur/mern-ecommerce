@@ -7,8 +7,9 @@ import { useMediaQuery } from "../../hooks/useMediaQuery";
 // Import redux
 import { useDispatch } from "react-redux";
 import { setSize } from "../../redux/slices/selectionSlice";
+import { setFocus } from "../../redux/slices/searchSlice";
 
-export const ProductCard = ({ product, view }) => {
+export const ProductCard = ({ product, view, isSearchOverlay = false }) => {
   const [isHovered, setIsHovered] = useState(false);
   const isDesktop = useMediaQuery("(min-width: 1024px)");
 
@@ -53,6 +54,9 @@ export const ProductCard = ({ product, view }) => {
    * Triggered when the user clicks on the product card, image, or title.
    */
   const handleNavigate = () => {
+    if (isSearchOverlay) {
+      dispatch(setFocus(false));
+    }
     navigate(`/products/${product.slug}`);
   };
 
@@ -118,25 +122,28 @@ export const ProductCard = ({ product, view }) => {
         )}
 
         {/* Action Buttons */}
-        <div>
-          <div className="absolute right-2 top-2 z-30 flex flex-col gap-2 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-300">
-            <RoundActionButton
-              icon={Heart}
-              expandable={isDesktop}
-              expandableText="Add to Wishlist"
-            />
+        {!isSearchOverlay && (
+          <div>
+            <div className="absolute right-2 top-2 z-30 flex flex-col gap-2 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-300">
+              <RoundActionButton
+                icon={Heart}
+                expandable={isDesktop}
+                expandableText="Add to Wishlist"
+              />
+            </div>
+            <div className="absolute right-2 top-12 z-30 flex flex-col gap-2 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-300">
+              <RoundActionButton
+                icon={Eye}
+                expandable={isDesktop}
+                expandableText="Quick View"
+              />
+            </div>
           </div>
-          <div className="absolute right-2 top-12 z-30 flex flex-col gap-2 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-300">
-            <RoundActionButton
-              icon={Eye}
-              expandable={isDesktop}
-              expandableText="Quick View"
-            />
-          </div>
-        </div>
+        )}
 
         {/* Size Tags */}
-        {!isFullySoldOut &&
+        {!isSearchOverlay &&
+          !isFullySoldOut &&
           product.variants?.length > 0 &&
           product.variants[0].size && (
             <div className="hidden absolute left-0 bottom-16 right-0 items-center justify-center gap-1 transition-opacity duration-300 bg-black/5 py-2 lg:flex lg:opacity-0 lg:group-hover:opacity-100 pointer-events-none lg:group-hover:pointer-events-auto">
@@ -172,7 +179,7 @@ export const ProductCard = ({ product, view }) => {
           )}
 
         {/* Desktop Button */}
-        {!isList && (
+        {!isSearchOverlay && !isList && (
           <button
             className={`hidden lg:block absolute bottom-0 left-0 w-full z-30 py-2 font-bold uppercase text-sm border border-black transition-all duration-300 translate-y-full group-hover:translate-y-0 ${isFullySoldOut ? "bg-white text-black" : "bg-black text-white"}`}
           >
@@ -182,7 +189,7 @@ export const ProductCard = ({ product, view }) => {
       </div>
 
       {/* Mobile Button */}
-      {!isList && (
+      {!isSearchOverlay && !isList && (
         <button
           className={`lg:hidden w-full mt-2 py-2 font-bold uppercase text-sm border border-black ${isFullySoldOut ? "bg-white text-black" : "bg-black text-white"}`}
         >

@@ -235,3 +235,57 @@ export const createProduct = asyncHandler(async (req, res, next) => {
     data: savedProduct,
   });
 });
+
+/**
+ * @desc    Search products by query string (Name, Description, Color, itemType, etc.)
+ * @route   GET /api/products/search
+ * @access  Public
+ */
+export const searchProducts = asyncHandler(async (req, res, next) => {
+  const { query, minPrice, maxPrice, stock, sort } = req.query;
+
+  // 1. Search Regex (Existing logic)
+  const keywords = query
+    .replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+    .trim()
+    .split(/\s+/)
+    .join("|");
+  const searchRegex = new RegExp(keywords, "i");
+
+  // 2. Build Filter Object
+  let filter = {
+    $or: [
+      { name: { $regex: searchRegex } },
+      { color: { $regex: searchRegex } },
+      { fabric: { $regex: searchRegex } },
+      { description: { $regex: searchRegex } },
+    ],
+  };
+
+  // Price Filter add kora
+  if (minPrice || maxPrice) {
+    filter.price = {
+      $gte: Number(minPrice) || 0,
+      $lte: Number(maxPrice) || 999999,
+    };
+  }
+
+  // Stock Filter add kora
+  if (stock === "inStock") filter.countInStock = { $gt: 0 };
+  if (stock === "outOfStock") filter.countInStock = { $eq: 0 };
+
+  // 3. Sorting & Execution
+  const products = await Product.find(filter)
+    .sort(
+      sort === "priceLow"
+        ? { price: 1 }
+        : sort === "priceHigh"
+          ? { price: -1 }
+          : { createdAt: -1 },
+    )
+    .limit(parseInt(req.query.limit) || 20);
+
+  res
+    .status(200)
+    .json({ success: true, count: products.length, data: products });
+});

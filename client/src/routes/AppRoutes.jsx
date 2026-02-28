@@ -3,6 +3,7 @@ import { createBrowserRouter } from "react-router";
 import { MainLayout } from "../layout/MainLayout";
 
 import { Home } from "../pages/Home";
+import { SearchResultsPage } from "../pages/SearchResultsPage";
 import { CategoriesPage } from "../pages/CategoriesPage";
 import { ProductOverview } from "../pages/ProductOverview";
 import { ViewCart } from "../pages/ViewCart";
@@ -39,6 +40,10 @@ const router = createBrowserRouter([
       {
         path: "/",
         element: <Home />,
+      },
+      {
+        path: "/search",
+        element: <SearchResultsPage />,
       },
       {
         path: "/categories/:categoryName",

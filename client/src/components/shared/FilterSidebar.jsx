@@ -20,22 +20,28 @@ export const FilterSidebar = ({
 
   /* ---------------- Sync price range ---------------- */
   useEffect(() => {
-    setLocalPrice(priceRange);
-  }, [priceRange[0], priceRange[1], maxPrice]);
-
-  /* ---------------- Refined By visibility + scroll ---------------- */
-  useEffect(() => {
-    if (loading) {
-      setShouldShowRefined(false);
-      return;
+    if (priceRange[0] !== localPrice[0] || priceRange[1] !== localPrice[1]) {
+      setLocalPrice(priceRange);
     }
+  }, [priceRange]);
 
+  /* ---------------- Refined By visibility + optimized scroll ---------------- */
+  useEffect(() => {
     const isPriceFiltered = priceRange[0] !== 0 || priceRange[1] !== maxPrice;
-    const shouldShow = selectedStock.length > 0 || isPriceFiltered;
+    const hasSelectedStock = selectedStock.length > 0;
+    const shouldShow = hasSelectedStock || isPriceFiltered;
 
+    // Do not set to false during loading to prevent flickering.
+    // It should only be set to false when "Clear All" is triggered or the filters are empty.
     setShouldShowRefined(shouldShow);
 
-    if (shouldShow && sidebarRef.current) {
+    // Only scroll if a new filter is added and the sidebar is at the bottom.
+    if (
+      shouldShow &&
+      !loading &&
+      sidebarRef.current &&
+      sidebarRef.current.scrollTop > 100
+    ) {
       requestAnimationFrame(() => {
         sidebarRef.current.scrollTo({
           top: 0,
@@ -43,7 +49,7 @@ export const FilterSidebar = ({
         });
       });
     }
-  }, [loading, selectedStock, priceRange, maxPrice]);
+  }, [selectedStock.length, priceRange, maxPrice, loading]);
 
   /* ---------------- Handlers ---------------- */
   const handleToggle = (value) => {
@@ -119,58 +125,62 @@ export const FilterSidebar = ({
             </h3>
           </div>
 
-          {/* Refined By */}
-          {shouldShowRefined && (
-            <div className="animate-in fade-in slide-in-from-top-1 duration-300">
-              <div className="flex justify-between items-center mb-1">
-                <h3 className="font-bold! text-[15px]! text-[#1a1a1a]">
-                  REFINED BY
-                </h3>
-                <button
-                  onClick={handleClearAll}
-                  className="text-[13px]! text-gray-800 underline underline-offset-4 hover:text-black"
-                >
-                  Clear All
-                </button>
-              </div>
-
-              <p className="text-[14px] text-gray-500 mb-4">
-                {totalFound} results
-              </p>
-
-              <div className="flex flex-wrap gap-2">
-                {selectedStock.map((id) => (
-                  <button
-                    key={id}
-                    onClick={() => handleToggle(id)}
-                    className="flex items-center gap-2 bg-[#f8f8f8] px-3 py-1.5 text-[13px]! hover:bg-[#707070] hover:text-white transition"
-                  >
-                    {id === "1" ? "In stock" : "Out of stock"}
-                    <X size={14} />
-                  </button>
-                ))}
-
-                {isPriceFiltered && (
-                  <button
-                    onClick={() =>
-                      updateFilters(
-                        selectedStock,
-                        [0, maxPrice],
-                        null,
-                        null,
-                        true,
-                      )
-                    }
-                    className="flex items-center gap-2 bg-[#f8f8f8] px-3 py-1.5 text-[13px]! hover:bg-[#707070] hover:text-white transition"
-                  >
-                    Tk {localPrice[0].toLocaleString()} – Tk{" "}
-                    {localPrice[1].toLocaleString()}
-                    <X size={14} />
-                  </button>
-                )}
-              </div>
+          {/* Refined By - Now uses CSS transition to avoid jumping */}
+          <div
+            className={`transition-all duration-300 ease-in-out overflow-hidden ${
+              shouldShowRefined
+                ? "max-h-[500px] opacity-100 mb-8"
+                : "max-h-0 opacity-0 mb-0 pointer-events-none"
+            }`}
+          >
+            <div className="flex justify-between items-center mb-1">
+              <h3 className="font-bold! text-[15px]! text-[#1a1a1a]">
+                REFINED BY
+              </h3>
+              <button
+                onClick={handleClearAll}
+                className="text-[13px]! text-gray-800 underline underline-offset-4 hover:text-black"
+              >
+                Clear All
+              </button>
             </div>
-          )}
+
+            <p className="text-[14px] text-gray-500 mb-4">
+              {totalFound} results
+            </p>
+
+            <div className="flex flex-wrap gap-2">
+              {selectedStock.map((id) => (
+                <button
+                  key={id}
+                  onClick={() => handleToggle(id)}
+                  className="flex items-center gap-2 bg-[#f8f8f8] px-3 py-1.5 text-[13px]! hover:bg-[#707070] hover:text-white transition"
+                >
+                  {id === "1" ? "In stock" : "Out of stock"}
+                  <X size={14} />
+                </button>
+              ))}
+
+              {isPriceFiltered && (
+                <button
+                  onClick={() =>
+                    updateFilters(
+                      selectedStock,
+                      [0, maxPrice],
+                      null,
+                      null,
+                      true,
+                    )
+                  }
+                  className="flex items-center gap-2 bg-[#f8f8f8] px-3 py-1.5 text-[13px]! hover:bg-[#707070] hover:text-white transition"
+                >
+                  Tk {localPrice[0].toLocaleString()} – Tk{" "}
+                  {localPrice[1].toLocaleString()}
+                  <X size={14} />
+                </button>
+              )}
+            </div>
+          </div>
 
           {/* Availability */}
           <div>

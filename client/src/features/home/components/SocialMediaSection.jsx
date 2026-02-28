@@ -5,7 +5,6 @@ import { useSocialMediaData } from "../../../hooks/useSocialMediaData";
 
 export const SocialMediaSection = () => {
   const { posts: slides, loading, error } = useSocialMediaData();
-  console.log("Social", slides);
 
   return (
     <SectionLayout bgColor="bg-[#FAFAFA] py-5">

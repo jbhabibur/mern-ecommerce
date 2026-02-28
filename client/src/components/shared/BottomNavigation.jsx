@@ -3,6 +3,7 @@ import { Home, Search, LayoutGrid, User, ShoppingBag } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { openAuthDrawer } from "../../redux/slices/authDrawerSlice";
 import { cartActions } from "../../redux/slices/cartSlice";
+import { setClicked } from "../../redux/slices/searchSlice";
 
 export const BottomNavigation = () => {
   const dispatch = useDispatch();
@@ -20,6 +21,10 @@ export const BottomNavigation = () => {
 
     if (label === "Cart") {
       dispatch(cartActions.setCartOpen(!isCartOpen));
+    }
+
+    if (label === "Search") {
+      dispatch(setClicked(true));
     }
     // You can add other navigation logic here (e.g., using useNavigate)
   };

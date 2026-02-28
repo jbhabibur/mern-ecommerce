@@ -11,6 +11,7 @@ import { CartDrawer } from "../components/Cart/CartDrawer";
 import { BottomNavigation } from "../components/shared/BottomNavigation";
 import { StickyPurchaseBar } from "../features/product-details/components/StickyPurchaseBar";
 import { Preloader } from "../components/loaders/Preloader";
+import { SearchTrigger } from "../features/search/components/SearchTrigger";
 
 // Hooks
 import { useScrollToTop } from "../hooks/useScrollToTop";
@@ -75,8 +76,15 @@ export const MainLayout = () => {
       </motion.div>
 
       {/* --- Global Overlays & Modals --- */}
+
+      {/* 1. Auth Drawer */}
       <AuthDrawer />
+
+      {/* 2. Cart Drawer */}
       <CartDrawer />
+
+      {/* 3. Search Drawer */}
+      <SearchTrigger />
 
       {/* Sticky Purchase Bar: Renders only for active products */}
       {activeProduct && (

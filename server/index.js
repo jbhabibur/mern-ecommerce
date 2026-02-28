@@ -18,6 +18,7 @@ import checkoutRoutes from "./routes/checkout.route.js";
 import orderRoutes from "./routes/order.routes.js";
 import paymentRoutes from "./routes/payment.routes.js";
 import userRoutes from "./routes/user.routes.js";
+import wishlistRoutes from "./routes/wishlist.routes.js";
 
 // Initialize Database Connection
 connectDB();
@@ -83,6 +84,9 @@ app.use("/api/payment", paymentRoutes);
 
 // Profile routes
 app.use("/api/profile", userRoutes);
+
+// Wishlist routes
+app.use("/api/wishlist", wishlistRoutes);
 
 /**
  * Health Check Route

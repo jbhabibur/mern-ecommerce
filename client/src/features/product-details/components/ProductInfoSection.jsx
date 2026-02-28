@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Eye } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
 
 // Import hooks
 import { PurchaseActions } from "../../../components/shared/PurchaseActions";
@@ -12,6 +13,8 @@ import { setSize, setProductInfo } from "../../../redux/slices/selectionSlice";
 
 export const ProductInfoSection = ({ product }) => {
   const dispatch = useDispatch();
+  const [searchParams] = useSearchParams();
+  const selectedSizeFromUrl = searchParams.get("s"); // Get 's' from URL
 
   // Read selected size from Redux
   const { selectedSize } = useSelector((state) => state.selection);
@@ -27,27 +30,20 @@ export const ProductInfoSection = ({ product }) => {
 
   // Logic: Handle initial size selection and cleanup
   useEffect(() => {
-    // 1. Check if there's a size in localStorage (from ProductCard click)
-    const savedSize = localStorage.getItem("selectedSize");
-
-    if (hasVariants) {
-      if (savedSize) {
-        // If user clicked a specific size from ProductCard, use that
-        dispatch(setSize(savedSize));
-      } else if (!selectedSize) {
-        // Otherwise, auto-select the first available size in stock
+    if (hasVariants && variants.length > 0) {
+      // 1. URL-e size thakle sheta priority pabe (Fixes hard reload issue)
+      if (selectedSizeFromUrl) {
+        dispatch(setSize(selectedSizeFromUrl));
+      }
+      // 2. URL-e kisu na thakle ebong Redux empty thakle default select hobe
+      else if (!selectedSize) {
         const initialSize = variants.find((v) => v.stock > 0)?.size || "";
         if (initialSize) {
           dispatch(setSize(initialSize));
         }
       }
     }
-
-    // Cleanup: Clear localStorage when user leaves this product page
-    return () => {
-      localStorage.removeItem("selectedSize");
-    };
-  }, [hasVariants, variants, dispatch, selectedSize]);
+  }, [hasVariants, variants, selectedSizeFromUrl, dispatch]);
 
   // Determine if the product is sold out
   const isFullySoldOut = hasVariants

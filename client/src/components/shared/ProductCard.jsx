@@ -5,9 +5,14 @@ import { RoundActionButton } from "../atoms/RoundActionButton";
 import { useMediaQuery } from "../../hooks/useMediaQuery";
 
 // Import redux
-import { useDispatch } from "react-redux";
-import { setSize } from "../../redux/slices/selectionSlice";
+import { useDispatch, useSelector } from "react-redux";
 import { setFocus } from "../../redux/slices/searchSlice";
+import {
+  addToWishlistLocal,
+  addToWishlistDB,
+  removeFromWishlistLocal,
+  removeFromWishlistDB,
+} from "../../redux/slices/wishlistSlice";
 
 export const ProductCard = ({ product, view, isSearchOverlay = false }) => {
   const [isHovered, setIsHovered] = useState(false);
@@ -15,6 +20,34 @@ export const ProductCard = ({ product, view, isSearchOverlay = false }) => {
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  /* -------- Start: Wishlist Added Logic ------------ */
+  const { wishlistItems = [] } = useSelector((state) => state.wishlist || {});
+  const { user, token } = useSelector((state) => state.auth);
+  const isWishlisted = wishlistItems?.some(
+    (item) => item && item?._id === product?._id,
+  );
+  const handleWishlistToggle = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!product?._id) return;
+
+    if (token) {
+      if (isWishlisted) {
+        dispatch(removeFromWishlistDB({ productId: product._id }));
+      } else {
+        dispatch(addToWishlistDB({ productId: product._id }));
+      }
+    } else {
+      if (isWishlisted) {
+        dispatch(removeFromWishlistLocal(product._id));
+      } else {
+        dispatch(addToWishlistLocal(product));
+      }
+    }
+  };
+  /* -------- End: Wishlist Added Logic ------------ */
 
   // Find the Primary Image (isPrimary: true)
   const primaryImage = product.images?.find(
@@ -57,6 +90,10 @@ export const ProductCard = ({ product, view, isSearchOverlay = false }) => {
     if (isSearchOverlay) {
       dispatch(setFocus(false));
     }
+
+    // Clear any previous size selection to ensure fresh state
+    localStorage.removeItem("selectedSize");
+
     navigate(`/products/${product.slug}`);
   };
 
@@ -69,17 +106,15 @@ export const ProductCard = ({ product, view, isSearchOverlay = false }) => {
     e.stopPropagation();
     e.preventDefault();
 
-    // Redux setSize will be handled in ProductOverview
-    navigate(`/products/${product.slug}`, {
-      state: { selectedSize: size },
-    });
+    // URL-e size-ti query parameter (s=size) hisebe pathan
+    navigate(`/products/${product.slug}?s=${size}`);
   };
 
   return (
     <div
       onClick={handleNavigate}
       className={`group relative cursor-pointer bg-white ${
-        isList ? "flex flex-row gap-6 border-b pb-6" : "flex flex-col"
+        isList ? "flex flex-row gap-6" : "flex flex-col"
       }`}
     >
       {/* Image Container */}
@@ -126,7 +161,12 @@ export const ProductCard = ({ product, view, isSearchOverlay = false }) => {
           <div>
             <div className="absolute right-2 top-2 z-30 flex flex-col gap-2 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-300">
               <RoundActionButton
-                icon={Heart}
+                onClick={handleWishlistToggle}
+                icon={() => (
+                  <Heart
+                    className={`w-5 h-5 transition-colors ${isWishlisted ? "fill-black text-black" : "text-gray-600"}`}
+                  />
+                )}
                 expandable={isDesktop}
                 expandableText="Add to Wishlist"
               />

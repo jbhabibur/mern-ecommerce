@@ -8,7 +8,7 @@ import { cartActions } from "../../redux/slices/cartSlice";
 export const CartItem = ({ item, dispatch, handleEditItem }) => {
   const { id, image, name, size, price, quantity } = item;
 
-  const imageUrl = image?.url || "";
+  const imageUrl = typeof image === "string" ? image : image?.url || "";
 
   return (
     <div className="flex gap-4 relative">

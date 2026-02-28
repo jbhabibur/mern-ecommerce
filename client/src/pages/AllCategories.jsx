@@ -2,15 +2,12 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { API_URLS } from "../api/API_URLS";
 import { getFullImagePath } from "../api/apiConfig";
+import { ComponentLoader } from "../components/loaders/ComponentLoader";
 
 export const AllCategories = () => {
-  // State to store the list of categories
   const [categories, setCategories] = useState([]);
-  // State to track the current page for pagination
   const [page, setPage] = useState(1);
-  // Loading state to prevent duplicate API calls
   const [loading, setLoading] = useState(false);
-  // State to determine if there are more items to fetch from the server
   const [hasMore, setHasMore] = useState(true);
 
   /**
@@ -18,7 +15,7 @@ export const AllCategories = () => {
    * Uses a POST request to send pagination data.
    */
   const fetchCategories = async (pageNumber) => {
-    if (loading) return; // Exit if a request is already in progress
+    if (loading) <ComponentLoader />;
     setLoading(true);
     try {
       const response = await axios.post(API_URLS.ALL_CATEGORIES, {
@@ -89,7 +86,7 @@ export const AllCategories = () => {
               </p>
 
               {/* Action Button: Styled to match premium brand guidelines */}
-              <button className="bg-[#1e1e1e] text-white px-14 py-4 text-[12px] font-bold uppercase tracking-[0.2em] hover:bg-black transition-all duration-300 shadow-sm">
+              <button className="bg-[#1e1e1e] text-white px-14 py-3 text-[12px] font-bold uppercase tracking-[0.2em] hover:bg-black transition-all duration-300 shadow-sm">
                 Shop Now
               </button>
             </div>

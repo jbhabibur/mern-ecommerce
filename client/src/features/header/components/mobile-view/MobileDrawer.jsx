@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { X, MoveLeft } from "lucide-react";
 import { MobileMenuItem } from "./MobileMenuItem";
+import { createPortal } from "react-dom";
 
 export const MobileDrawer = ({
   isOpen,
@@ -9,56 +10,62 @@ export const MobileDrawer = ({
   setActiveSubMenu,
   navigationData,
 }) => {
-  // Lock body scroll when the drawer is open to prevent background scrolling
+  // Logic to handle scroll locking
   useEffect(() => {
     if (isOpen) {
+      // Get the current scroll position
+      const scrollY = window.scrollY;
+
+      // Fix the body position to prevent ANY scrolling
+      document.body.style.position = "fixed";
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = "100%";
       document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = "unset";
+      // Retrieve the scroll position from the inline style
+      const scrollY = document.body.style.top;
+
+      // Reset styles
+      document.body.style.position = "";
+      document.body.style.top = "";
+      document.body.style.width = "";
+      document.body.style.overflow = "";
+
+      // Restore scroll position so user doesn't jump to top
+      window.scrollTo(0, parseInt(scrollY || "0") * -1);
     }
-    // Cleanup to remove scroll lock when component unmounts
+
+    // Cleanup when component unmounts
     return () => {
-      document.body.style.overflow = "unset";
+      document.body.style.position = "";
+      document.body.style.top = "";
+      document.body.style.width = "";
+      document.body.style.overflow = "";
     };
   }, [isOpen]);
 
-  /**
-   * Handles navigation based on the slug value provided.
-   * Maps specific slugs to direct paths or defaults to the categories route.
-   */
   const handleNav = (slugValue) => {
     if (!slugValue) return;
-
-    // Close drawer immediately for better UX
     onClose();
 
-    let targetPath;
-    if (slugValue === "/" || slugValue === "home") {
-      targetPath = "/";
-    } else if (slugValue === "contact" || slugValue === "contact-us") {
-      targetPath = "/contact";
-    } else if (slugValue === "offers") {
-      targetPath = "/offers";
-    } else if (slugValue === "login") {
-      targetPath = "/account/login";
-    } else if (slugValue === "register") {
-      targetPath = "/account/register";
-    } else if (slugValue === "wishlist") {
-      targetPath = "/wishlist";
-    } else {
-      targetPath = `/categories/${slugValue}`;
-    }
+    const slugs = {
+      "/": "/",
+      home: "/",
+      contact: "/contact",
+      "contact-us": "/contact",
+      offers: "/offers",
+      login: "/account/login",
+      register: "/account/register",
+      wishlist: "/wishlist",
+    };
 
-    // Delay navigation slightly to allow drawer closing animation to finish
+    const targetPath = slugs[slugValue] || `/categories/${slugValue}`;
+
     setTimeout(() => {
       window.location.href = targetPath;
     }, 300);
   };
 
-  /**
-   * Decides whether to open a sub-menu or navigate directly
-   * depending on if the item has children.
-   */
   const handleItemClick = (item) => {
     if (item.children && item.children.length > 0) {
       setActiveSubMenu(item);
@@ -67,46 +74,48 @@ export const MobileDrawer = ({
     }
   };
 
-  return (
+  const drawerContent = (
     <div
-      className={`fixed inset-0 z-50 transition-all duration-300 ${isOpen ? "visible" : "invisible"}`}
+      className={`fixed inset-0 z-[999] transition-all duration-300 ${
+        isOpen ? "visible" : "invisible"
+      }`}
     >
-      {/* Background Overlay */}
+      {/* Overlay: touch-none is key for mobile */}
       <div
-        className={`absolute inset-0 bg-black/50 transition-opacity duration-300 ${isOpen ? "opacity-100" : "opacity-0"}`}
+        className={`absolute inset-0 bg-black/50 transition-opacity duration-300 touch-none ${
+          isOpen ? "opacity-100" : "opacity-0"
+        }`}
         onClick={onClose}
       />
 
       <div
-        className={`absolute top-0 left-0 w-80 h-full bg-white shadow-2xl transform transition-transform duration-300 ease-in-out ${isOpen ? "translate-x-0" : "-translate-x-full"} flex flex-col overflow-hidden`}
+        className={`absolute top-0 left-0 w-80 h-full bg-white shadow-2xl transform transition-transform duration-300 ease-in-out ${
+          isOpen ? "translate-x-0" : "-translate-x-full"
+        } flex flex-col overflow-hidden`}
       >
-        {/* Header Section */}
+        {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 bg-white z-10 border-b border-gray-50">
           {activeSubMenu ? (
             <div
               className="flex items-center gap-3 cursor-pointer"
               onClick={() => setActiveSubMenu(null)}
             >
-              <div className="flex items-center gap-2">
-                <MoveLeft className="w-5 h-5 text-gray-700" />
-                <h2 className="text-[13px]! m-0 font-bold uppercase tracking-wide">
-                  {activeSubMenu.label}
-                </h2>
-              </div>
+              <MoveLeft className="w-5 h-5 text-gray-700" />
+              <h2 className="text-[13px]! m-0 font-bold uppercase">
+                {activeSubMenu.label}
+              </h2>
             </div>
           ) : (
             <h2 className="text-lg font-bold">Menu</h2>
           )}
-          <X
-            className="w-6 h-6 cursor-pointer text-gray-700"
-            onClick={onClose}
-          />
+          <X className="w-6 h-6 cursor-pointer" onClick={onClose} />
         </div>
 
+        {/* Content Area */}
         <div className="relative flex-1 overflow-hidden">
-          {/* Main Menu Layer (Top Level) */}
+          {/* Main Menu */}
           <div
-            className={`absolute inset-0 transition-transform duration-300 ease-in-out ${activeSubMenu ? "-translate-x-full" : "translate-x-0"} overflow-y-auto`}
+            className={`absolute inset-0 transition-transform duration-300 ${activeSubMenu ? "-translate-x-full" : "translate-x-0"} overflow-y-auto`}
           >
             {navigationData.map((item, index) => (
               <div
@@ -119,25 +128,20 @@ export const MobileDrawer = ({
             ))}
           </div>
 
-          {/* Sub-Menu Layer (Second Level) */}
+          {/* Sub Menu */}
           <div
-            className={`absolute inset-0 transition-transform duration-300 ease-in-out bg-white ${activeSubMenu ? "translate-x-0" : "translate-x-full"} overflow-y-auto`}
+            className={`absolute inset-0 transition-transform duration-300 bg-white ${activeSubMenu ? "translate-x-0" : "translate-x-full"} overflow-y-auto`}
           >
-            {/* Clickable Parent Item to visit the main category page */}
             {activeSubMenu && (
               <div
                 onClick={() => handleNav(activeSubMenu.slug)}
-                className="cursor-pointer border-b border-gray-100 bg-gray-50/50 hover:bg-gray-100 transition-colors"
+                className="cursor-pointer border-b border-gray-100 bg-gray-50/50"
               >
-                <div className="px-4 py-4 flex items-center justify-between">
-                  <span className="text-[13px] font-semibold text-gray-900 uppercase tracking-tight">
-                    Go To {activeSubMenu.label}
-                  </span>
+                <div className="px-4 py-4 text-[13px] font-semibold uppercase">
+                  Go To {activeSubMenu.label}
                 </div>
               </div>
             )}
-
-            {/* Sub-Menu Children Listing */}
             {activeSubMenu?.children?.map((item, index) => (
               <div
                 key={item.id || index}
@@ -152,4 +156,6 @@ export const MobileDrawer = ({
       </div>
     </div>
   );
+
+  return createPortal(drawerContent, document.body);
 };

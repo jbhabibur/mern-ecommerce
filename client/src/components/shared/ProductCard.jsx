@@ -13,6 +13,7 @@ import {
   removeFromWishlistLocal,
   removeFromWishlistDB,
 } from "../../redux/slices/wishlistSlice";
+import { openQuickView } from "../../redux/slices/productViewSlice";
 
 export const ProductCard = ({ product, view, isSearchOverlay = false }) => {
   const [isHovered, setIsHovered] = useState(false);
@@ -110,6 +111,14 @@ export const ProductCard = ({ product, view, isSearchOverlay = false }) => {
     navigate(`/products/${product.slug}?s=${size}`);
   };
 
+  // Handle Quick View Modal
+  const handleQuickView = (e) => {
+    console.log("hello");
+    e.preventDefault();
+    e.stopPropagation();
+    dispatch(openQuickView(product));
+  };
+
   return (
     <div
       onClick={handleNavigate}
@@ -173,6 +182,7 @@ export const ProductCard = ({ product, view, isSearchOverlay = false }) => {
             </div>
             <div className="absolute right-2 top-12 z-30 flex flex-col gap-2 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-300">
               <RoundActionButton
+                onClick={handleQuickView}
                 icon={Eye}
                 expandable={isDesktop}
                 expandableText="Quick View"

@@ -12,6 +12,7 @@ import { BottomNavigation } from "../components/shared/BottomNavigation";
 import { StickyPurchaseBar } from "../features/product-details/components/StickyPurchaseBar";
 import { Preloader } from "../components/loaders/Preloader";
 import { SearchTrigger } from "../features/search/components/SearchTrigger";
+import { QuickViewModal } from "../components/shared/QuickViewModal";
 
 // Hooks
 import { useScrollToTop } from "../hooks/useScrollToTop";
@@ -86,7 +87,7 @@ export const MainLayout = () => {
       {/* 3. Search Drawer */}
       <SearchTrigger />
 
-      {/* Sticky Purchase Bar: Renders only for active products */}
+      {/* 4. Sticky Purchase Bar: Renders only for active products */}
       {activeProduct && (
         <StickyPurchaseBar
           product={activeProduct}
@@ -94,8 +95,11 @@ export const MainLayout = () => {
         />
       )}
 
-      {/* Persistent Mobile Bottom Navigation */}
+      {/* 5. Persistent Mobile Bottom Navigation */}
       <BottomNavigation />
+
+      {/* 6. Quick view modal */}
+      <QuickViewModal />
     </div>
   );
 };

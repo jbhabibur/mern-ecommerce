@@ -8,21 +8,36 @@ export const useCheckoutInitiate = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const navigate = useNavigate();
 
-  // Redux theke cart data niye asha (assuming your state structure)
   const { items, totalAmount } = useSelector((state) => state.cart);
 
-  const onProceed = async () => {
+  const onProceed = async (isBuyNow = false, currentProduct = null) => {
     if (isProcessing) return;
 
+    const checkoutItems =
+      isBuyNow && currentProduct
+        ? [
+            {
+              productId: currentProduct.id,
+              image: currentProduct?.image?.url || currentProduct.image,
+              quantity: currentProduct.quantity || 1,
+              priceAtCheckout: currentProduct.price,
+              size: currentProduct.size,
+            },
+          ]
+        : items.map((item) => ({
+            productId: item.id,
+            image: item?.image?.url || item.image,
+            quantity: item.quantity,
+            priceAtCheckout: item.price,
+            size: item.size,
+          }));
+
     const payload = {
-      items: items.map((item) => ({
-        productId: item.id,
-        image: item?.image?.url || item.image, // fallbacks for safety
-        quantity: item.quantity,
-        priceAtCheckout: item.price,
-        size: item.size,
-      })),
-      totalAmount: totalAmount,
+      items: checkoutItems,
+      totalAmount:
+        isBuyNow && currentProduct
+          ? currentProduct.price * (currentProduct.quantity || 1)
+          : totalAmount,
     };
 
     setIsProcessing(true);
@@ -43,7 +58,6 @@ export const useCheckoutInitiate = () => {
 
       if (response.data.success && response.data.data.token) {
         const checkoutToken = response.data.data.token;
-        // Tomar routing structure onujayi navigate hobe
         navigate(`/checkouts/cn/${checkoutToken}`);
       }
     } catch (error) {

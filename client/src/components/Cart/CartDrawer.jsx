@@ -62,7 +62,7 @@ export const CartDrawer = () => {
     <>
       {/* Overlay */}
       <div
-        className={`fixed inset-0 bg-black/40 z-[100] transition-opacity duration-300 ${
+        className={`fixed inset-0 bg-black/40 z-[200] transition-opacity duration-300 ${
           isOpen
             ? "opacity-100 visible md:cursor-none"
             : "opacity-0 invisible pointer-events-none"
@@ -73,7 +73,7 @@ export const CartDrawer = () => {
         <FloatingCloseButton isOpen={isOpen} />
       </div>
       <div
-        className={`fixed right-0 top-0 h-full w-full max-w-[90%] md:max-w-[400px] bg-white z-[101] shadow-2xl transform transition-transform duration-500 ease-[cubic-bezier(0.32,0,0.07,1)] flex flex-col ${
+        className={`fixed right-0 top-0 h-full w-full max-w-[90%] md:max-w-[400px] bg-white z-[201] shadow-2xl transform transition-transform duration-500 ease-[cubic-bezier(0.32,0,0.07,1)] flex flex-col ${
           isOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >

@@ -68,7 +68,10 @@ export const UtilityHeader = () => {
           <div className="flex flex-col space-y-4">
             {/* Top row: Outlet link and search bar */}
             <div className="flex justify-end items-center gap-x-4">
-              <Link className="no-underline text-black font-normal text-sm">
+              <Link
+                to={"/outlets"}
+                className="no-underline text-black font-normal text-sm"
+              >
                 Outlets
               </Link>
 

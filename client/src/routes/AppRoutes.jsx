@@ -1,10 +1,11 @@
-import { createBrowserRouter } from "react-router";
+import { createBrowserRouter, Outlet } from "react-router";
 
 import { MainLayout } from "../layout/MainLayout";
 
 import { Home } from "../pages/Home";
 import { SearchResultsPage } from "../pages/SearchResultsPage";
 import { WishlistPage } from "../pages/WishlistPage";
+import { Outlets } from "../pages/Outlets";
 import { CategoriesPage } from "../pages/CategoriesPage";
 import { ProductOverview } from "../pages/ProductOverview";
 import { ViewCart } from "../pages/ViewCart";
@@ -49,6 +50,10 @@ const router = createBrowserRouter([
       {
         path: "/wishlist",
         element: <WishlistPage />,
+      },
+      {
+        path: "/outlets",
+        element: <Outlets />,
       },
       {
         path: "/categories/:categoryName",

@@ -113,43 +113,44 @@ export const CategoriesPage = () => {
       <div className="flex flex-col md:flex-row gap-8">
         <aside className="md:block lg:w-60 md:w-56">
           {/* Mobile drawer */}
-          {isFilterOpen &&
-            createPortal(
-              <div className="fixed inset-0 z-[100] md:hidden">
-                {/* Overlay */}
-                <div
-                  className={`absolute inset-0 bg-black/50 transition-opacity duration-300 ${
-                    isFilterOpen ? "opacity-100" : "opacity-0"
-                  }`}
-                  onClick={() => setIsFilterOpen(false)}
-                />
+          {createPortal(
+            <div
+              className={`fixed inset-0 z-[100] md:hidden ${isFilterOpen ? "pointer-events-auto" : "pointer-events-none"}`}
+            >
+              {/* Overlay */}
+              <div
+                className={`absolute inset-0 bg-black/50 transition-opacity duration-300 ease-in-out ${
+                  isFilterOpen ? "opacity-100" : "opacity-0"
+                }`}
+                onClick={() => setIsFilterOpen(false)}
+              />
 
-                {/* Sidebar Container */}
-                <div
-                  className={`fixed top-0 left-0 h-full w-[280px] bg-white shadow-xl transform transition-transform duration-300 ease-in-out ${
-                    isFilterOpen ? "translate-x-0" : "-translate-x-full"
-                  }`}
-                >
-                  <div className="h-full overflow-y-auto custom-scrollbar">
-                    <FilterSidebar
-                      isOpen={isFilterOpen}
-                      onClose={() => setIsFilterOpen(false)}
-                      inStockCount={inStockCount}
-                      outOfStockCount={outOfStockCount}
-                      totalFound={totalFound}
-                      selectedStock={selectedStock}
-                      priceRange={priceRange}
-                      itemsPerPage={itemsPerPage}
-                      sortOption={sortOption}
-                      updateFilters={updateFilters}
-                      maxPrice={maxPriceInRange}
-                      loading={loading}
-                    />
-                  </div>
+              {/* Sidebar Container */}
+              <div
+                className={`fixed top-0 left-0 h-full w-[280px] bg-white shadow-xl transform transition-transform duration-300 ease-in-out ${
+                  isFilterOpen ? "translate-x-0" : "-translate-x-full"
+                }`}
+              >
+                <div className="h-full overflow-y-auto custom-scrollbar">
+                  <FilterSidebar
+                    isOpen={isFilterOpen}
+                    onClose={() => setIsFilterOpen(false)}
+                    inStockCount={inStockCount}
+                    outOfStockCount={outOfStockCount}
+                    totalFound={totalFound}
+                    selectedStock={selectedStock}
+                    priceRange={priceRange}
+                    itemsPerPage={itemsPerPage}
+                    sortOption={sortOption}
+                    updateFilters={updateFilters}
+                    maxPrice={maxPriceInRange}
+                    loading={loading}
+                  />
                 </div>
-              </div>,
-              document.body,
-            )}
+              </div>
+            </div>,
+            document.body,
+          )}
 
           {/* Desktop static sidebar */}
           <div className="hidden md:block sticky top-4">

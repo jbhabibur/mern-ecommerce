@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { API_URLS } from "../api/API_URLS";
 import { getFullImagePath } from "../api/apiConfig";
-import { ComponentLoader } from "../components/loaders/ComponentLoader";
+import { AllCategoriesSkeleton } from "../components/shared/skeletons/AllCategoriesSkeleton";
 
 export const AllCategories = () => {
   const [categories, setCategories] = useState([]);
@@ -15,15 +15,24 @@ export const AllCategories = () => {
    * Uses a POST request to send pagination data.
    */
   const fetchCategories = async (pageNumber) => {
-    if (loading) <ComponentLoader />;
+    if (loading) return;
     setLoading(true);
+
+    // 1. Start a timer to track the minimum loading time
+    const minLoadingTime = new Promise((resolve) => setTimeout(resolve, 1000));
+
     try {
-      const response = await axios.post(API_URLS.ALL_CATEGORIES, {
+      // 2. Fetch the data from API
+      const apiCall = axios.post(API_URLS.ALL_CATEGORIES, {
         page: pageNumber,
       });
+
+      // 3. Wait for BOTH the API and the 1-second timer to finish
+      const [response] = await Promise.all([apiCall, minLoadingTime]);
+
       const newData = response.data.data;
 
-      // Update categories list while ensuring no duplicate IDs exist
+      // Update categories list
       setCategories((prev) => {
         const existingIds = new Set(prev.map((cat) => cat._id));
         const uniqueNewData = newData.filter(
@@ -32,7 +41,6 @@ export const AllCategories = () => {
         return [...prev, ...uniqueNewData];
       });
 
-      // Update hasMore state based on backend response
       setHasMore(response.data.hasMore);
     } catch (error) {
       console.error("Fetch Error:", error);
@@ -40,7 +48,6 @@ export const AllCategories = () => {
       setLoading(false);
     }
   };
-
   // Initial fetch on component mount
   useEffect(() => {
     fetchCategories(1);
@@ -55,6 +62,8 @@ export const AllCategories = () => {
     setPage(nextPage);
     fetchCategories(nextPage);
   };
+
+  if (loading) return <AllCategoriesSkeleton />;
 
   return (
     <div className="max-w-[1400px] mx-auto px-6 py-16 bg-white">

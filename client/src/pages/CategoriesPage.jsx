@@ -70,7 +70,7 @@ export const CategoriesPage = () => {
       document.body.classList.remove("lock-scroll");
     }
 
-    // Cleanup function: পেজ থেকে চলে গেলে বা কম্পোনেন্ট আনমাউন্ট হলে লক রিমুভ হবে
+    // Cleanup function
     return () => {
       document.body.classList.remove("lock-scroll");
     };

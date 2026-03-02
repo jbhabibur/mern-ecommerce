@@ -11,6 +11,7 @@ export const SectionLayout = ({
   children,
   bgColor = "bg-white",
   containerClass = "max-w-[75rem]!",
+  custom = "",
 }) => {
   return (
     /* Primary Section Wrapper with dynamic background and subtle top border */
@@ -19,7 +20,9 @@ export const SectionLayout = ({
           - Manages responsive horizontal padding (px-6 to lg:px-20)
           - Applies layout constraints from containerClass
       */}
-      <div className={`container mx-auto px-6 lg:px-20 ${containerClass}`}>
+      <div
+        className={`container mx-auto px-6 lg:px-20 ${containerClass} ${custom}`}
+      >
         {children}
       </div>
     </section>

@@ -6,6 +6,8 @@ import authDrawerReducer from "./slices/authDrawerSlice";
 import authReducer from "./slices/authSlice";
 import selectionReducer from "./slices/selectionSlice";
 import checkoutReducer from "./slices/checkoutSlice";
+import wishlistReducer from "./slices/wishlistSlice";
+import productViewReducer from "./slices/productViewSlice";
 
 /**
  * Redux Store Configuration
@@ -21,6 +23,8 @@ export const store = configureStore({
     auth: authReducer,
     selection: selectionReducer,
     checkout: checkoutReducer,
+    wishlist: wishlistReducer,
+    productview: productViewReducer,
   },
   // Default middleware is sufficient since we removed RTK Query
   middleware: (getDefaultMiddleware) => getDefaultMiddleware(),

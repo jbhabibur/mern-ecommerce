@@ -26,6 +26,7 @@ export const UtilityHeader = () => {
   const { isLoggedIn, user } = useSelector((state) => state.auth);
   const totalQuantity = useSelector((state) => state.cart.totalQuantity);
   const { query } = useSelector((state) => state.search);
+  const { wishlistItems } = useSelector((state) => state.wishlist);
 
   // Data from hooks
   const logout = useLogout();
@@ -67,7 +68,10 @@ export const UtilityHeader = () => {
           <div className="flex flex-col space-y-4">
             {/* Top row: Outlet link and search bar */}
             <div className="flex justify-end items-center gap-x-4">
-              <Link className="no-underline text-black font-normal text-sm">
+              <Link
+                to={"/outlets"}
+                className="no-underline text-black font-normal text-sm"
+              >
                 Outlets
               </Link>
 
@@ -104,8 +108,22 @@ export const UtilityHeader = () => {
                 </span>
               </div>
 
-              <div className="flex gap-x-2 cursor-pointer items-center group">
-                <Heart className="w-5 h-5 transition-transform group-hover:scale-110" />
+              <div
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  navigate("/wishlist");
+                }}
+                className="flex gap-x-2 cursor-pointer items-center group"
+              >
+                <div className="relative">
+                  <Heart className="w-5 h-5 transition-transform group-hover:scale-110" />
+                  {wishlistItems.length > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-[#FFE5E8] text-[#FF4D6D] rounded-full w-4 h-4 flex items-center justify-center text-[10px] font-bold border border-white">
+                      {wishlistItems.length}
+                    </span>
+                  )}
+                </div>
                 <span className="text-sm">My Wish List</span>
               </div>
 

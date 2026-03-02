@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useCategory } from "../hooks/useCategory";
 import { Filter } from "lucide-react";
+import { createPortal } from "react-dom";
 
 // Components
 import { Breadcrumb } from "../components/atoms/Breadcrumb";
@@ -59,6 +60,22 @@ export const CategoriesPage = () => {
     }
   }, [loading, isInitialMount]);
 
+  // --- Scroll Lock Logic for Mobile Only ---
+  useEffect(() => {
+    const isMobile = window.innerWidth < 768;
+
+    if (isFilterOpen && isMobile) {
+      document.body.classList.add("lock-scroll");
+    } else {
+      document.body.classList.remove("lock-scroll");
+    }
+
+    // Cleanup function
+    return () => {
+      document.body.classList.remove("lock-scroll");
+    };
+  }, [isFilterOpen]);
+
   if (loading && isInitialMount && !isLoadingMore) {
     return <CategoriesSkeleton />;
   }
@@ -94,26 +111,63 @@ export const CategoriesPage = () => {
       <Breadcrumb />
 
       <div className="flex flex-col md:flex-row gap-8">
-        <aside
-          className={`
-            ${isFilterOpen ? "fixed inset-0 z-[100] bg-white p-6 overflow-y-auto block" : "hidden"} 
-            md:block md:static md:w-56 lg:w-60 md:p-0 md:bg-transparent md:z-auto shrink-0
-          `}
-        >
-          <FilterSidebar
-            isOpen={isFilterOpen}
-            onClose={() => setIsFilterOpen(false)}
-            inStockCount={inStockCount}
-            outOfStockCount={outOfStockCount}
-            totalFound={totalFound}
-            selectedStock={selectedStock}
-            priceRange={priceRange}
-            itemsPerPage={itemsPerPage}
-            sortOption={sortOption}
-            updateFilters={updateFilters}
-            maxPrice={maxPriceInRange}
-            loading={loading}
-          />
+        <aside className="md:block lg:w-60 md:w-56">
+          {/* Mobile drawer */}
+          {createPortal(
+            <div
+              className={`fixed inset-0 z-[100] md:hidden ${isFilterOpen ? "pointer-events-auto" : "pointer-events-none"}`}
+            >
+              {/* Overlay */}
+              <div
+                className={`absolute inset-0 bg-black/50 transition-opacity duration-300 ease-in-out ${
+                  isFilterOpen ? "opacity-100" : "opacity-0"
+                }`}
+                onClick={() => setIsFilterOpen(false)}
+              />
+
+              {/* Sidebar Container */}
+              <div
+                className={`fixed top-0 left-0 h-full w-[280px] bg-white shadow-xl transform transition-transform duration-300 ease-in-out ${
+                  isFilterOpen ? "translate-x-0" : "-translate-x-full"
+                }`}
+              >
+                <div className="h-full overflow-y-auto custom-scrollbar">
+                  <FilterSidebar
+                    isOpen={isFilterOpen}
+                    onClose={() => setIsFilterOpen(false)}
+                    inStockCount={inStockCount}
+                    outOfStockCount={outOfStockCount}
+                    totalFound={totalFound}
+                    selectedStock={selectedStock}
+                    priceRange={priceRange}
+                    itemsPerPage={itemsPerPage}
+                    sortOption={sortOption}
+                    updateFilters={updateFilters}
+                    maxPrice={maxPriceInRange}
+                    loading={loading}
+                  />
+                </div>
+              </div>
+            </div>,
+            document.body,
+          )}
+
+          {/* Desktop static sidebar */}
+          <div className="hidden md:block sticky top-4">
+            <FilterSidebar
+              isOpen={true} // Always open
+              inStockCount={inStockCount}
+              outOfStockCount={outOfStockCount}
+              totalFound={totalFound}
+              selectedStock={selectedStock}
+              priceRange={priceRange}
+              itemsPerPage={itemsPerPage}
+              sortOption={sortOption}
+              updateFilters={updateFilters}
+              maxPrice={maxPriceInRange}
+              loading={loading}
+            />
+          </div>
         </aside>
 
         <main className="flex-1 relative">
@@ -157,7 +211,7 @@ export const CategoriesPage = () => {
                 />
               </div>
 
-              <div className="block lg:hidden">
+              <div className="block md:hidden">
                 <SortMobile
                   selected={sortOption}
                   onChange={(val) =>
@@ -186,7 +240,9 @@ export const CategoriesPage = () => {
                 ? products.map((product) => (
                     <div
                       key={product._id}
-                      className={view === "list" ? "border-b pb-6" : ""}
+                      className={
+                        view === "list" ? "border-b border-gray-200 pb-6" : ""
+                      }
                     >
                       <ProductCard product={product} view={view} />
                     </div>

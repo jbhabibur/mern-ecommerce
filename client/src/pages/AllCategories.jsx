@@ -1,113 +1,163 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { Link } from "react-router-dom";
 import { API_URLS } from "../api/API_URLS";
 import { getFullImagePath } from "../api/apiConfig";
+import { NAVIGATION_DATA_DESKTOP } from "../constants/navigationData";
+import { SectionLayout } from "../layout/SectionLayout";
+import { Breadcrumb } from "../components/atoms/Breadcrumb";
+import { ImagePlaceholder } from "../components/atoms/ImagePlaceholder";
 
 export const AllCategories = () => {
-  // State to store the list of categories
   const [categories, setCategories] = useState([]);
-  // State to track the current page for pagination
-  const [page, setPage] = useState(1);
-  // Loading state to prevent duplicate API calls
-  const [loading, setLoading] = useState(false);
-  // State to determine if there are more items to fetch from the server
-  const [hasMore, setHasMore] = useState(true);
+  const [loading, setLoading] = useState(true);
+  // 1. Pagination-er jonno visible count state (Initial 8)
+  const [visibleCount, setVisibleCount] = useState(8);
 
-  /**
-   * Fetches categories from the backend based on the page number.
-   * Uses a POST request to send pagination data.
-   */
-  const fetchCategories = async (pageNumber) => {
-    if (loading) return; // Exit if a request is already in progress
-    setLoading(true);
+  const fetchSingleCount = async (slug) => {
     try {
-      const response = await axios.post(API_URLS.ALL_CATEGORIES, {
-        page: pageNumber,
-      });
-      const newData = response.data.data;
-
-      // Update categories list while ensuring no duplicate IDs exist
-      setCategories((prev) => {
-        const existingIds = new Set(prev.map((cat) => cat._id));
-        const uniqueNewData = newData.filter(
-          (cat) => !existingIds.has(cat._id),
-        );
-        return [...prev, ...uniqueNewData];
-      });
-
-      // Update hasMore state based on backend response
-      setHasMore(response.data.hasMore);
-    } catch (error) {
-      console.error("Fetch Error:", error);
-    } finally {
-      setLoading(false);
+      const url = API_URLS.CATEGORY_PRODUCTS(slug);
+      const res = await axios.get(url);
+      const data = res.data;
+      if (Array.isArray(data)) return data.length;
+      return data.products?.length || data.total || 0;
+    } catch (err) {
+      return 0;
     }
   };
 
-  // Initial fetch on component mount
-  useEffect(() => {
-    fetchCategories(1);
-  }, []);
-
-  /**
-   * Handles the 'Show More' button click.
-   * Increments the page number and triggers a new fetch.
-   */
-  const handleShowMore = () => {
-    const nextPage = page + 1;
-    setPage(nextPage);
-    fetchCategories(nextPage);
+  const fetchApiCategories = async () => {
+    try {
+      const res = await axios.post(API_URLS.ALL_CATEGORIES, { page: 1 });
+      return res.data.data || [];
+    } catch (err) {
+      return [];
+    }
   };
 
+  const calculateTotalSum = (item, countMap) => {
+    let currentTotal = countMap[item.slug] || 0;
+    if (item.children && item.children.length > 0) {
+      item.children.forEach((child) => {
+        currentTotal += calculateTotalSum(child, countMap);
+      });
+    }
+    return currentTotal;
+  };
+
+  const initializeAllData = async () => {
+    setLoading(true);
+    const apiCats = await fetchApiCategories();
+    const allSlugs = new Set();
+    const extractSlugs = (items) => {
+      items.forEach((it) => {
+        if (it.slug && it.slug !== "/") allSlugs.add(it.slug);
+        if (it.children) extractSlugs(it.children);
+      });
+    };
+    extractSlugs(NAVIGATION_DATA_DESKTOP);
+
+    const countMap = {};
+    await Promise.all(
+      Array.from(allSlugs).map(async (slug) => {
+        countMap[slug] = await fetchSingleCount(slug);
+      }),
+    );
+
+    const finalDisplayList = [];
+    const processNavigation = (items) => {
+      items.forEach((item) => {
+        if (item.slug && item.slug !== "/") {
+          const matchedApi = apiCats.find((c) => c.slug === item.slug);
+          const totalAggregatedCount = calculateTotalSum(item, countMap);
+          finalDisplayList.push({
+            id: item.id || item.slug,
+            name: item.label,
+            slug: item.slug,
+            bannerImage: matchedApi?.bannerImage || null,
+            totalCount: totalAggregatedCount,
+          });
+        }
+        if (item.children) processNavigation(item.children);
+      });
+    };
+
+    processNavigation(NAVIGATION_DATA_DESKTOP);
+    const uniqueList = Array.from(
+      new Map(finalDisplayList.map((c) => [c.slug, c])).values(),
+    );
+    setCategories(uniqueList);
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    initializeAllData();
+  }, []);
+
+  // 2. Show More handle korar function
+  const handleShowMore = () => {
+    setVisibleCount((prevCount) => prevCount + 8);
+  };
+
+  if (loading)
+    return (
+      <div className="text-center py-20 font-bold">Loading Collections...</div>
+    );
+
   return (
-    <div className="max-w-[1400px] mx-auto px-6 py-16 bg-white">
-      {/* Category Grid: Responsive layout (1 col mobile, 2 col tablet, 3 col desktop) */}
+    <SectionLayout custom="py-10">
+      <Breadcrumb />
+
+      {/* 3. Slice use kore prothome 8-ta dekhano hocche */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-10 gap-y-20">
-        {categories.map((cat) => (
-          <div key={cat._id} className="flex flex-col items-center">
-            {/* Image Section: Fixed aspect ratio with hover zoom effect */}
-            <div className="w-full h-[220px] overflow-hidden bg-[#f4f4f4] mb-8 group cursor-pointer">
-              <img
-                src={getFullImagePath(cat.displayImage)} // Using dynamic display image logic
-                alt={cat.name}
-                className="w-full h-full object-cover group-hover:scale-105 transition duration-1000 ease-in-out"
-                // Fallback placeholder if image fails to load
-                onError={(e) => {
-                  e.target.src =
-                    "https://via.placeholder.com/800x400?text=No+Image";
-                }}
-              />
-            </div>
+        {categories.slice(0, visibleCount).map((cat) => (
+          <div key={cat.id} className="flex flex-col items-center">
+            <Link
+              to={`/categories/${cat.slug}`}
+              className="w-full h-[220px] overflow-hidden bg-[#f4f4f4] mb-8 group cursor-pointer relative flex items-center justify-center !no-underline"
+            >
+              {cat.bannerImage ? (
+                <img
+                  src={getFullImagePath(cat.bannerImage)}
+                  alt={cat.name}
+                  className="w-full h-full object-cover group-hover:scale-105 transition duration-1000 ease-in-out"
+                />
+              ) : (
+                <ImagePlaceholder />
+              )}
+            </Link>
 
-            {/* Text Content: High-end typography and styling */}
             <div className="text-center w-full">
-              <h3 className="text-[28px] font-[900] uppercase tracking-tighter text-black leading-tight mb-2">
-                {cat.name}
-              </h3>
+              <Link to={`/categories/${cat.slug}`} className="!no-underline">
+                <h3 className="text-[22px] font-[900] uppercase tracking-tighter text-black leading-tight mb-2">
+                  {cat.name}
+                </h3>
+              </Link>
               <p className="text-[#999] text-[13px] font-medium uppercase tracking-[0.15em] mb-8">
-                {cat.productCount || 0} Products
+                {cat.totalCount} Products
               </p>
-
-              {/* Action Button: Styled to match premium brand guidelines */}
-              <button className="bg-[#1e1e1e] text-white px-14 py-4 text-[12px] font-bold uppercase tracking-[0.2em] hover:bg-black transition-all duration-300 shadow-sm">
+              <Link
+                to={`/categories/${cat.slug}`}
+                className="bg-[#1e1e1e] text-white !no-underline inline-block px-14 py-3 text-[12px] font-bold uppercase tracking-[0.2em] hover:bg-black transition-all duration-300"
+              >
                 Shop Now
-              </button>
+              </Link>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Pagination Trigger: Only shown if not loading and more data is available */}
-      {!loading && hasMore && (
-        <div className="flex justify-center mt-24">
+      {/* 4. Show More Button - Sudhu jodi aro item thake tokhon dekhabe */}
+      {visibleCount < categories.length && (
+        <div className="mt-20 text-center">
           <button
             onClick={handleShowMore}
-            className="px-20 py-4 border-[2px] border-black font-black uppercase text-[12px] tracking-[0.3em] hover:bg-black hover:text-white transition-all duration-500"
+            className="border border-black text-black px-10 py-3 text-[12px] font-bold uppercase tracking-[0.2em] hover:bg-black! hover:text-white! transition-all duration-300"
           >
             Show More
           </button>
         </div>
       )}
-    </div>
+    </SectionLayout>
   );
 };

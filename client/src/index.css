@@ -40,4 +40,12 @@ body {
   .product-image-hover:hover {
     @apply scale-105;
   }
+
+  /* Scroll Lock Class for Mobile Drawer */
+  .lock-scroll {
+    overflow: hidden !important;
+    height: 100vh !important;
+    position: fixed !important;
+    width: 100% !important;
+  }
 }

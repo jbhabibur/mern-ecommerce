@@ -1,15 +1,16 @@
 import React from "react";
 import { Breadcrumb } from "../components/atoms/Breadcrumb";
+import { SectionLayout } from "../layout/SectionLayout";
 
 export const ContactPage = () => {
   return (
-    <div className="max-w-[76rem] mx-auto px-4 py-8 font-sans">
+    <SectionLayout>
       {/* Breadcrumb */}
       <Breadcrumb />
 
       <h1 className="text-xl! font-bold! my-10! tracking-tight">CONTACT</h1>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-16 mb-10">
         {/* Left Side: Contact Form */}
         <div>
           <p className="text-gray-700 mb-6">
@@ -77,7 +78,7 @@ export const ContactPage = () => {
               cup of fresh tea and a cookie:
             </p>
 
-            <p className="leading-relaxed italic text-gray-600">
+            <p className="leading-relaxed text-gray-600">
               Ambia Tower (7th Floor), 4/1 Simson Road, Kotwali , <br />
               Dhaka, Bangladesh, 1100.
             </p>
@@ -85,12 +86,12 @@ export const ContactPage = () => {
 
           <div className="pt-4 border-t border-gray-200">
             <p className="leading-loose">
-              If you have any question, please contact us . Hotline: 02- <br />
-              57390880 Email: info@beman.com.bd
+              If you have any question, please contact us . <br /> Hotline: 02-
+              57390880 Email: info@mensfashion.com.bd
             </p>
           </div>
         </div>
       </div>
-    </div>
+    </SectionLayout>
   );
 };

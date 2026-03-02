@@ -87,7 +87,7 @@ const SubMenuChild = ({ child, onNav }) => {
       onMouseLeave={() => setIsChildOpen(false)}
     >
       <div
-        className="flex-1 flex items-center justify-between px-3 py-[14px] font-normal! text-[12px] bg-white text-black uppercase tracking-tight hover:bg-gray-100 hover:text-gray-800 transition-colors cursor-pointer"
+        className="flex-1 flex items-center justify-between px-3 py-2.5 font-normal! text-[12px] bg-white text-black uppercase tracking-tight hover:bg-gray-100 hover:text-gray-800 transition-colors cursor-pointer"
         onClick={() => onNav(child.slug)} // Changed from child.label to child.slug
       >
         <span className="tracking-widest! ">{child.label}</span>

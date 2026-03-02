@@ -49,7 +49,7 @@ export const Hero = () => {
               <img
                 src={item.carouselImage}
                 alt={item.name}
-                className="w-full h-auto sm:h-full object-contain sm:object-cover transition-transform duration-700 group-hover/item:scale-105"
+                className="w-full h-[300px] sm:h-full object-cover transition-transform duration-700 group-hover/item:scale-105"
               />
 
               {/* --- Title Overlay --- */}

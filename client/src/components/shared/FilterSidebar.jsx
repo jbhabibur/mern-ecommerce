@@ -102,7 +102,7 @@ export const FilterSidebar = ({
           md:relative md:block md:translate-x-0 md:opacity-100 md:w-full md:p-0 md:z-0 md:bg-transparent md:overflow-visible
           ${
             isOpen
-              ? "translate-x-0 opacity-100 shadow-2xl"
+              ? "translate-x-0 opacity-100"
               : "max-md:-translate-x-full max-md:opacity-0"
           }
         `}

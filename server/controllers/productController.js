@@ -289,3 +289,20 @@ export const searchProducts = asyncHandler(async (req, res, next) => {
     .status(200)
     .json({ success: true, count: products.length, data: products });
 });
+
+/**
+ * @desc    Fetch all products without pagination
+ * @route   GET /api/products
+ * @access  Public
+ */
+export const getAllProducts = asyncHandler(async (req, res) => {
+  // 1. Fetch all products from the database sorted by newest
+  const products = await Product.find().sort({ createdAt: -1 });
+
+  // 2. Send response
+  res.status(200).json({
+    success: true,
+    data: products,
+    totalProducts: products.length, // Total count of products found
+  });
+});

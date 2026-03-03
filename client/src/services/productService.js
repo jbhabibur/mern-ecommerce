@@ -1,6 +1,5 @@
 import apiInstance from "./apiInstance";
 import { API_URLS } from "../api/API_URLS";
-import { BASE_URL } from "../api/apiConfig";
 
 /**
  * @desc    Fetch a single product by its slug
@@ -65,4 +64,26 @@ export const fetchCategoryProducts = async (slug) => {
   // Use the dynamic function from API_URLS for environmental compatibility
   const response = await apiInstance.get(API_URLS.CATEGORY_PRODUCTS(slug));
   return response.data;
+};
+
+/**
+ * @desc    Fetch all products with pagination
+ * @param   {number} page - The page number to fetch
+ * @returns {Promise<Object>} - Returns products and pagination metadata
+ */
+export const fetchAllProducts = async (page = 1) => {
+  try {
+    const response = await apiInstance.get(
+      `${API_URLS.ALL_PRODUCTS}?pageNumber=${page}`,
+    );
+
+    if (response.data && response.data.success) {
+      // We return the whole object because we need 'pages' and 'page' for the UI
+      return response.data;
+    }
+
+    return response.data;
+  } catch (error) {
+    throw error.response?.data?.message || "Failed to load products.";
+  }
 };

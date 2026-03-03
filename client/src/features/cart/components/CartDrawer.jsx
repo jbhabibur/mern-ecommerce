@@ -1,22 +1,21 @@
 import { useState, useEffect } from "react";
 import { X, ShoppingBag, Gift, Tag } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-
-import { getFullImagePath } from "../../api/apiConfig";
+import { createPortal } from "react-dom";
 
 // Import components
 import { CartItem } from "./CartItem";
 import { EditItemModal } from "./EditItemModal";
 import { YouMayAlsoLike } from "./YouMayAlsoLike";
-import { PrimaryButton } from "../atoms/PrimaryButton";
+import { PrimaryButton } from "../../../components/atoms/PrimaryButton";
 import { FloatingCloseButton } from "./FloatingCloseButton";
 
 // Import hooks
-import { useCheckoutInitiate } from "../../hooks/useCheckoutInitiate";
+import { useCheckoutInitiate } from "../../../hooks/useCheckoutInitiate";
 
 // Redux hooks and actions
 import { useSelector, useDispatch } from "react-redux";
-import { cartActions } from "../../redux/slices/cartSlice";
+import { cartActions } from "../../../redux/slices/cartSlice";
 
 // Swiper styles
 import "swiper/css";
@@ -58,22 +57,32 @@ export const CartDrawer = () => {
     };
   }, [isOpen]);
 
-  return (
+  // Optional: Close on ESC
+  useEffect(() => {
+    const handleEsc = (e) => {
+      if (e.key === "Escape") dispatch(cartActions.setCartOpen(false));
+    };
+    if (isOpen) window.addEventListener("keydown", handleEsc);
+    return () => window.removeEventListener("keydown", handleEsc);
+  }, [isOpen, dispatch]);
+
+  return createPortal(
     <>
       {/* Overlay */}
       <div
-        className={`fixed inset-0 bg-black/40 z-[200] transition-opacity duration-300 ${
+        className={`fixed inset-0 bg-black/40 z-[10000] transition-opacity duration-300 ${
           isOpen
             ? "opacity-100 visible md:cursor-none"
             : "opacity-0 invisible pointer-events-none"
         }`}
         onClick={() => dispatch(cartActions.setCartOpen(false))}
       >
-        {/* 2. Floating Close Button */}
         <FloatingCloseButton isOpen={isOpen} />
       </div>
+
+      {/* Drawer Panel */}
       <div
-        className={`fixed right-0 top-0 h-full w-full max-w-[90%] md:max-w-[400px] bg-white z-[201] shadow-2xl transform transition-transform duration-500 ease-[cubic-bezier(0.32,0,0.07,1)] flex flex-col ${
+        className={`fixed right-0 top-0 h-full w-full max-w-[90%] md:max-w-[400px] bg-white z-[10001] shadow-2xl transform transition-transform duration-500 ease-[cubic-bezier(0.32,0,0.07,1)] flex flex-col ${
           isOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
@@ -100,15 +109,14 @@ export const CartDrawer = () => {
             {/* Scrollable Area */}
             <div className="max-h-[40vh] overflow-y-auto px-4 pt-4 pb-2 space-y-8 scrollbar-hide">
               <div className="space-y-6">
-                {cartItems.length > 0 &&
-                  cartItems.map((item) => (
-                    <CartItem
-                      key={`${item.id}-${item.size}`}
-                      item={item}
-                      dispatch={dispatch}
-                      handleEditItem={handleEditItem}
-                    />
-                  ))}
+                {cartItems.map((item) => (
+                  <CartItem
+                    key={`${item.id}-${item.size}`}
+                    item={item}
+                    dispatch={dispatch}
+                    handleEditItem={handleEditItem}
+                  />
+                ))}
               </div>
 
               {/* Slider Section */}
@@ -187,12 +195,13 @@ export const CartDrawer = () => {
         )}
       </div>
 
-      {/* RENDER MODAL HERE: Outside the drawer div for full-screen overlay */}
+      {/* Edit Item Modal */}
       <EditItemModal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
         item={selectedItem}
       />
-    </>
+    </>,
+    document.body,
   );
 };

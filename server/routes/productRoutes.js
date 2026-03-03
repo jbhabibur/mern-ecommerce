@@ -8,6 +8,7 @@ import {
   getSingleProductBySlug,
   getPopularProducts,
   searchProducts,
+  getAllProducts,
 } from "../controllers/productController.js";
 
 // Middleware & Validation Imports
@@ -22,6 +23,9 @@ const router = express.Router();
  * STATIC & QUERY ROUTES (Specific paths first)
  * -----------------------------------------------------------
  */
+
+// @route   GET /api/products (Paginated list)
+router.get("/", getAllProducts);
 
 // @route   GET /api/products/search
 router.get("/search", searchProducts);

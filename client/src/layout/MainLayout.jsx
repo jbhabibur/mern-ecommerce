@@ -7,7 +7,7 @@ import { HeaderController } from "../features/header/components/HeaderController
 import { Footer } from "../features/footer/components/Footer";
 import { GlobalLoader } from "../components/atoms/GlobalLoader";
 import { AuthDrawer } from "../features/auth/components/AuthDrawer";
-import { CartDrawer } from "../components/Cart/CartDrawer";
+import { CartDrawer } from "../features/cart/components/CartDrawer";
 import { BottomNavigation } from "../components/shared/BottomNavigation";
 import { StickyPurchaseBar } from "../features/product-details/components/StickyPurchaseBar";
 import { Preloader } from "../components/loaders/Preloader";

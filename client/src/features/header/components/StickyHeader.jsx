@@ -6,6 +6,7 @@ import { Search, ShoppingBag } from "lucide-react";
 import { cartActions } from "../../../redux/slices/cartSlice";
 import { useDispatch } from "react-redux";
 import { StickySearchOverlay } from "../../search/components/StickySearchOverlay";
+import { motion } from "framer-motion";
 
 export const StickyHeader = () => {
   const dispatch = useDispatch();
@@ -14,7 +15,13 @@ export const StickyHeader = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   const headerContent = (
-    <div className="fixed top-0 left-0 w-full z-50 flex gap-x-3 bg-black">
+    <motion.div
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.4, ease: "easeOut" }}
+      className="fixed top-0 left-0 w-full z-50 flex gap-x-3 bg-black"
+    >
       <div className="p-2 flex items-center justify-center cursor-pointer">
         <a href="/">
           <img
@@ -55,7 +62,7 @@ export const StickyHeader = () => {
           onClose={() => setIsSearchOpen(false)}
         />
       </div>
-    </div>
+    </motion.div>
   );
 
   // 3. Ensure your index.html has <div id="header-portal"></div>

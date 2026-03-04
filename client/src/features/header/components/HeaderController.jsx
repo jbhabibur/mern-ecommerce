@@ -3,6 +3,7 @@ import { MainNavigationMenu } from "./desktop-view/MainNavigationMenu";
 import { useHeaderController } from "../hooks/useHeaderController";
 import { MobileHeader } from "./mobile-view/MobileHeader";
 import { StickyHeader } from "./StickyHeader";
+import { AnimatePresence } from "framer-motion";
 
 export const HeaderController = () => {
   const { isMobile, showSticky, headerRef } = useHeaderController();
@@ -21,11 +22,7 @@ export const HeaderController = () => {
             <MainNavigationMenu />
           </div>
 
-          {showSticky && (
-            <div className="fixed top-0 left-0 w-full z-50 animate-in slide-in-from-top duration-300">
-              <StickyHeader />
-            </div>
-          )}
+          <AnimatePresence>{showSticky && <StickyHeader />}</AnimatePresence>
         </>
       )}
     </header>

@@ -1,34 +1,26 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState, useCallback } from "react";
+
+const STORAGE_KEY = "last_preloader_time";
+const ONE_HOUR = 60 * 60 * 1000;
 
 export const usePreloader = () => {
-  const ONE_HOUR = 60 * 60 * 1000;
-
-  const [showLoader, setShowLoader] = useState(() => {
-    const lastSeen = localStorage.getItem("last_preloader_time");
-    const now = Date.now();
-
-    // Show if never seen or if 1 hour passed
-    const isExpired = !lastSeen || now - parseInt(lastSeen) > ONE_HOUR;
-    return isExpired;
-  });
+  const [showLoader, setShowLoader] = useState(false);
 
   useEffect(() => {
-    // Only set timestamp once when the loader is first shown
-    if (showLoader) {
-      const lastSeen = localStorage.getItem("last_preloader_time");
-      const now = Date.now();
+    const lastSeen = localStorage.getItem(STORAGE_KEY);
+    const now = Date.now();
 
-      if (!lastSeen || now - parseInt(lastSeen) > ONE_HOUR) {
-        localStorage.setItem("last_preloader_time", now.toString());
-      }
+    const isExpired = !lastSeen || now - Number(lastSeen) > ONE_HOUR;
 
-      // Auto-hide loader after animation (e.g., 2s)
-      const timer = setTimeout(() => setShowLoader(false), 2000);
-      return () => clearTimeout(timer);
+    if (isExpired) {
+      setShowLoader(true);
     }
-  }, [showLoader]);
+  }, []);
 
-  const handleLoaderComplete = () => setShowLoader(false);
+  const handleLoaderComplete = useCallback(() => {
+    localStorage.setItem(STORAGE_KEY, Date.now().toString());
+    setShowLoader(false);
+  }, []);
 
   return { showLoader, handleLoaderComplete };
 };

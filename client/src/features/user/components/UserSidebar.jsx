@@ -14,6 +14,7 @@ import {
 
 export const UserSidebar = () => {
   const { user } = useSelector((state) => state.auth);
+  console.log(user);
 
   const menuData = [
     {

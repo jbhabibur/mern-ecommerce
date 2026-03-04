@@ -9,7 +9,9 @@ import {
   forgotPassword,
   resetPassword,
   verifyMagicLink,
+  firebaseAuth,
 } from "../controllers/authController.js";
+import { verifyToken } from "../middleware/verifyToken.middleware.js";
 
 import { validate } from "../middleware/validate.middleware.js";
 import { registerSchema, loginSchema } from "../validators/auth.validator.js";
@@ -17,6 +19,13 @@ import { registerSchema, loginSchema } from "../validators/auth.validator.js";
 // @route   POST /api/auth/register
 // @desc    Register a new user & send OTP
 router.post("/register", validate(registerSchema), registerUser);
+
+/**
+ * @route   POST /api/auth/firebase-auth
+ * @desc    Firebase OAuth login/register
+ * @access  Private (Needs verifyToken to get Firebase data)
+ */
+router.post("/firebase-auth", verifyToken, firebaseAuth);
 
 // @route   POST /api/auth/verify-otp
 // @desc    Verify user email using OTP code

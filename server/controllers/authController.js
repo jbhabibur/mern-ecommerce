@@ -443,3 +443,56 @@ export const verifyMagicLink = asyncHandler(async (req, res) => {
   // This page on your frontend will show the "Success" message for 3-5 seconds.
   res.redirect(`${process.env.CLIENT_URL}/account/verify-success`);
 });
+
+/**
+ * @desc    Firebase OAuth Login (Google/GitHub)
+ * @route   POST /api/auth/firebase
+ * @access  Public
+ */
+export const firebaseAuth = asyncHandler(async (req, res) => {
+  // 1. Data extracted and attached by your Firebase middleware
+  const { uid, email, name, picture } = req.firebaseUser;
+
+  if (!email) {
+    return res.status(400).json({
+      success: false,
+      message: "Email not found in Firebase user data",
+    });
+  }
+
+  // 2. Check if the user already exists in MongoDB
+  let user = await User.findOne({ email });
+
+  // 3. Create a new user record if it's their first time
+  if (!user) {
+    const nameParts = name ? name.split(" ") : ["User"];
+
+    user = await User.create({
+      firstName: nameParts[0],
+      lastName: nameParts.slice(1).join(" ") || "",
+      email,
+      photo: picture,
+      firebaseUid: uid,
+      isVerified: true, // Social providers verified the email
+    });
+  }
+
+  // 4. Generate & Send Tokens (Matching your loginUser logic)
+  // This sets the refreshToken cookie and generates the accessToken
+  const accessToken = sendTokens(user, res);
+
+  // 5. Professional Success Response
+  return res.status(200).json({
+    success: true,
+    message: "Login successful",
+    accessToken, // Frontend needs this for ProtectedRoute
+    user: {
+      id: user._id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      photo: user.photo,
+      role: user.role,
+    },
+  });
+});

@@ -1,4 +1,4 @@
-import User from "../models/User.js"; // Added .js extension
+import User from "../models/User.js";
 import bcrypt from "bcryptjs";
 
 // 1. Get User Profile

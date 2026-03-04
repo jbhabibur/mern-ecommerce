@@ -1,48 +1,51 @@
 import { useState, useEffect, useRef } from "react";
 
 /**
- * Custom hook to manage Header state including mobile detection,
- * scroll direction, and sticky visibility.
+ * Manages header behavior: mobile detection, scroll direction, and sticky state.
  */
 export const useHeaderController = () => {
-  // Define a constant for the header height instead of dynamic calculation
-  const FIXED_HEADER_HEIGHT = 80;
-
   const [scrollDirection, setScrollDirection] = useState("up");
   const [showSticky, setShowSticky] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
   const headerRef = useRef(null);
   const lastScrollY = useRef(0);
+  const TOLERANCE = 10; // Pixels to ignore small jitters
 
-  const THRESHOLD = 300; // Scroll distance before sticky header can appear
-  const TOLERANCE = 10; // Minimum scroll movement to trigger a state update
-
-  // Handle window resize and initial mobile detection
+  // 1. Monitor screen width for mobile/desktop toggle
   useEffect(() => {
-    const handleUpdate = () => {
-      const width = document.documentElement.clientWidth;
-      setIsMobile(width <= 1024);
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 1024);
     };
 
-    handleUpdate();
-    window.addEventListener("resize", handleUpdate);
-    return () => window.removeEventListener("resize", handleUpdate);
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Handle scroll logic to determine scroll direction and sticky visibility
+  // 2. Monitor scroll to determine direction and sticky visibility
   useEffect(() => {
     const onScroll = () => {
       const currentY = window.scrollY;
 
-      // Update direction only if scroll movement exceeds tolerance
+      // Get height of the header component to know when it is fully off-screen
+      const headerHeight = headerRef.current
+        ? headerRef.current.offsetHeight
+        : 150;
+
+      // Update direction if movement exceeds tolerance
       if (Math.abs(currentY - lastScrollY.current) > TOLERANCE) {
-        setScrollDirection(currentY > lastScrollY.current ? "down" : "up");
+        const newDirection = currentY > lastScrollY.current ? "down" : "up";
+        setScrollDirection(newDirection);
         lastScrollY.current = currentY;
       }
 
-      // Show sticky header when scrolling up and past the threshold point
-      setShowSticky(currentY > THRESHOLD && scrollDirection === "up");
+      /**
+       * showSticky is true if:
+       * - User has scrolled past the original header (currentY > headerHeight)
+       * - User is scrolling up
+       */
+      setShowSticky(currentY > headerHeight && scrollDirection === "up");
     };
 
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -53,6 +56,5 @@ export const useHeaderController = () => {
     isMobile,
     showSticky,
     headerRef,
-    fixedHeight: FIXED_HEADER_HEIGHT,
   };
 };

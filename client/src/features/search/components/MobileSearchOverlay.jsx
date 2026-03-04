@@ -6,7 +6,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 
-import { X, Search } from "lucide-react";
+import { X, Search, Loader2 } from "lucide-react";
 import { ProductCard } from "../../../components/shared/ProductCard";
 
 import { useSearch } from "../hooks/useSearch";
@@ -16,21 +16,60 @@ export const MobileSearchOverlay = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const inputRef = useRef(null);
+
   const [isSwiperReady, setIsSwiperReady] = useState(false);
 
-  const { isClicked, query } = useSelector((state) => state.search);
-  const { products, loading: isLoading } = useSearch(query);
+  // Local state for debouncing and artificial delay
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isWaiting, setIsWaiting] = useState(false);
 
+  const { isClicked, query } = useSelector((state) => state.search);
+  const { products, loading: apiLoading } = useSearch(query);
+
+  // Combined loading state
+  const isLoading = apiLoading || isWaiting;
+
+  // --- 1. Debounce + 1 Sec Artificial Loading Logic ---
+  useEffect(() => {
+    if (isClicked) {
+      setSearchTerm(query);
+    }
+  }, [isClicked]);
+
+  useEffect(() => {
+    if (searchTerm !== query) {
+      setIsWaiting(true);
+    }
+
+    const delayDebounceFn = setTimeout(() => {
+      dispatch(setQuery(searchTerm));
+
+      setTimeout(() => {
+        setIsWaiting(false);
+      }, 1000);
+    }, 500); // 500ms debounce
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchTerm, dispatch]);
+
+  // --- 2. Clear & Close Logic ---
   const handleClose = () => {
     dispatch(setClicked(false));
+
+    setTimeout(() => {
+      setSearchTerm("");
+      dispatch(setQuery(""));
+    }, 400);
   };
 
   const handleSearchChange = (e) => {
-    dispatch(setQuery(e.target.value));
+    setSearchTerm(e.target.value);
   };
 
   const handleTagClick = (tag) => {
-    dispatch(setQuery(tag));
+    setSearchTerm(tag);
+    handleClose();
+    navigate(`/search?q=${encodeURIComponent(tag)}`);
   };
 
   // Body scroll lock logic
@@ -53,13 +92,12 @@ export const MobileSearchOverlay = () => {
     };
   }, [isClicked]);
 
-  // MobileSearchOverlay.jsx bhitore
+  // Navigation check
   useEffect(() => {
     if (isClicked) {
       handleClose();
-      dispatch(setQuery("")); // <--- Navigation er por query reset korar jonno
     }
-  }, [location.pathname]); // query change hole close korar dorkar nai, shudhu path change hole hobe
+  }, [location.pathname]);
 
   return (
     <div
@@ -93,17 +131,21 @@ export const MobileSearchOverlay = () => {
             <input
               ref={inputRef}
               type="text"
-              value={query}
+              value={searchTerm}
               onChange={handleSearchChange}
               placeholder="Search products..."
               className="w-full bg-[#f8f8f8] border-b border-gray-100 p-2 border pr-10 outline-none text-base placeholder:text-sm placeholder:font-semibold"
             />
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 text-lg">
-              <Search size={20} />
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600">
+              {isLoading ? (
+                <Loader2 size={20} className="animate-spin text-black/40" />
+              ) : (
+                <Search size={20} />
+              )}
             </span>
           </div>
 
-          {!query && (
+          {!searchTerm && (
             <div className="mb-8">
               <h3 className="text-xs! font-bold! uppercase tracking-wider mb-2 text-gray-900">
                 Trending Now
@@ -121,10 +163,7 @@ export const MobileSearchOverlay = () => {
                   "polo",
                 ].map((tag) => (
                   <div
-                    onClick={() => {
-                      dispatch(setFocus(false));
-                      navigate(`/search?q=${encodeURIComponent(tag)}`);
-                    }}
+                    onClick={() => handleTagClick(tag)}
                     key={tag}
                     className="flex items-center gap-2 bg-[#f8f8f8] px-2.5 py-1.5 text-[13px] text-gray-500 cursor-pointer hover:bg-black hover:text-white transition-all duration-300"
                   >
@@ -142,13 +181,14 @@ export const MobileSearchOverlay = () => {
 
             <div className="w-full h-[1px] mb-3 bg-[#DDD1C8]"></div>
 
-            {isLoading && (
-              <div className="text-center py-10 text-gray-400 animate-pulse">
-                Loading...
+            {isLoading ? (
+              <div className="text-center py-10 flex flex-col items-center justify-center text-gray-400">
+                <Loader2 className="animate-spin mb-2" size={30} />
+                <p className="text-[10px] uppercase tracking-widest">
+                  Searching...
+                </p>
               </div>
-            )}
-
-            {!isLoading && query && products?.length === 0 && (
+            ) : query && products?.length === 0 ? (
               <div className="py-12 flex flex-col items-center text-center">
                 <p className="text-[14px] font-bold text-gray-900 uppercase">
                   No products found
@@ -157,37 +197,40 @@ export const MobileSearchOverlay = () => {
                   Try another term.
                 </p>
               </div>
-            )}
-
-            {/* FIX: isClicked thaklei shudhu Swiper render hobe jate getComputedStyle error na ashe */}
-            {isSwiperReady && !isLoading && products?.length > 0 && (
-              <Swiper
-                key={query || "popular"}
-                spaceBetween={16}
-                slidesPerView={2.2}
-                observer={true}
-                observeParents={true}
-                className="w-full"
-              >
-                {products.map((item) => (
-                  <SwiperSlide key={item._id || item.id}>
-                    <ProductCard
-                      product={item}
-                      view="grid"
-                      isSearchOverlay={true}
-                    />
-                  </SwiperSlide>
-                ))}
-              </Swiper>
+            ) : (
+              isSwiperReady &&
+              products?.length > 0 && (
+                <Swiper
+                  key={query || "popular"}
+                  spaceBetween={16}
+                  slidesPerView={2.2}
+                  observer={true}
+                  observeParents={true}
+                  className="w-full"
+                >
+                  {products.slice(0, 10).map((item) => (
+                    <SwiperSlide key={item._id || item.id}>
+                      <div onClick={handleClose}>
+                        <ProductCard
+                          product={item}
+                          view="grid"
+                          isSearchOverlay={true}
+                        />
+                      </div>
+                    </SwiperSlide>
+                  ))}
+                </Swiper>
+              )
             )}
           </div>
 
-          {query && products?.length > 0 && (
+          {!isLoading && query && products?.length > 0 && (
             <div className="mt-8 pt-4 border-t border-gray-100 text-center">
               <button
                 onClick={() => {
+                  const currentQuery = query;
                   handleClose();
-                  navigate(`/search?q=${encodeURIComponent(query)}`);
+                  navigate(`/search?q=${encodeURIComponent(currentQuery)}`);
                 }}
                 className="text-[11px] font-bold uppercase tracking-widest text-gray-900 hover:underline"
               >

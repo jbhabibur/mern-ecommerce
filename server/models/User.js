@@ -25,8 +25,15 @@ const userSchema = new mongoose.Schema(
     },
     password: {
       type: String,
-      required: true,
+      // Password is ONLY required if it's NOT a social/firebase login
+      required: function () {
+        return !this.firebaseUid; // Matches the field name in your controller
+      },
       select: false,
+    },
+    firebaseUid: {
+      type: String,
+      default: null,
     },
     role: {
       type: String,

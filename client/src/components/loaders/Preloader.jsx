@@ -1,63 +1,82 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 
-export const Preloader = () => {
+export const Preloader = ({ onFinish }) => {
   const [count, setCount] = useState(0);
-  const [isComplete, setIsComplete] = useState(false);
-  const [showBrand, setShowBrand] = useState(false);
-  const [isDismissed, setIsDismissed] = useState(false);
+  const [phase, setPhase] = useState("loading");
+  // phases: loading → brand → sliding
 
+  const timers = useRef([]);
+
+  // Counter animation
   useEffect(() => {
+    if (phase !== "loading") return;
+
     if (count < 100) {
       const timer = setTimeout(() => {
         setCount((prev) => prev + 1);
-      }, 25);
+      }, 18);
+
+      timers.current.push(timer);
       return () => clearTimeout(timer);
-    } else {
-      // 1. Counter fades out
-      setTimeout(() => setIsComplete(true), 400);
-
-      // 2. Brand title appears at 700ms
-      setTimeout(() => setShowBrand(true), 700);
-
-      // 3. Slide starts 2 seconds after the title appears
-      // 700ms (appearance) + 2000ms (waiting time) = 2700ms
-      setTimeout(() => setIsDismissed(true), 2700);
     }
-  }, [count]);
+
+    if (count === 100) {
+      setPhase("brand");
+    }
+  }, [count, phase]);
+
+  // Brand → Slide → Finish sequence
+  useEffect(() => {
+    if (phase === "brand") {
+      const brandTimer = setTimeout(() => {
+        setPhase("sliding");
+      }, 1000); // Show brand 1s
+
+      timers.current.push(brandTimer);
+    }
+
+    if (phase === "sliding") {
+      const finishTimer = setTimeout(() => {
+        onFinish();
+      }, 1200); // Match slide duration
+
+      timers.current.push(finishTimer);
+    }
+
+    return () => {
+      timers.current.forEach(clearTimeout);
+    };
+  }, [phase, onFinish]);
 
   return (
     <motion.div
       initial={{ y: 0 }}
-      // Smoothly slides the entire window from bottom to top
-      animate={{ y: isDismissed ? "-100%" : 0 }}
+      animate={{ y: phase === "sliding" ? "-100%" : 0 }}
       transition={{
         duration: 1.2,
-        ease: [0.76, 0, 0.24, 1], // Premium curtain-like ease
+        ease: [0.76, 0, 0.24, 1],
       }}
-      className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#05070a] overflow-hidden"
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-[#05070a] overflow-hidden"
     >
-      {/* Decorative line */}
+      {/* Decorative Line */}
       <div className="absolute top-1/2 w-[80%] h-[1px] bg-white/10" />
 
-      {/* Counter UI */}
-      {!isComplete && (
-        <motion.div
-          exit={{ opacity: 0 }}
-          className="absolute bottom-[10%] right-[10%] flex items-center text-white font-extralight text-7xl md:text-9xl"
-        >
+      {/* Counter */}
+      {phase === "loading" && (
+        <div className="absolute bottom-[10%] right-[10%] flex items-center text-white font-extralight text-7xl md:text-9xl">
           <span className="opacity-30">[</span>
           <span className="min-w-[120px] text-center">{count}</span>
           <span className="opacity-30">]</span>
-        </motion.div>
+        </div>
       )}
 
-      {/* Brand UI */}
-      {showBrand && (
+      {/* Brand */}
+      {phase !== "loading" && (
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1 }}
+          transition={{ duration: 0.8 }}
           className="text-white text-3xl md:text-6xl tracking-[1.5rem] font-extralight uppercase text-center"
         >
           MENS FASHION

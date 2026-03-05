@@ -1,4 +1,7 @@
-import { createBrowserRouter } from "react-router";
+import { createBrowserRouter, Navigate } from "react-router";
+
+import { LandingPage } from "../features/auth/LandingPage";
+import { LoginPage } from "../features/auth/LoginPage";
 
 import { AdminLayout } from "../layouts/AdminLayout";
 import { AddProduct } from "../features/products/AddProduct";
@@ -11,18 +14,30 @@ import { AddCategory } from "../components/AddCategory";
 const router = createBrowserRouter([
   {
     path: "/",
+    element: <LandingPage />,
+  },
+  {
+    path: "/login",
+    element: <LoginPage />,
+  },
+  {
+    path: "/admin",
     element: <AdminLayout />,
     children: [
+      {
+        index: true,
+        element: <Navigate to="products/add" replace />,
+      },
       {
         path: "products/add",
         element: <AddProduct />,
       },
       {
-        path: "/website/banners",
+        path: "website/banners",
         element: <PromoManager />,
       },
       {
-        path: "/website/social",
+        path: "website/social",
         element: <SocialMediaManager />,
       },
       {

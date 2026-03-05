@@ -36,3 +36,6 @@ coverage/
 
 # Docker override files (optional)
 docker-compose.override.yml
+
+# Secrets and Credentials
+server/config/firebase-service-account.json

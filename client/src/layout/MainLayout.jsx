@@ -13,6 +13,9 @@ import { StickyPurchaseBar } from "../features/product-details/components/Sticky
 import { Preloader } from "../components/loaders/Preloader";
 import { SearchTrigger } from "../features/search/components/SearchTrigger";
 import { QuickViewModal } from "../components/shared/QuickViewModal";
+import { FloatingActions } from "../components/shared/FloatingActions";
+import { CookieConsent } from "../components/shared/CookieConsent";
+import { PromoModal } from "../components/shared/PromoModal";
 
 // Hooks
 import { useScrollToTop } from "../hooks/useScrollToTop";
@@ -77,17 +80,20 @@ export const MainLayout = () => {
       </motion.div>
 
       {/* --- Global Overlays & Modals --- */}
+      <PromoModal showLoader={showLoader} />
 
-      {/* 1. Auth Drawer */}
+      {/* Auth Drawer */}
       <AuthDrawer />
 
-      {/* 2. Cart Drawer */}
+      {/* Cart Drawer */}
       <CartDrawer />
 
-      {/* 3. Search Drawer */}
+      {/* Search Drawer */}
       <SearchTrigger />
 
-      {/* 4. Sticky Purchase Bar: Renders only for active products */}
+      <FloatingActions />
+
+      {/* Sticky Purchase Bar: Renders only for active products */}
       {activeProduct && (
         <StickyPurchaseBar
           product={activeProduct}
@@ -95,11 +101,13 @@ export const MainLayout = () => {
         />
       )}
 
-      {/* 5. Persistent Mobile Bottom Navigation */}
+      {/* Persistent Mobile Bottom Navigation */}
       <BottomNavigation />
 
-      {/* 6. Quick view modal */}
+      {/* Quick view modal */}
       <QuickViewModal />
+
+      <CookieConsent />
     </div>
   );
 };

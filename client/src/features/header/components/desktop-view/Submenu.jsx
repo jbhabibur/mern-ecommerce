@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { ChevronRight } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 export const SubMenu = ({ item }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -40,7 +41,11 @@ export const SubMenu = ({ item }) => {
   };
 
   return (
-    <div
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: false, amount: 0.5 }} // once: false মানে প্রতিবার স্ক্রলে আসলে অ্যানিমেশন হবে
+      transition={{ duration: 0.5, ease: "easeOut" }}
       className="relative group px-2 py-[10px] cursor-pointer"
       onMouseEnter={() => setIsOpen(true)}
       onMouseLeave={() => setIsOpen(false)}
@@ -55,25 +60,31 @@ export const SubMenu = ({ item }) => {
       </div>
 
       {/* Dropdown Menu (Level 1) */}
-      {item.children && (
-        <div
-          className={`absolute top-full left-0 min-w-[220px] bg-white text-black shadow-2xl border-t-2 border-black z-50 transition-all duration-300 transform 
+      <AnimatePresence>
+        {item.children && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            className={`absolute top-full left-0 min-w-[220px] bg-white text-black shadow-2xl border-t-2 border-black z-50 transition-all duration-300 transform 
           ${isOpen ? "opacity-100 translate-y-0 visible" : "opacity-0 translate-y-2 invisible"}`}
-        >
-          <ul className="flex flex-col w-full p-0 m-0 list-none">
-            {item.children.map((child, index) => (
-              <li
-                key={index}
-                className="w-full border-b border-gray-100 last:border-0"
-              >
-                {/* Passing handleNav and the child object containing the slug */}
-                <SubMenuChild child={child} onNav={handleNav} />
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-    </div>
+          >
+            <ul className="flex flex-col w-full p-0 m-0 list-none">
+              {item.children.map((child, index) => (
+                <li
+                  key={index}
+                  className="w-full border-b border-gray-100 last:border-0"
+                >
+                  {/* Passing handleNav and the child object containing the slug */}
+                  <SubMenuChild child={child} onNav={handleNav} />
+                </li>
+              ))}
+            </ul>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
 };
 
@@ -95,25 +106,31 @@ const SubMenuChild = ({ child, onNav }) => {
       </div>
 
       {/* Side Dropdown (Level 2) */}
-      {child.children && (
-        <div
-          className={`absolute top-0 left-full min-w-[200px] bg-white shadow-xl border-l border-gray-100 transition-all duration-200 transform
+      <AnimatePresence>
+        {child.children && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            className={`absolute top-0 left-full min-w-[200px] bg-white shadow-xl border-l border-gray-100 transition-all duration-200 transform
           ${isChildOpen ? "opacity-100 translate-x-0 visible" : "opacity-0 -translate-x-2 invisible"}`}
-        >
-          {child.children.map((subChild, i) => (
-            <div
-              key={i}
-              className="px-3 py-[14px] text-[12px] text-gray-600 uppercase font-normal! hover:bg-gray-100 border-b border-gray-50 last:border-0 transition-colors cursor-pointer"
-              onClick={(e) => {
-                e.stopPropagation();
-                onNav(subChild.slug); // Changed from subChild.label to subChild.slug
-              }}
-            >
-              {subChild.label}
-            </div>
-          ))}
-        </div>
-      )}
+          >
+            {child.children.map((subChild, i) => (
+              <div
+                key={i}
+                className="px-3 py-[14px] text-[12px] text-gray-600 uppercase font-normal! hover:bg-gray-100 border-b border-gray-50 last:border-0 transition-colors cursor-pointer"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onNav(subChild.slug); // Changed from subChild.label to subChild.slug
+                }}
+              >
+                {subChild.label}
+              </div>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

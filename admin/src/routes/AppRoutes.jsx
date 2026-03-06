@@ -11,6 +11,11 @@ import { SocialMediaManager } from "../features/storefront/SocialMediaManager";
 import { CategoriesManager } from "../components/CategoriesManager";
 import { AddCategory } from "../components/AddCategory";
 
+import { Dashboard } from "../features/dashboard/Dashboard";
+import { ProductInventory } from "../features/products/ProductInventory";
+
+import { AllOrders } from "../features/orders/AllOrders";
+
 const router = createBrowserRouter([
   {
     path: "/",
@@ -20,13 +25,22 @@ const router = createBrowserRouter([
     path: "/login",
     element: <LoginPage />,
   },
+
   {
     path: "/admin",
     element: <AdminLayout />,
     children: [
       {
         index: true,
-        element: <Navigate to="products/add" replace />,
+        element: <Navigate to="dashboard" replace />,
+      },
+      {
+        path: "dashboard",
+        element: <Dashboard />,
+      },
+      {
+        path: "products/",
+        element: <ProductInventory />,
       },
       {
         path: "products/add",
@@ -47,6 +61,10 @@ const router = createBrowserRouter([
       {
         path: "categories/add",
         element: <AddCategory />,
+      },
+      {
+        path: "/admin/orders",
+        element: <AllOrders />,
       },
     ],
   },

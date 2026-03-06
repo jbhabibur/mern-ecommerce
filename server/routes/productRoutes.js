@@ -9,6 +9,7 @@ import {
   getPopularProducts,
   searchProducts,
   getAllProducts,
+  getPaginatedProducts,
 } from "../controllers/productController.js";
 
 // Middleware & Validation Imports
@@ -24,8 +25,10 @@ const router = express.Router();
  * -----------------------------------------------------------
  */
 
-// @route   GET /api/products (Paginated list)
+// @route   GET /api/products
 router.get("/", getAllProducts);
+
+router.get("/paginated", getPaginatedProducts);
 
 // @route   GET /api/products/search
 router.get("/search", searchProducts);

@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
 
 export const useAddressForm = () => {
+  const [loading, setLoading] = useState(false); // Track API submission state
   const [formData, setFormData] = useState({
     contact: { email: "" },
     shipping: {
@@ -95,8 +96,7 @@ export const useAddressForm = () => {
       });
     };
 
-    // 2. Shipping Validation: Skip if logged in (using saved addresses)
-    // Only validate manual shipping form if NOT logged in
+    // 2. Shipping Validation: Only validate manual shipping form if NOT logged in
     if (!isActuallyLoggedIn) {
       validateSection("shipping");
     }
@@ -132,13 +132,51 @@ export const useAddressForm = () => {
     };
   };
 
+  /**
+   * HANDLE SUBMISSION (NEW)
+   * This function maps state fields to match the database schema
+   * (e.g., 'phone' -> 'phoneNumber' and 'address' -> 'houseAddress')
+   */
+  const handleSubmit = async (editingId, apiFunction) => {
+    // Map internal state to Backend/API field names
+    const payload = {
+      fullName: formData.shipping.fullName,
+      phoneNumber: formData.shipping.phone,
+      division: formData.shipping.division,
+      city: formData.shipping.city,
+      zone: formData.shipping.zone,
+      houseAddress: formData.shipping.address,
+      label: formData.shipping.label,
+    };
+
+    setLoading(true);
+    try {
+      // If editingId exists, we update; otherwise, we create.
+      const response = editingId
+        ? await apiFunction(editingId, payload)
+        : await apiFunction(payload);
+
+      return { success: true, data: response };
+    } catch (err) {
+      console.error("Address Submission Error:", err);
+      return { success: false, error: err };
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     formData,
     errors,
+    loading,
     handleChange,
     handleLocationChange,
+    handleDivisionChange: (val) =>
+      handleLocationChange("shipping", "division", val),
+    handleCityChange: (val) => handleLocationChange("shipping", "city", val),
     validateForm,
     getFinalData,
     setFormData,
+    handleSubmit,
   };
 };

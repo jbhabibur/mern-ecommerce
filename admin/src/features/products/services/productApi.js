@@ -67,3 +67,41 @@ export const fetchCategories = async () => {
     };
   }
 };
+
+/**
+ * GET: Fetch products with pagination
+ */
+export const fetchPaginatedProducts = async (page = 1, limit = 8) => {
+  try {
+    const response = await fetch(
+      `${BASE_URL}/api/products/paginated?page=${page}&limit=${limit}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      },
+    );
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.message || "Failed to fetch products");
+    }
+
+    return {
+      success: true,
+      data: result.data || [],
+      totalPages: result.totalPages || 1,
+      totalProducts: result.totalProducts || 0,
+      currentPage: result.currentPage || 1,
+    };
+  } catch (error) {
+    console.error("Pagination Error:", error.message);
+    return {
+      success: false,
+      message: error.message,
+      data: [],
+    };
+  }
+};

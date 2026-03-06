@@ -306,3 +306,33 @@ export const getAllProducts = asyncHandler(async (req, res) => {
     totalProducts: products.length, // Total count of products found
   });
 });
+
+/**
+ * @desc    Fetch products with pagination
+ * @route   GET /api/products/paginated
+ * @access  Public
+ */
+export const getPaginatedProducts = asyncHandler(async (req, res) => {
+  // 1. Query parameters থেকে page এবং limit নেয়া (Default values সহ)
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 8;
+  const skip = (page - 1) * limit;
+
+  // 2. মোট প্রোডাক্ট সংখ্যা বের করা
+  const totalProducts = await Product.countDocuments();
+
+  // 3. নির্দিষ্ট পেজের ডাটা ডাটাবেস থেকে আনা
+  const products = await Product.find()
+    .sort({ createdAt: -1 }) // নতুন প্রোডাক্ট আগে দেখাবে
+    .skip(skip)
+    .limit(limit);
+
+  // 4. সাকসেস রেসপন্স পাঠানো
+  res.status(200).json({
+    success: true,
+    data: products,
+    totalProducts,
+    totalPages: Math.ceil(totalProducts / limit),
+    currentPage: page,
+  });
+});

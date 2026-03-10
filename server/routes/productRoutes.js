@@ -9,6 +9,9 @@ import {
   getPopularProducts,
   searchProducts,
   getAllProducts,
+  getPaginatedProducts,
+  getAllUniqueSizes, // যুক্ত করা হয়েছে
+  getProductStockAnalysis, // যুক্ত করা হয়েছে
 } from "../controllers/productController.js";
 
 // Middleware & Validation Imports
@@ -24,8 +27,10 @@ const router = express.Router();
  * -----------------------------------------------------------
  */
 
-// @route   GET /api/products (Paginated list)
+// @route   GET /api/products
 router.get("/", getAllProducts);
+
+router.get("/paginated", getPaginatedProducts);
 
 // @route   GET /api/products/search
 router.get("/search", searchProducts);
@@ -35,6 +40,18 @@ router.get("/popular", getPopularProducts);
 
 // @route   GET /api/products/new-arrivals
 router.get("/new-arrivals", getNewArrivals);
+
+/**
+ * -----------------------------------------------------------
+ * ADMIN & ANALYTICS ROUTES
+ * -----------------------------------------------------------
+ */
+
+// @route   GET /api/products/admin/all-sizes
+router.get("/admin/all-sizes", getAllUniqueSizes);
+
+// @route   GET /api/products/admin/stock-analysis/:id
+router.get("/admin/stock-analysis/:id", getProductStockAnalysis);
 
 /**
  * -----------------------------------------------------------

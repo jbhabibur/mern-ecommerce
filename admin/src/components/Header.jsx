@@ -3,132 +3,146 @@ import { Search, Bell, Menu, Moon, Sun, X } from "lucide-react";
 import { useTheme } from "../contexts/ThemeContext";
 
 export const Header = ({ toggleSidebar }) => {
-  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
-  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
 
-  // Context theke theme and toggle nilam
   const { theme, toggleTheme } = useTheme();
-  const isDarkMode = theme === "dark";
+  const isDark = theme === "dark";
 
   return (
     <header
-      className="h-16 flex items-center justify-between px-4 md:px-6 sticky top-0 z-30 transition-colors duration-300
-      bg-theme-base border-b border-theme-line"
+      className="
+        h-16 flex items-center justify-between px-4 md:px-6
+        sticky top-0 z-40
+        backdrop-blur-md
+        bg-theme-base/80
+        border-b border-theme-line
+      "
     >
-      {/* Left Side: Toggle & Desktop Search */}
-      <div className="flex items-center gap-2 md:gap-4 flex-1">
+      {/* LEFT */}
+      <div className="flex items-center gap-3 flex-1">
+        {/* Mobile Sidebar Toggle */}
         <button
           onClick={toggleSidebar}
-          className="p-2 rounded-lg lg:hidden transition-colors
-            text-theme-front hover:bg-theme-sub"
+          className="p-2 rounded-lg lg:hidden hover:bg-theme-sub transition-colors"
         >
-          <Menu size={20} />
+          <Menu size={20} className="text-theme-front" />
         </button>
 
-        {/* Desktop Search Bar */}
-        <div className="relative max-w-md w-full hidden md:block group">
-          <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-            <Search
-              size={18}
-              className="text-theme-muted group-focus-within:text-theme-front transition-colors"
-            />
-          </span>
+        {/* Desktop Search */}
+        <div className="relative hidden md:block w-full max-w-md">
+          <Search
+            size={18}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-theme-muted"
+          />
+
           <input
             type="text"
-            className="block w-full pl-10 pr-3 py-2 border leading-5 transition-all sm:text-sm outline-none font-bold tracking-tight
-              bg-theme-sub border-theme-line placeholder-theme-muted text-theme-front 
-              focus:bg-theme-base focus:border-theme-front"
-            placeholder="SEARCH..."
+            placeholder="Search products, orders..."
+            className="
+              w-full pl-10 pr-3 py-2
+              rounded-lg
+              border
+              text-sm
+              outline-none
+              bg-theme-sub
+              border-theme-line
+              text-theme-front
+              focus:border-theme-act focus:ring-1 focus:ring-theme-act
+              "
           />
         </div>
 
+        {/* Mobile Search Button */}
         <button
-          onClick={() => setIsMobileSearchOpen(!isMobileSearchOpen)}
-          className="p-2 md:hidden text-theme-front"
+          onClick={() => setMobileSearchOpen(true)}
+          className="p-2 md:hidden hover:bg-theme-sub rounded-lg transition-colors"
         >
-          <Search size={20} />
+          <Search size={20} className="text-theme-front" />
         </button>
       </div>
 
-      {/* Right Side: Actions & Profile */}
-      <div className="flex items-center gap-1 md:gap-4">
-        {/* Theme Toggle Button - Now using Context */}
+      {/* RIGHT */}
+      <div className="flex items-center gap-2 md:gap-4">
+        {/* THEME TOGGLE */}
         <button
           onClick={toggleTheme}
-          className="p-2 rounded-full transition-colors text-theme-front hover:bg-theme-sub"
-          title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+          className="p-2 rounded-lg hover:bg-theme-sub transition-colors"
         >
-          {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+          {isDark ? (
+            <Sun size={20} className="text-theme-front" />
+          ) : (
+            <Moon size={20} className="text-theme-front" />
+          )}
         </button>
 
-        {/* Notifications Dropdown */}
+        {/* NOTIFICATIONS */}
         <div className="relative">
           <button
-            onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
-            className="p-2 rounded-full relative transition-colors text-theme-front hover:bg-theme-sub"
+            onClick={() => setNotificationsOpen(!notificationsOpen)}
+            className="p-2 rounded-lg hover:bg-theme-sub relative transition-colors"
           >
-            <Bell size={20} />
-            <span className="absolute top-2 right-2.5 block h-2 w-2 rounded-full bg-theme-act ring-2 ring-theme-base"></span>
+            <Bell size={20} className="text-theme-front" />
+            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
           </button>
 
-          {isNotificationsOpen && (
-            <div
-              className="absolute right-0 mt-2 w-64 md:w-72 shadow-2xl z-50 border
-              bg-theme-base border-theme-line animate-in fade-in zoom-in duration-200"
-            >
-              <div className="px-4 py-3 border-b border-theme-line font-black text-[10px] uppercase tracking-widest text-theme-front">
-                Alerts
+          {notificationsOpen && (
+            <div className="absolute right-0 mt-3 w-72 bg-theme-base border border-theme-line rounded-xl shadow-xl overflow-hidden z-50">
+              <div className="px-4 py-3 border-b border-theme-line text-sm font-semibold text-theme-front">
+                Notifications
               </div>
+
               <div className="max-h-60 overflow-y-auto">
-                <a
-                  href="#"
-                  className="block px-4 py-3 hover:bg-theme-sub border-b border-theme-line transition-colors"
-                >
-                  <p className="text-[10px] font-bold text-theme-front uppercase">
-                    System Update
+                <div className="px-4 py-3 hover:bg-theme-sub cursor-pointer">
+                  <p className="text-sm font-medium text-theme-front">
+                    New order received
                   </p>
-                  <p className="text-[9px] text-theme-muted mt-1">2 MINS AGO</p>
-                </a>
+                  <p className="text-xs text-theme-muted">2 minutes ago</p>
+                </div>
+
+                <div className="px-4 py-3 hover:bg-theme-sub cursor-pointer">
+                  <p className="text-sm font-medium text-theme-front">
+                    Product stock low
+                  </p>
+                  <p className="text-xs text-theme-muted">10 minutes ago</p>
+                </div>
               </div>
             </div>
           )}
         </div>
 
-        <div className="hidden sm:block h-6 w-px bg-theme-line mx-1"></div>
+        {/* Divider */}
+        <div className="hidden sm:block w-px h-6 bg-theme-line"></div>
 
-        {/* User Profile */}
-        <div className="flex items-center gap-2 md:gap-3 cursor-pointer p-1 group">
-          <div className="text-right hidden sm:block">
-            <p className="text-xs font-black uppercase tracking-tighter text-theme-front leading-tight">
-              Zayed Khan
-            </p>
-            <p className="text-[9px] font-bold text-theme-muted uppercase">
-              Admin
-            </p>
+        {/* PROFILE */}
+        <div className="flex items-center gap-3 cursor-pointer">
+          <div className="hidden sm:block text-right">
+            <p className="text-sm font-medium text-theme-front">Admin</p>
+            <p className="text-xs text-theme-muted">Administrator</p>
           </div>
+
           <div className="relative">
-            <div className="h-8 w-8 md:h-9 md:w-9 border border-theme-front overflow-hidden grayscale group-hover:grayscale-0 transition-all">
-              <img
-                src="https://api.dicebear.com/7.x/avataaars/svg?seed=Zayed"
-                className="h-full w-full object-cover bg-theme-sub"
-                alt="Avatar"
-              />
-            </div>
-            <span className="absolute -bottom-1 -right-1 block h-2.5 w-2.5 md:h-3 md:w-3 rounded-full bg-theme-act border-2 border-theme-base"></span>
+            <img
+              src="https://api.dicebear.com/7.x/avataaars/svg?seed=admin"
+              className="w-9 h-9 rounded-full border border-theme-line"
+              alt="avatar"
+            />
+            <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-theme-base rounded-full"></span>
           </div>
         </div>
       </div>
 
       {/* MOBILE SEARCH OVERLAY */}
-      {isMobileSearchOpen && (
-        <div className="absolute inset-0 bg-theme-base z-50 flex items-center px-4 md:hidden animate-in slide-in-from-top duration-300">
+      {mobileSearchOpen && (
+        <div className="absolute inset-0 bg-theme-base flex items-center px-4 md:hidden z-50">
+          <Search size={20} className="text-theme-muted mr-2" />
           <input
             autoFocus
             type="text"
-            className="flex-1 bg-transparent border-none outline-none font-bold text-theme-front"
-            placeholder="SEARCH..."
+            placeholder="Search..."
+            className="flex-1 bg-transparent outline-none text-sm text-theme-front"
           />
-          <button onClick={() => setIsMobileSearchOpen(false)}>
+          <button onClick={() => setMobileSearchOpen(false)}>
             <X size={20} className="text-theme-front" />
           </button>
         </div>

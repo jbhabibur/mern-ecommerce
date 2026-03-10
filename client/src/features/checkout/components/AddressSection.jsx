@@ -5,7 +5,6 @@ import { useAddressForm } from "../hooks/useAddressForm";
 import { BD_LOCATIONS } from "../../../constants/locations";
 import { AddressModal } from "./AddressModal";
 
-// ১. প্যারেন্ট থেকে প্রপস গ্রহণ করা হচ্ছে
 export const AddressSection = ({
   selectedId,
   setSelectedId,
@@ -19,7 +18,6 @@ export const AddressSection = ({
 
   const tooltipRef = useRef(null);
 
-  // refreshAddresses ফাংশনটি Modal এর জন্য প্রয়োজন তাই এখানে রাখা হয়েছে
   const { refreshAddresses } = useAddress();
 
   const {
@@ -34,7 +32,7 @@ export const AddressSection = ({
     handleSubmit,
   } = useAddressForm();
 
-  // Initial auto-select: প্যারেন্টের setSelectedId ব্যবহার করবে
+  // Initial auto-select:
   useEffect(() => {
     if (addresses?.length > 0 && !selectedId) {
       const defaultAddr =
@@ -113,6 +111,7 @@ export const AddressSection = ({
         </div>
 
         <button
+          type="button"
           onClick={() => setIsOpen(!isOpen)}
           className="p-1.5 hover:bg-gray-50 rounded-full transition-all active:scale-90 mt-1"
         >
@@ -235,6 +234,7 @@ export const AddressSection = ({
               ref={showTooltipId === addr._id ? tooltipRef : null}
             >
               <button
+                type="button"
                 onClick={(e) => {
                   e.stopPropagation();
                   setShowTooltipId(
@@ -266,6 +266,7 @@ export const AddressSection = ({
 
         {/* Add New Button */}
         <button
+          type="button"
           onClick={handleAddNew}
           className="flex items-center gap-2.5 text-[#005BD1] text-[15px] font-bold mt-4 py-3 px-1 hover:opacity-70 transition-all active:scale-[0.98]"
         >

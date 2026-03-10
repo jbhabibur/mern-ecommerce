@@ -19,6 +19,7 @@ import orderRoutes from "./routes/order.routes.js";
 import paymentRoutes from "./routes/payment.routes.js";
 import userRoutes from "./routes/user.routes.js";
 import wishlistRoutes from "./routes/wishlist.routes.js";
+import analyticsRoutes from "./routes/analytics.route.js";
 
 // Initialize Database Connection
 connectDB();
@@ -87,6 +88,9 @@ app.use("/api/profile", userRoutes);
 
 // Wishlist routes
 app.use("/api/wishlist", wishlistRoutes);
+
+// Analytics routes (Admin Only)
+app.use("/api/analytics", analyticsRoutes);
 
 /**
  * Health Check Route

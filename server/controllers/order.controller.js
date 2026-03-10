@@ -3,6 +3,9 @@ import SSLCommerzPayment from "sslcommerz-lts";
 import mongoose from "mongoose";
 
 export const createOrder = async (req, res) => {
+  // 1. Log incoming body for debugging
+  console.log("🚀 Incoming Order Body:", JSON.stringify(req.body, null, 2));
+
   try {
     const {
       customer,
@@ -13,14 +16,14 @@ export const createOrder = async (req, res) => {
       payment,
     } = req.body;
 
-    // 1. Basic Validation
+    // 2. Basic Validation
     if (!items || items.length === 0) {
       return res
         .status(400)
         .json({ success: false, message: "No items found" });
     }
 
-    // 2. Create Order in Database (Always save the order first)
+    // 3. Create Order in Database
     const newOrder = new Order({
       customer,
       items,
@@ -37,69 +40,87 @@ export const createOrder = async (req, res) => {
     });
 
     const savedOrder = await newOrder.save();
+    console.log("✅ Order saved in DB:", savedOrder._id);
 
-    // 3. SSLCommerz Logic
+    // 4. SSLCommerz Logic
     if (payment.method === "ssl") {
+      const isLive = process.env.SSL_IS_LIVE === "true";
       const sslcz = new SSLCommerzPayment(
-        process.env.SSL_STORE_ID, // Matches your .env
-        process.env.SSL_STORE_PASS, // Matches your .env
-        false, // Sandbox mode
+        process.env.SSL_STORE_ID,
+        process.env.SSL_STORE_PASS,
+        isLive,
       );
 
+      // Mapping logic to prevent 'undefined' errors
       const data = {
         total_amount: financials.totalAmount,
         currency: "BDT",
         tran_id: payment.transactionId,
+
         success_url: `${process.env.SERVER_URL}/api/payment/success/${payment.transactionId}`,
         fail_url: `${process.env.SERVER_URL}/api/payment/fail/${payment.transactionId}`,
         cancel_url: `${process.env.SERVER_URL}/api/payment/cancel/${payment.transactionId}`,
         ipn_url: `${process.env.SERVER_URL}/api/payment/ipn`,
+
         shipping_method: "Courier",
-        product_name: items.map((i) => i.name).join(", "),
+        product_name: items
+          .map((i) => i.name)
+          .join(", ")
+          .substring(0, 100),
         product_category: "Clothing",
         product_profile: "general",
-        cus_name: shippingAddress.fullName,
-        cus_email: customer.email,
-        cus_add1: shippingAddress.houseAddress, // SSL requires address fields
-        cus_city: shippingAddress.city,
-        cus_state: shippingAddress.division,
+
+        // Customer Details (Handles both 'phone' and 'phoneNumber')
+        cus_name: shippingAddress.fullName || "Customer",
+        cus_email: customer.email || "test@test.com",
+        cus_add1:
+          shippingAddress.address || shippingAddress.houseAddress || "Dhaka",
+        cus_city: shippingAddress.city || "Dhaka",
+        cus_state: shippingAddress.division || "Dhaka",
         cus_postcode: "1000",
         cus_country: "Bangladesh",
-        cus_phone: shippingAddress.phoneNumber,
-        ship_name: shippingAddress.fullName,
-        ship_add1: shippingAddress.houseAddress,
-        ship_city: shippingAddress.city,
-        ship_state: shippingAddress.division,
+        cus_phone:
+          shippingAddress.phone || shippingAddress.phoneNumber || "01700000000",
+
+        // Shipping Details (Required by SSLCommerz)
+        ship_name: shippingAddress.fullName || "Customer",
+        ship_add1:
+          shippingAddress.address || shippingAddress.houseAddress || "Dhaka",
+        ship_city: shippingAddress.city || "Dhaka",
+        ship_state: shippingAddress.division || "Dhaka",
         ship_postcode: "1000",
         ship_country: "Bangladesh",
       };
 
+      console.log("🛠 SSL Initialization Data:", data);
+
       const apiResponse = await sslcz.init(data);
 
       if (apiResponse?.GatewayPageURL) {
+        console.log("🔗 SSL Gateway URL:", apiResponse.GatewayPageURL);
         return res.status(201).json({
           success: true,
           paymentUrl: apiResponse.GatewayPageURL,
           orderId: savedOrder._id,
         });
       } else {
-        // If SSL fails, we return the error from SSLCommerz
+        console.error("❌ SSL Initialization Failed:", apiResponse);
         return res.status(400).json({
           success: false,
           message: "SSL Session failed",
-          error: apiResponse?.failedreason,
+          error: apiResponse?.failedreason || "Store Credential Error",
         });
       }
     }
 
-    // 4. COD Response
+    // 5. COD Response
     res.status(201).json({
       success: true,
       message: "Order placed successfully (COD)",
       orderId: savedOrder._id,
     });
   } catch (error) {
-    console.error("Order Error:", error);
+    console.error("🔥 Order Controller Error:", error);
     res.status(500).json({ success: false, message: error.message });
   }
 };
@@ -177,6 +198,8 @@ export const getUserOrders = async (req, res) => {
 export const retryPayment = async (req, res) => {
   try {
     const { orderId } = req.params;
+
+    // Find the existing order in the database
     const order = await Order.findById(orderId);
 
     if (!order) {
@@ -185,27 +208,27 @@ export const retryPayment = async (req, res) => {
         .json({ success: false, message: "Order not found" });
     }
 
-    // 1. Initialize SSLCommerz EXACTLY like your createOrder
+    // 1. Initialize SSLCommerz (Same logic as createOrder)
+    const isLive = process.env.SSL_IS_LIVE === "true";
     const sslcz = new SSLCommerzPayment(
       process.env.SSL_STORE_ID,
       process.env.SSL_STORE_PASS,
-      false, // Hardcoded 'false' just like in your createOrder
+      isLive, // true for live, false for sandbox
     );
 
-    // 2. Generate a fresh Transaction ID (SSL requires a unique one for every attempt)
+    // 2. Generate a fresh Transaction ID (SSL requires a unique ID for every attempt)
     const newTranId = `RE${orderId.toString().slice(-4)}${Date.now().toString().slice(-6)}`;
 
-    // 3. Fallback for rootUrl since SERVER_URL is missing in your .env
-    const rootUrl = process.env.SERVER_URL || "http://localhost:5000";
-
+    // 3. Prepare SSLCommerz Data with proper fallbacks to prevent undefined errors
     const data = {
       total_amount: order.financials.totalAmount,
       currency: "BDT",
       tran_id: newTranId,
-      success_url: `${rootUrl}/api/payment/success/${newTranId}`,
-      fail_url: `${rootUrl}/api/payment/fail/${newTranId}`,
-      cancel_url: `${rootUrl}/api/payment/cancel/${newTranId}`,
-      ipn_url: `${rootUrl}/api/payment/ipn`,
+      success_url: `${process.env.SERVER_URL}/api/payment/success/${newTranId}`,
+      fail_url: `${process.env.SERVER_URL}/api/payment/fail/${newTranId}`,
+      cancel_url: `${process.env.SERVER_URL}/api/payment/cancel/${newTranId}`,
+      ipn_url: `${process.env.SERVER_URL}/api/payment/ipn`,
+
       shipping_method: "Courier",
       product_name: order.items
         .map((i) => i.name)
@@ -213,42 +236,104 @@ export const retryPayment = async (req, res) => {
         .substring(0, 100),
       product_category: "Clothing",
       product_profile: "general",
+
+      // Customer Details (Handles both 'phone' and 'phoneNumber' mapping)
       cus_name: order.shippingAddress.fullName || "Customer",
       cus_email: order.customer.email || "test@test.com",
-      cus_add1: order.shippingAddress.houseAddress || "Dhaka",
+      cus_add1:
+        order.shippingAddress.address ||
+        order.shippingAddress.houseAddress ||
+        "Dhaka",
       cus_city: order.shippingAddress.city || "Dhaka",
       cus_state: order.shippingAddress.division || "Dhaka",
       cus_postcode: "1000",
       cus_country: "Bangladesh",
-      cus_phone: order.shippingAddress.phoneNumber || "01700000000",
-      ship_name: order.shippingAddress.fullName,
-      ship_add1: order.shippingAddress.houseAddress,
-      ship_city: order.shippingAddress.city,
-      ship_state: order.shippingAddress.division,
+      cus_phone:
+        order.shippingAddress.phone ||
+        order.shippingAddress.phoneNumber ||
+        "01700000000",
+
+      // Shipping Details (Required by SSLCommerz)
+      ship_name: order.shippingAddress.fullName || "Customer",
+      ship_add1:
+        order.shippingAddress.address ||
+        order.shippingAddress.houseAddress ||
+        "Dhaka",
+      ship_city: order.shippingAddress.city || "Dhaka",
+      ship_state: order.shippingAddress.division || "Dhaka",
       ship_postcode: "1000",
       ship_country: "Bangladesh",
     };
 
+    console.log("🛠 Retrying SSL Session with Data:", data);
+
     const apiResponse = await sslcz.init(data);
 
     if (apiResponse?.GatewayPageURL) {
-      // IMPORTANT: You MUST update the database with the newTranId
-      // Otherwise, the success/fail routes won't find the order.
+      // 4. IMPORTANT: Update the database with the new Transaction ID
+      // so the success/fail routes can identify this order attempt
       order.payment.transactionId = newTranId;
       await order.save();
 
+      console.log(
+        "🔗 New SSL Gateway URL (Retry):",
+        apiResponse.GatewayPageURL,
+      );
       return res.status(200).json({
         success: true,
         paymentUrl: apiResponse.GatewayPageURL,
       });
     } else {
+      console.error("❌ SSL Retry Failed:", apiResponse);
       return res.status(400).json({
         success: false,
-        message: apiResponse?.failedreason || "SSL Session failed",
+        message: "SSL Session failed",
+        error: apiResponse?.failedreason || "Store Credential Error",
       });
     }
   } catch (error) {
-    console.error("Retry Payment Error:", error);
+    console.error("🔥 Retry Payment Error:", error);
     res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+/**
+ * Controller: Get Orders with Dynamic Limit and Pagination
+ * Used for both the Admin Dashboard (limited results) and the All Orders page (paginated).
+ */
+export const getAllOrdersAdmin = async (req, res) => {
+  try {
+    // Extract page and limit from query parameters; defaults to page 1 and limit 8
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 8;
+    const skip = (page - 1) * limit;
+
+    // Get the total count of orders for pagination metadata
+    const totalOrders = await Order.countDocuments();
+
+    // Fetch orders with latest first, applying pagination skip and limit
+    const orders = await Order.find()
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    res.status(200).json({
+      success: true,
+      orders: orders || [],
+      pagination: {
+        totalOrders,
+        currentPage: page,
+        totalPages: Math.ceil(totalOrders / limit),
+        hasNextPage: skip + orders.length < totalOrders,
+        hasPrevPage: page > 1,
+      },
+    });
+  } catch (error) {
+    console.error("Admin Fetch Orders Error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: error.message,
+    });
   }
 };

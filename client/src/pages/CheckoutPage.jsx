@@ -89,6 +89,16 @@ export const CheckoutPage = () => {
         email: isLoggedIn ? user?.email : contact.email,
         userId: isLoggedIn ? user?.id : null,
         isGuest: !isLoggedIn,
+        fullName: isLoggedIn ? user?.fullName : contact.name,
+        phoneNumber: isLoggedIn ? user?.phoneNumber : contact.phone,
+        address: {
+          houseAddress: user?.houseAddress,
+          landmark: user?.landmark,
+          city: user?.city,
+          zone: user?.zone,
+          division: user?.division,
+          countryCode: user?.countryCode,
+        },
       },
 
       // 2. Product Snapshots (Mapping from Redux store)

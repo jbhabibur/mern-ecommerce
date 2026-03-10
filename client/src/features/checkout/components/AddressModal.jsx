@@ -63,6 +63,7 @@ export const AddressModal = ({
               Cancel
             </button>
             <button
+              type="button"
               onClick={(e) =>
                 handleSubmit(
                   e,

@@ -15,15 +15,20 @@ export const adminOrderApi = createApi({
   }),
   tagTypes: ["Orders"],
   endpoints: (builder) => ({
+    // Updated to accept dynamic parameters for page and limit
     getOrders: builder.query({
-      // Matches: GET /api/orders/admin/all
-      query: () => "/orders/admin/all",
+      query: (params = {}) => {
+        const { page = 1, limit = 8 } = params;
+        return {
+          url: "/orders/admin/all",
+          params: { page, limit }, // Appends ?page=X&limit=Y to the URL
+        };
+      },
       providesTags: ["Orders"],
     }),
 
     updateOrder: builder.mutation({
       query: ({ id, ...patch }) => ({
-        // Matches: PATCH /api/orders/admin/update/:id
         url: `/orders/admin/update/${id}`,
         method: "PATCH",
         body: patch,

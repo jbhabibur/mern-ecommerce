@@ -6,7 +6,6 @@ import {
   retryPayment,
   //  Admin controllers
   getAllOrdersAdmin,
-  updateOrderAdmin,
 } from "../controllers/order.controller.js";
 import { verifyToken } from "../middleware/verifyToken.middleware.js";
 
@@ -29,21 +28,17 @@ router.get("/retry-payment/:orderId", verifyToken, retryPayment);
 // Route: GET /api/orders/:id (Success Page details)
 router.get("/:id", getOrderById);
 
-/** * ==========================================
+/**
+ * ==========================================
  * ADMIN MANAGEMENT ROUTES
  * ==========================================
  */
 
 /**
  * Route: GET /api/orders/admin/all
- * Description: Fetch all orders for the Admin Dashboard
+ * Description: Retrieve paginated orders for the Admin Dashboard or full order management.
+ * Query Params: ?page=1&limit=8
  */
 router.get("/admin/all", verifyToken, getAllOrdersAdmin);
-
-/**
- * Route: PATCH /api/orders/admin/update/:id
- * Description: Admin updates order status or internal notes
- */
-router.patch("/admin/update/:id", verifyToken, updateOrderAdmin);
 
 export default router;

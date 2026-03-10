@@ -10,6 +10,8 @@ import {
   searchProducts,
   getAllProducts,
   getPaginatedProducts,
+  getAllUniqueSizes, // যুক্ত করা হয়েছে
+  getProductStockAnalysis, // যুক্ত করা হয়েছে
 } from "../controllers/productController.js";
 
 // Middleware & Validation Imports
@@ -38,6 +40,18 @@ router.get("/popular", getPopularProducts);
 
 // @route   GET /api/products/new-arrivals
 router.get("/new-arrivals", getNewArrivals);
+
+/**
+ * -----------------------------------------------------------
+ * ADMIN & ANALYTICS ROUTES
+ * -----------------------------------------------------------
+ */
+
+// @route   GET /api/products/admin/all-sizes
+router.get("/admin/all-sizes", getAllUniqueSizes);
+
+// @route   GET /api/products/admin/stock-analysis/:id
+router.get("/admin/stock-analysis/:id", getProductStockAnalysis);
 
 /**
  * -----------------------------------------------------------

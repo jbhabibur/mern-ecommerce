@@ -313,26 +313,83 @@ export const getAllProducts = asyncHandler(async (req, res) => {
  * @access  Public
  */
 export const getPaginatedProducts = asyncHandler(async (req, res) => {
-  // 1. Query parameters থেকে page এবং limit নেয়া (Default values সহ)
+  // 1. Get page and limit from query parameters (with default values)
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 8;
   const skip = (page - 1) * limit;
 
-  // 2. মোট প্রোডাক্ট সংখ্যা বের করা
+  // 2. Get the total number of products
   const totalProducts = await Product.countDocuments();
 
-  // 3. নির্দিষ্ট পেজের ডাটা ডাটাবেস থেকে আনা
+  // 3. Fetch the products for the requested page from the database
   const products = await Product.find()
-    .sort({ createdAt: -1 }) // নতুন প্রোডাক্ট আগে দেখাবে
+    .sort({ createdAt: -1 }) // Show newest products first
     .skip(skip)
     .limit(limit);
 
-  // 4. সাকসেস রেসপন্স পাঠানো
+  // 4. Send success response
   res.status(200).json({
     success: true,
     data: products,
     totalProducts,
     totalPages: Math.ceil(totalProducts / limit),
     currentPage: page,
+  });
+});
+
+/**
+ * @desc    Get all unique sizes across all products for filters/analytics
+ * @route   GET /api/products/admin/all-sizes
+ * @access  Admin / Private
+ */
+export const getAllUniqueSizes = asyncHandler(async (req, res) => {
+  // 1. Fetch only the 'variants' field from the database
+  const products = await Product.find().select("variants");
+
+  // 2. Extract sizes from all product variants
+  const sizeSet = new Set();
+
+  products.forEach((product) => {
+    product.variants.forEach((variant) => {
+      if (variant.size) {
+        sizeSet.add(variant.size); // Using a Set ensures no duplicate sizes
+      }
+    });
+  });
+
+  // 3. Convert the Set back into an Array
+  const uniqueSizes = Array.from(sizeSet);
+
+  res.status(200).json({
+    success: true,
+    count: uniqueSizes.length,
+    data: uniqueSizes, // Output: ["M", "XL", "15.35", "16", "1-2 Year"]
+  });
+});
+
+/**
+ * @desc    Get size and stock breakdown for a specific product
+ * @route   GET /api/products/admin/stock-analysis/:id
+ * @access  Admin / Private
+ */
+export const getProductStockAnalysis = asyncHandler(async (req, res, next) => {
+  const product = await Product.findById(req.params.id).select("variants name");
+
+  if (!product) {
+    return res
+      .status(404)
+      .json({ success: false, message: "Product not found" });
+  }
+
+  // Format data for chart representation
+  const stockData = product.variants.map((v) => ({
+    size: v.size,
+    stock: v.stock,
+  }));
+
+  res.status(200).json({
+    success: true,
+    productName: product.name,
+    data: stockData,
   });
 });

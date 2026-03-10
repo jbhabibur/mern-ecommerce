@@ -298,79 +298,38 @@ export const retryPayment = async (req, res) => {
 };
 
 /**
- * Controller: Get all orders for Admin Dashboard
+ * Controller: Get Orders with Dynamic Limit and Pagination
+ * Used for both the Admin Dashboard (limited results) and the All Orders page (paginated).
  */
 export const getAllOrdersAdmin = async (req, res) => {
   try {
-    // Fetches all orders from the database, sorted by latest first
-    const orders = await Order.find().sort({ createdAt: -1 });
+    // Extract page and limit from query parameters; defaults to page 1 and limit 8
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 8;
+    const skip = (page - 1) * limit;
+
+    // Get the total count of orders for pagination metadata
+    const totalOrders = await Order.countDocuments();
+
+    // Fetch orders with latest first, applying pagination skip and limit
+    const orders = await Order.find()
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
 
     res.status(200).json({
       success: true,
-      count: orders.length,
       orders: orders || [],
+      pagination: {
+        totalOrders,
+        currentPage: page,
+        totalPages: Math.ceil(totalOrders / limit),
+        hasNextPage: skip + orders.length < totalOrders,
+        hasPrevPage: page > 1,
+      },
     });
   } catch (error) {
     console.error("Admin Fetch Orders Error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Internal server error",
-      error: error.message,
-    });
-  }
-};
-
-/**
- * Controller: Admin update order status, verification, and internal notes
- */
-export const updateOrderAdmin = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { orderStatus, internalNote, isVerified } = req.body;
-
-    // Validate if the ID is a valid MongoDB ObjectId
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid Order ID format",
-      });
-    }
-
-    // Find and update the order fields
-    const updatedOrder = await Order.findByIdAndUpdate(
-      id,
-      {
-        $set: {
-          orderStatus,
-          internalNote,
-          isVerified,
-        },
-        // Log the change in order history
-        $push: {
-          history: {
-            status: orderStatus,
-            note: internalNote || "Status updated by admin",
-            updatedAt: new Date(),
-          },
-        },
-      },
-      { new: true }, // Return the updated document
-    );
-
-    if (!updatedOrder) {
-      return res.status(404).json({
-        success: false,
-        message: "Order not found",
-      });
-    }
-
-    res.status(200).json({
-      success: true,
-      message: "Order updated successfully",
-      order: updatedOrder,
-    });
-  } catch (error) {
-    console.error("Admin Update Error:", error);
     res.status(500).json({
       success: false,
       message: "Internal server error",

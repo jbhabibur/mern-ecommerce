@@ -2,6 +2,7 @@ import { createBrowserRouter, Navigate } from "react-router";
 
 import { LandingPage } from "../features/auth/LandingPage";
 import { LoginPage } from "../features/auth/LoginPage";
+import { SetupAdmin } from "../features/auth/SetupAdmin";
 
 import { AdminLayout } from "../layouts/AdminLayout";
 import { AddProduct } from "../features/products/AddProduct";
@@ -16,7 +17,15 @@ import { ProductInventory } from "../features/products/ProductInventory";
 
 import { AllOrders } from "../features/orders/AllOrders";
 
+// New Feature Import
+import { InviteAdmin } from "../features/admins/InviteAdmin";
+import { StaffList } from "../features/admins/StaffList";
+
 const router = createBrowserRouter([
+  {
+    path: "/account/setup-admin",
+    element: <SetupAdmin />,
+  },
   {
     path: "/",
     element: <LandingPage />,
@@ -65,6 +74,15 @@ const router = createBrowserRouter([
       {
         path: "/admin/orders",
         element: <AllOrders />,
+      },
+      // Invite Admin Route Added
+      {
+        path: "admins/invite",
+        element: <InviteAdmin />,
+      },
+      {
+        path: "admins/manage",
+        element: <StaffList />,
       },
     ],
   },

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React from "react";
 import {
   Edit3,
   AlertCircle,
@@ -7,16 +7,15 @@ import {
   Search,
   ShoppingBag,
   Calendar,
+  ChevronLeft,
+  ChevronRight,
+  ChevronDown,
 } from "lucide-react";
 
 import { OrderActionModal } from "./components/OrderActionModal";
-
-import { useGetOrdersQuery } from "../../redux/service/adminOrderApi";
 import { useOrderActions } from "./hooks/useOrderActions";
+import { useOrdersPagination } from "./hooks/useOrdersPagination";
 
-/**
- * Status style mapper with industry standard colors
- */
 const getStatusStyles = (status) => {
   const s = status?.toLowerCase();
   switch (s) {
@@ -36,9 +35,19 @@ const getStatusStyles = (status) => {
 };
 
 export const AllOrders = () => {
-  const { data, isLoading, isError, error } = useGetOrdersQuery();
-  const [searchTerm, setSearchTerm] = useState("");
-  console.log(data);
+  // Using our Custom Hooks
+  const {
+    orders,
+    pagination,
+    currentPage,
+    searchTerm,
+    isLoading,
+    isFetching,
+    isError,
+    error,
+    handlePageChange,
+    handleSearchChange,
+  } = useOrdersPagination(8);
 
   const {
     selectedOrder,
@@ -52,18 +61,6 @@ export const AllOrders = () => {
     closeModal,
     handleSaveChanges,
   } = useOrderActions();
-
-  const filteredOrders = useMemo(() => {
-    const orders = data?.orders || [];
-    if (!searchTerm) return orders;
-    const s = searchTerm.toLowerCase();
-    return orders.filter(
-      (o) =>
-        o._id.toLowerCase().includes(s) ||
-        o.billingAddress?.fullName?.toLowerCase().includes(s) ||
-        o.billingAddress?.phoneNumber?.includes(s),
-    );
-  }, [data, searchTerm]);
 
   if (isLoading)
     return (
@@ -105,8 +102,14 @@ export const AllOrders = () => {
               placeholder="Search Name, Phone, or ID..."
               className="w-full bg-theme-sub border border-theme-line rounded-xl py-2.5 pl-10 pr-4 text-sm focus:ring-1 focus:ring-theme-act outline-none"
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e) => handleSearchChange(e.target.value)}
             />
+            {isFetching && (
+              <Loader2
+                className="absolute right-3 top-1/2 -translate-y-1/2 animate-spin text-theme-act"
+                size={14}
+              />
+            )}
           </div>
         </header>
 
@@ -124,8 +127,10 @@ export const AllOrders = () => {
                   <th className="px-6 py-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-theme-line">
-                {filteredOrders.map((order) => (
+              <tbody
+                className={`divide-y divide-theme-line transition-opacity ${isFetching ? "opacity-50" : "opacity-100"}`}
+              >
+                {orders.map((order) => (
                   <tr
                     key={order._id}
                     className="hover:bg-theme-sub/40 transition-colors"
@@ -209,18 +214,78 @@ export const AllOrders = () => {
               </tbody>
             </table>
           </div>
-          {filteredOrders.length === 0 && (
+
+          {orders.length === 0 ? (
             <div className="py-20 text-center opacity-30">
               <ShoppingBag className="mx-auto mb-2" size={48} />
               <p className="text-sm font-black uppercase tracking-widest">
                 No matching orders
               </p>
             </div>
+          ) : (
+            <div className="flex flex-col sm:flex-row items-center justify-between px-6 py-4 bg-theme-sub/20 border-t border-theme-line gap-4">
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={!pagination.hasPrevPage || isFetching}
+                  className="p-2 rounded-lg border border-theme-line text-theme-muted hover:bg-theme-sub disabled:opacity-30 transition-colors"
+                >
+                  <ChevronLeft size={18} />
+                </button>
+
+                {[...Array(pagination.totalPages)].map((_, index) => (
+                  <button
+                    key={index + 1}
+                    onClick={() => handlePageChange(index + 1)}
+                    className={`w-9 h-9 rounded-xl text-xs font-bold transition-all ${
+                      currentPage === index + 1
+                        ? "bg-theme-act text-theme-actfg shadow-lg shadow-theme-act/20"
+                        : "text-theme-muted hover:bg-theme-sub border border-theme-line"
+                    }`}
+                  >
+                    {index + 1}
+                  </button>
+                ))}
+
+                <button
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={!pagination.hasNextPage || isFetching}
+                  className="p-2 rounded-lg border border-theme-line text-theme-muted hover:bg-theme-sub disabled:opacity-30 transition-colors"
+                >
+                  <ChevronRight size={18} />
+                </button>
+              </div>
+
+              <div className="flex items-center gap-4">
+                <span className="text-[10px] font-black uppercase text-theme-muted tracking-widest">
+                  Page
+                </span>
+                <div className="relative">
+                  <select
+                    value={currentPage}
+                    onChange={(e) => handlePageChange(Number(e.target.value))}
+                    className="appearance-none bg-theme-base border border-theme-line rounded-xl px-4 py-2 pr-10 text-xs font-bold text-theme-front outline-none cursor-pointer"
+                  >
+                    {[...Array(pagination.totalPages)].map((_, i) => (
+                      <option key={i + 1} value={i + 1}>
+                        {i + 1}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown
+                    size={14}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-theme-muted pointer-events-none"
+                  />
+                </div>
+                <span className="text-[10px] font-black uppercase text-theme-muted tracking-widest">
+                  of {pagination.totalPages}
+                </span>
+              </div>
+            </div>
           )}
         </div>
       </div>
 
-      {/* Reusable Modal Component */}
       <OrderActionModal
         isOpen={isModalOpen}
         onClose={closeModal}

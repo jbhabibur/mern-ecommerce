@@ -37,8 +37,26 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ["customer", "admin"],
+      enum: [
+        "super-admin", // Full system access, including user management and platform settings
+        "admin", // General management access, except for sensitive system configurations
+        "manager", // Store and inventory operations management
+        "stylist", // Product curation, fashion collections, and lookbook management
+        "customer-support", // Access to order tracking, customer queries, and tickets
+        "customer", // Standard end-user with purchasing privileges
+      ],
       default: "customer",
+    },
+    accountStatus: {
+      type: String,
+      enum: [
+        "active", // Account is fully functional and verified
+        "inactive", // Account deactivated by the user
+        "suspended", // Access restricted by admin due to policy violations
+        "pending", // Invitation sent but password/profile setup is incomplete
+        "deleted", // Soft-deleted record; retained for history but login disabled
+      ],
+      default: "active",
     },
     isSubscribed: {
       type: Boolean,

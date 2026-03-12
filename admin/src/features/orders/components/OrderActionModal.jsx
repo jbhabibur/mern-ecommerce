@@ -5,13 +5,13 @@ import {
   ShoppingBag,
   MapPin,
   Edit3,
-  PhoneCall,
   Loader2,
   Clock,
   CreditCard,
   Truck,
   User,
-  Hash,
+  ExternalLink,
+  Package,
 } from "lucide-react";
 
 export const OrderActionModal = ({
@@ -27,218 +27,210 @@ export const OrderActionModal = ({
 }) => {
   if (!isOpen || !order) return null;
 
-  const isCOD = order.payment?.method === "cod";
+  const statusColors = {
+    "Order Placed":
+      "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
+    Confirmed:
+      "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400",
+    Shipped:
+      "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
+    Delivered:
+      "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
+    Cancelled: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
+  };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-in fade-in duration-300">
-      <div className="w-full max-w-4xl bg-theme-base border border-theme-line rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-        {/* Header - Fixed */}
-        <div className="flex items-center justify-between p-6 bg-theme-sub/40 border-b border-theme-line">
-          <div className="flex items-center gap-4">
-            <div
-              className={`p-3 rounded-2xl ${isCOD ? "bg-amber-500/10 text-amber-600" : "bg-blue-500/10 text-blue-600"}`}
-            >
-              {isCOD ? <PhoneCall size={22} /> : <Edit3 size={22} />}
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+      <div className="w-full max-w-5xl bg-theme-base border border-theme-line rounded-xl shadow-xl overflow-hidden flex flex-col max-h-[95vh]">
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-theme-line bg-theme-sub/20">
+          <div className="flex items-center gap-3">
+            <div className="bg-theme-act/10 p-2 rounded-lg text-theme-act">
+              <Package size={20} />
             </div>
             <div>
-              <h3 className="font-black text-theme-front uppercase text-sm tracking-tighter">
-                Manage Order #{order._id?.slice(-8).toUpperCase()}
-              </h3>
-              <p className="text-[10px] text-theme-muted font-bold uppercase tracking-widest flex items-center gap-1">
-                <Clock size={10} /> Placed on{" "}
-                {new Date(order.createdAt).toLocaleString()}
-              </p>
+              <h2 className="text-lg font-semibold text-theme-front flex items-center gap-2">
+                Order #{order._id?.slice(-8).toUpperCase()}
+                <span
+                  className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${statusColors[order.orderStatus] || "bg-theme-line"}`}
+                >
+                  {order.orderStatus}
+                </span>
+              </h2>
+              <div className="flex items-center gap-3 mt-0.5 text-xs text-theme-muted">
+                <span className="flex items-center gap-1">
+                  <Clock size={12} />{" "}
+                  {new Date(order.createdAt).toLocaleDateString()}
+                </span>
+                <span className="flex items-center gap-1">
+                  <CreditCard size={12} />{" "}
+                  {order.payment?.method?.toUpperCase()}
+                </span>
+              </div>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-theme-line rounded-full transition-colors text-theme-muted"
+            className="p-2 hover:bg-theme-sub rounded-md text-theme-muted transition-colors"
           >
-            <X size={24} />
+            <X size={20} />
           </button>
         </div>
 
-        {/* Content - Scrollable */}
-        <div className="overflow-y-auto p-6 md:p-8 custom-scrollbar">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            {/* Left Column: Information (Col 7) */}
-            <div className="lg:col-span-7 space-y-8">
-              {/* 1. Customer Insights Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <section className="bg-theme-sub/30 p-5 rounded-3xl border border-theme-line relative overflow-hidden group">
-                  <div className="flex items-center gap-2 text-theme-act font-black uppercase text-[10px] tracking-widest mb-3">
-                    <User size={14} /> Customer Profile
-                  </div>
-                  <p className="font-bold text-theme-front text-lg">
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Column 1: Customer & Shipping */}
+            <div className="space-y-6">
+              <section>
+                <h4 className="text-[11px] font-bold text-theme-muted uppercase tracking-wider mb-3 flex items-center gap-2">
+                  <User size={14} /> Customer Information
+                </h4>
+                <div className="p-4 border border-theme-line rounded-lg bg-theme-sub/10">
+                  <p className="font-semibold text-theme-front">
                     {order.billingAddress?.fullName}
                   </p>
-                  <p className="text-xs text-theme-muted mb-3 italic">
+                  <p className="text-sm text-theme-muted mt-1">
                     {order.customer?.email}
                   </p>
                   <a
                     href={`tel:${order.billingAddress?.phoneNumber}`}
-                    className="inline-flex items-center gap-2 bg-theme-act text-theme-actfg px-4 py-2 rounded-xl text-xs font-black hover:scale-105 transition-transform"
+                    className="mt-3 flex items-center justify-center gap-2 w-full py-2 bg-theme-base border border-theme-line rounded-md text-sm font-medium hover:bg-theme-sub transition-colors"
                   >
-                    <Phone size={14} /> Call Customer
+                    <Phone size={14} /> {order.billingAddress?.phoneNumber}
                   </a>
-                </section>
+                </div>
+              </section>
 
-                <section className="bg-theme-sub/30 p-5 rounded-3xl border border-theme-line">
-                  <div className="flex items-center gap-2 text-theme-act font-black uppercase text-[10px] tracking-widest mb-3">
-                    <MapPin size={14} /> Shipping Destination
-                  </div>
-                  <p className="text-xs text-theme-front font-bold leading-relaxed">
+              <section>
+                <h4 className="text-[11px] font-bold text-theme-muted uppercase tracking-wider mb-3 flex items-center gap-2">
+                  <MapPin size={14} /> Shipping Address
+                </h4>
+                <div className="p-4 border border-theme-line rounded-lg">
+                  <p className="text-sm leading-relaxed text-theme-front">
                     {order.billingAddress?.address ||
                       order.billingAddress?.houseAddress}
-                    ,<br />
+                    <br />
                     {order.billingAddress?.city}, {order.billingAddress?.zone}
                   </p>
-                  <span className="mt-2 inline-block px-2 py-1 bg-theme-line rounded-md text-[9px] font-black uppercase text-theme-muted">
-                    Label: {order.billingAddress?.label || "Home"}
-                  </span>
-                </section>
-              </div>
-
-              {/* 2. Order Breakdown */}
-              <section className="space-y-4">
-                <div className="flex items-center justify-between border-b border-theme-line pb-2">
-                  <div className="flex items-center gap-2 text-theme-act font-black uppercase text-[10px] tracking-widest">
-                    <ShoppingBag size={14} /> Cart Summary (
-                    {order.items?.length})
+                  <div className="mt-2 text-[10px] font-medium text-theme-act uppercase bg-theme-act/5 inline-block px-2 py-0.5 rounded">
+                    Type: {order.billingAddress?.label || "Home"}
                   </div>
                 </div>
-                <div className="space-y-3">
+              </section>
+            </div>
+
+            {/* Column 2: Items & Financials */}
+            <div className="lg:col-span-1 space-y-6">
+              <section>
+                <h4 className="text-[11px] font-bold text-theme-muted uppercase tracking-wider mb-3 flex items-center gap-2">
+                  <ShoppingBag size={14} /> Order Items ({order.items?.length})
+                </h4>
+                <div className="space-y-2">
                   {order.items?.map((item, idx) => (
                     <div
                       key={idx}
-                      className="flex items-center gap-4 p-3 bg-theme-sub/20 rounded-2xl border border-theme-line/40 hover:border-theme-act/30 transition-colors"
+                      className="flex gap-3 p-2 border border-theme-line rounded-lg items-center"
                     >
                       <img
                         src={item.image}
-                        className="w-16 h-16 rounded-xl object-cover border border-theme-line shadow-sm"
+                        className="w-12 h-12 rounded object-cover bg-theme-sub"
                         alt=""
                       />
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-bold text-theme-front truncate">
+                        <p className="text-sm font-medium text-theme-front truncate">
                           {item.name}
                         </p>
-                        <div className="flex gap-2 mt-1">
-                          <span className="text-[10px] bg-theme-line px-2 py-0.5 rounded font-bold">
-                            Size: {item.size}
-                          </span>
-                          <span className="text-[10px] bg-theme-line px-2 py-0.5 rounded font-bold">
-                            Qty: {item.quantity}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-sm font-black text-theme-front">
-                          ৳{item.priceAtCheckout || order.financials?.subtotal}
-                        </p>
-                        <p className="text-[9px] text-theme-muted font-bold uppercase">
-                          Unit Price
+                        <p className="text-[11px] text-theme-muted">
+                          Qty: {item.quantity} • Size: {item.size}
                         </p>
                       </div>
+                      <p className="text-sm font-semibold">
+                        ৳{item.priceAtCheckout}
+                      </p>
                     </div>
                   ))}
                 </div>
               </section>
 
-              {/* 3. Financial Summary */}
-              <section className="bg-theme-front text-theme-base p-6 rounded-[2rem] shadow-xl">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-[10px] uppercase font-black opacity-60">
-                      Payment via
-                    </p>
-                    <p className="text-sm font-bold flex items-center gap-2 capitalize">
-                      <CreditCard size={14} /> {order.payment?.method} (
-                      {order.payment?.status})
-                    </p>
-                  </div>
-                  <div className="text-right border-l border-theme-base/20 pl-4">
-                    <p className="text-[10px] uppercase font-black opacity-60">
-                      Total Bill
-                    </p>
-                    <p className="text-2xl font-black">
-                      ৳{order.financials?.subtotal || order.priceAtCheckout}
-                    </p>
-                  </div>
+              <section className="p-4 bg-theme-front text-theme-base rounded-lg">
+                <div className="flex justify-between items-center mb-2 opacity-80 text-xs">
+                  <span>Subtotal</span>
+                  <span>
+                    ৳{order.financials?.subtotal || order.priceAtCheckout}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center pt-2 border-t border-theme-base/20">
+                  <span className="font-bold">Total Amount</span>
+                  <span className="text-lg font-bold">
+                    ৳{order.financials?.subtotal || order.priceAtCheckout}
+                  </span>
                 </div>
               </section>
             </div>
 
-            {/* Right Column: Admin Actions (Col 5) */}
-            <div className="lg:col-span-5 flex flex-col gap-6">
-              <div className="bg-theme-sub p-6 rounded-[2rem] border-2 border-theme-line space-y-6">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-theme-muted uppercase tracking-widest flex items-center gap-2">
-                    <Truck size={14} className="text-theme-act" /> Logistic
-                    Status
-                  </label>
-                  <select
-                    value={newStatus}
-                    onChange={(e) => setNewStatus(e.target.value)}
-                    className="w-full bg-theme-base border-2 border-theme-line p-4 rounded-2xl text-sm font-bold text-theme-front focus:border-theme-act outline-none transition-all appearance-none cursor-pointer hover:bg-theme-sub/50"
-                  >
-                    {[
-                      "Order Placed",
-                      "Confirmed",
-                      "Shipped",
-                      "Delivered",
-                      "Cancelled",
-                    ].map((status) => (
-                      <option key={status} value={status}>
-                        {status}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-theme-muted uppercase tracking-widest flex items-center gap-2">
-                    <Edit3 size={14} className="text-theme-act" /> Internal
-                    Audit Note
-                  </label>
-                  <textarea
-                    value={internalNote}
-                    onChange={(e) => setInternalNote(e.target.value)}
-                    placeholder="E.g., Customer confirmed on call, requested delivery after 4PM..."
-                    className="w-full bg-theme-base border-2 border-theme-line p-4 rounded-2xl text-sm h-48 resize-none focus:border-theme-act outline-none transition-all"
-                  />
-                  <p className="text-[9px] text-theme-muted font-medium px-2">
-                    * This note is only visible to staff members.
-                  </p>
-                </div>
-
-                <button
-                  onClick={onSave}
-                  disabled={isUpdating}
-                  className="w-full bg-theme-act text-theme-actfg font-black py-5 rounded-2xl flex items-center justify-center gap-3 shadow-2xl shadow-theme-act/40 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50"
-                >
-                  {isUpdating ? (
-                    <Loader2 className="animate-spin" size={20} />
-                  ) : (
-                    <>Update Order Lifecycle</>
-                  )}
-                </button>
-              </div>
-
-              {/* Quick Status History (Optional/Visual) */}
-              <div className="px-4">
-                <h4 className="text-[10px] font-black text-theme-muted uppercase tracking-widest mb-4">
-                  Workflow Progress
+            {/* Column 3: Actions */}
+            <div className="space-y-6">
+              <section className="p-5 bg-theme-sub/30 border border-theme-line rounded-xl">
+                <h4 className="text-[11px] font-bold text-theme-muted uppercase tracking-wider mb-4">
+                  Update Workflow
                 </h4>
-                <div className="flex justify-between items-center relative">
-                  <div className="absolute h-[2px] bg-theme-line w-full top-1/2 -translate-y-1/2 z-0" />
-                  {[1, 2, 3, 4].map((step) => (
-                    <div
-                      key={step}
-                      className={`w-3 h-3 rounded-full border-2 border-theme-base z-10 ${order.orderStatus === "Delivered" ? "bg-theme-success" : "bg-theme-line"}`}
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-xs font-medium text-theme-muted mb-1.5 block">
+                      Logistic Status
+                    </label>
+                    <div className="relative">
+                      <select
+                        value={newStatus}
+                        onChange={(e) => setNewStatus(e.target.value)}
+                        className="w-full bg-theme-base border border-theme-line p-2.5 rounded-lg text-sm font-medium appearance-none focus:ring-2 focus:ring-theme-act/20 outline-none"
+                      >
+                        {[
+                          "Order Placed",
+                          "Confirmed",
+                          "Shipped",
+                          "Delivered",
+                          "Cancelled",
+                        ].map((s) => (
+                          <option key={s} value={s}>
+                            {s}
+                          </option>
+                        ))}
+                      </select>
+                      <Truck
+                        size={14}
+                        className="absolute right-3 top-3 text-theme-muted pointer-events-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-medium text-theme-muted mb-1.5 block">
+                      Internal Audit Note
+                    </label>
+                    <textarea
+                      value={internalNote}
+                      onChange={(e) => setInternalNote(e.target.value)}
+                      placeholder="Add staff remarks..."
+                      className="w-full bg-theme-base border border-theme-line p-3 rounded-lg text-sm h-32 resize-none focus:ring-2 focus:ring-theme-act/20 outline-none"
                     />
-                  ))}
+                  </div>
+
+                  <button
+                    onClick={onSave}
+                    disabled={isUpdating}
+                    className="w-full bg-theme-act text-theme-actfg font-semibold py-3 rounded-lg flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-50"
+                  >
+                    {isUpdating ? (
+                      <Loader2 className="animate-spin" size={18} />
+                    ) : (
+                      "Save Changes"
+                    )}
+                  </button>
                 </div>
-              </div>
+              </section>
             </div>
           </div>
         </div>

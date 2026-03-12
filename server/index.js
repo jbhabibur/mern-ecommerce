@@ -20,6 +20,7 @@ import paymentRoutes from "./routes/payment.routes.js";
 import userRoutes from "./routes/user.routes.js";
 import wishlistRoutes from "./routes/wishlist.routes.js";
 import analyticsRoutes from "./routes/analytics.route.js";
+import adminRoutes from "./routes/admin.routes.js";
 
 // Initialize Database Connection
 connectDB();
@@ -65,6 +66,7 @@ app.use("/uploads", express.static("uploads"));
 app.use("/api/categories", categoryRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/admin", adminRoutes);
 
 // Promo Slots Routes
 app.use("/api/storefront/promo-slots", promoslotRoutes);

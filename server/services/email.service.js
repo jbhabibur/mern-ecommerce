@@ -2,6 +2,7 @@ import { transporter } from "../config/mail.config.js";
 import { verificationTemplate } from "../templetes/verificationEmail.js";
 import { successTemplate } from "../templetes/successEmail.js";
 import { resetPasswordTemplate } from "../templetes/resetPasswordTemplate.js";
+import { adminInviteTemplate } from "../templetes/adminInviteTemplate.js";
 
 /**
  * Sends a verification email containing an OTP
@@ -61,5 +62,24 @@ export const sendResetPasswordEmail = async ({ email, name, resetUrl }) => {
   } catch (error) {
     console.error("Reset Email Error:", error.message);
     throw new Error("Failed to send reset email");
+  }
+};
+
+/**
+ * Sends an admin invitation email with a setup URL and role details
+ */
+export const sendAdminInviteEmail = async ({ email, name, role, setupUrl }) => {
+  try {
+    const info = await transporter.sendMail({
+      from: `"MENS FASHION's Support" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: "Invitation to Join - Account Setup Required",
+      html: adminInviteTemplate(name, role, setupUrl),
+    });
+    console.log("Admin Invitation email sent: " + info.response);
+    return info;
+  } catch (error) {
+    console.error("Admin Invite Email Error:", error.message);
+    throw new Error("Failed to send admin invitation email");
   }
 };

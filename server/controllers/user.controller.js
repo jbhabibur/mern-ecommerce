@@ -1,5 +1,6 @@
 import User from "../models/User.js";
 import bcrypt from "bcryptjs";
+import { asyncHandler } from "../middleware/error.middleware.js";
 
 // 1. Get User Profile
 // Fetches user data excluding the password field
@@ -149,3 +150,99 @@ export const updateProfileImage = async (req, res) => {
     });
   }
 };
+
+// 6. Get all users except customers
+export const getAllStaff = async (req, res) => {
+  try {
+    // Finds all users where role is NOT "customer"
+    const staffMembers = await User.find({
+      role: { $ne: "customer" },
+    }).select("-password");
+
+    res.status(200).json({
+      success: true,
+      count: staffMembers.length,
+      data: staffMembers,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch staff data",
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * @desc    Super Admin: Update user role and notify via email
+ * @route   PATCH /api/admin/update-role/:id
+ */
+export const updateUserRole = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { role } = req.body;
+
+  // 1. Find the user and update their role in the database
+  const user = await User.findByIdAndUpdate(
+    id,
+    { role },
+    { new: true, runValidators: true },
+  ).select("-password");
+
+  if (!user) {
+    return res.status(404).json({ success: false, message: "User not found." });
+  }
+
+  // 2. Notify the user about the role change via email
+  try {
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: user.email,
+      subject: "Account Role Updated - BEMAN",
+      html: `
+        <div style="font-family: sans-serif; line-height: 1.5;">
+          <h2>Hello ${user.firstName},</h2>
+          <p>Your account role on <b>BEMAN</b> has been officially updated.</p>
+          <p>New Assigned Role: <span style="color: #2563eb; font-weight: bold;">${role}</span></p>
+          <p>If you did not expect this change, please contact the system administrator.</p>
+          <br />
+          <p>Best Regards,<br />The BEMAN Team</p>
+        </div>
+      `,
+    });
+  } catch (emailError) {
+    // Log the error if the email fails to send, but continue with the response
+    console.error("Email sending failed:", emailError);
+  }
+
+  res.status(200).json({
+    success: true,
+    message: "User role updated and notification sent.",
+    data: user,
+  });
+});
+
+/**
+ * @desc    Super Admin: Permanently delete a user account
+ * @route   DELETE /api/profile/delete-user/:id
+ * @access  Private (Super Admin Only)
+ */
+export const deleteUser = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  // 1. Attempt to find and delete the user by their ID
+  const user = await User.findByIdAndDelete(id);
+
+  // 2. Return an error if the user does not exist
+  if (!user) {
+    return res.status(404).json({
+      success: false,
+      message: "User not found.",
+    });
+  }
+
+  // 3. Confirm successful deletion
+  res.status(200).json({
+    success: true,
+    message: "User account has been permanently deleted.",
+  });
+});

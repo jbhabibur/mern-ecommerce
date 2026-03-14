@@ -1,94 +1,71 @@
 import { BASE_URL } from "../../../api/apiConfig";
 
-/**
- * Product API Service
- * Uses the BASE_URL from apiConfig to communicate with the backend.
- */
-
-// 1. POST: Save a new product to the Database
+// POST: Save a new product
 export const createProduct = async (formData) => {
   try {
     const response = await fetch(`${BASE_URL}/api/products/add`, {
       method: "POST",
-      // IMPORTANT: Do NOT set "Content-Type" header when sending FormData.
-      // The browser will automatically set it to 'multipart/form-data'
-      // with the correct boundary.
-      body: formData,
+      body: formData, // Browser sets multipart/form-data automatically
     });
 
     const result = await response.json();
-
-    if (!response.ok) {
-      // result.message will contain the "name is required" or validation errors from backend
+    if (!response.ok)
       throw new Error(result.message || "Failed to create product");
-    }
 
-    return {
-      success: true,
-      data: result.data,
-      message: result.message || "Product created successfully",
-    };
+    return { success: true, data: result.data, message: result.message };
   } catch (error) {
     console.error("Create Product Error:", error.message);
-    return {
-      success: false,
-      message: error.message || "Network error occurred",
-    };
+    return { success: false, message: error.message };
   }
 };
 
-/**
- * GET: Fetch only necessary fields for categories (name and _id)
- * Matches the /api/categories/list-all route in your controller.
- */
-export const fetchCategories = async () => {
-  try {
-    // We only need name and _id for the dropdown to minimize data transfer
-    const response = await fetch(
-      `${BASE_URL}/api/categories/list-all?fields=name`,
-    );
-
-    const result = await response.json();
-
-    if (!response.ok) {
-      throw new Error(result.message || "Could not fetch categories");
-    }
-
-    return {
-      success: true,
-      data: result.data || [], // categories will contain { _id, name }
-    };
-  } catch (error) {
-    console.error("Fetch Categories Error:", error);
-    return {
-      success: false,
-      data: [],
-      message: error.message,
-    };
-  }
-};
-
-/**
- * GET: Fetch products with pagination
- */
-export const fetchPaginatedProducts = async (page = 1, limit = 8) => {
+// PUT: Update an existing product
+export const updateProduct = async (productId, formData) => {
   try {
     const response = await fetch(
-      `${BASE_URL}/api/products/paginated?page=${page}&limit=${limit}`,
+      `${BASE_URL}/api/products/update/${productId}`,
       {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        method: "PUT",
+        body: formData,
       },
     );
 
     const result = await response.json();
+    if (!response.ok)
+      throw new Error(result.message || "Failed to update product");
 
-    if (!response.ok) {
+    return { success: true, data: result.data, message: result.message };
+  } catch (error) {
+    console.error("Update Product Error:", error.message);
+    return { success: false, message: error.message };
+  }
+};
+
+// GET: Fetch Categories
+export const fetchCategories = async () => {
+  try {
+    const response = await fetch(
+      `${BASE_URL}/api/categories/list-all?fields=name`,
+    );
+    const result = await response.json();
+    if (!response.ok)
+      throw new Error(result.message || "Could not fetch categories");
+    return { success: true, data: result.data || [] };
+  } catch (error) {
+    console.error("Fetch Categories Error:", error);
+    return { success: false, data: [], message: error.message };
+  }
+};
+
+// GET: Fetch Paginated Products
+export const fetchPaginatedProducts = async (page = 1, limit = 8) => {
+  try {
+    const response = await fetch(
+      `${BASE_URL}/api/products/paginated?page=${page}&limit=${limit}`,
+    );
+    const result = await response.json();
+    if (!response.ok)
       throw new Error(result.message || "Failed to fetch products");
-    }
-
     return {
       success: true,
       data: result.data || [],
@@ -98,10 +75,57 @@ export const fetchPaginatedProducts = async (page = 1, limit = 8) => {
     };
   } catch (error) {
     console.error("Pagination Error:", error.message);
+    return { success: false, message: error.message, data: [] };
+  }
+};
+
+// DELETE: Remove a product from the database
+export const deleteProduct = async (productId) => {
+  try {
+    const response = await fetch(
+      `${BASE_URL}/api/products/delete/${productId}`,
+      {
+        method: "DELETE",
+      },
+    );
+
+    const result = await response.json();
+    if (!response.ok)
+      throw new Error(result.message || "Failed to delete product");
+
+    return { success: true, message: result.message };
+  } catch (error) {
+    console.error("Delete Product Error:", error.message);
+    return { success: false, message: error.message };
+  }
+};
+
+/**
+ * @desc    Fetch global inventory stats (Low Stock and Out of Stock counts)
+ * @route   GET /api/products/admin/inventory-stats
+ * @access  Admin / Private
+ */
+export const fetchInventoryStats = async () => {
+  try {
+    const response = await fetch(
+      `${BASE_URL}/api/products/admin/inventory-stats`,
+    );
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.message || "Failed to fetch inventory stats");
+    }
+
+    return {
+      success: true,
+      data: result, // result contains { lowStock: X, outOfStock: Y }
+    };
+  } catch (error) {
+    console.error("Fetch Inventory Stats Error:", error.message);
     return {
       success: false,
       message: error.message,
-      data: [],
+      data: { lowStock: 0, outOfStock: 0 },
     };
   }
 };

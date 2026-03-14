@@ -61,63 +61,6 @@ export const getTopPerformingItems = async (req, res) => {
   }
 };
 
-/**
- * Controller: getKpiStats
- * Purpose: Fetch all essential business metrics for Dashboard KPI cards.
- */
-// export const getKpiStats = async (req, res) => {
-//   try {
-//     const todayStart = new Date();
-//     todayStart.setHours(0, 0, 0, 0);
-
-//     const kpiData = await Order.aggregate([
-//       {
-//         $facet: {
-//           // --- REVENUE STATS ---
-//           revenue: [
-//             {
-//               $group: { _id: null, gross: { $sum: "$financials.totalAmount" } },
-//             },
-//           ],
-//           // --- ORDER COUNTS ---
-//           today: [
-//             { $match: { createdAt: { $gte: todayStart } } },
-//             { $count: "count" },
-//           ],
-//           // Using $in to capture both "Order Placed" and "Pending" as pending
-//           pending: [
-//             {
-//               $match: {
-//                 orderStatus: { $in: ["Order Placed", "Pending"] },
-//               },
-//             },
-//             { $count: "count" },
-//           ],
-//           delivered: [
-//             { $match: { orderStatus: "Delivered" } },
-//             { $count: "count" },
-//           ],
-//         },
-//       },
-//     ]);
-
-//     const stats = kpiData[0];
-
-//     res.status(200).json({
-//       success: true,
-//       data: {
-//         totalRevenue: stats.revenue[0]?.gross || 0,
-//         todayOrders: stats.today[0]?.count || 0,
-//         pendingOrders: stats.pending[0]?.count || 0, // Matches the 'pending' facet key
-//         deliveredOrders: stats.delivered[0]?.count || 0,
-//       },
-//     });
-//   } catch (error) {
-//     console.error("KPI Stats Error:", error);
-//     res.status(500).json({ success: false, message: error.message });
-//   }
-// };
-
 export const getKpiStats = async (req, res) => {
   try {
     const todayStart = new Date();
@@ -169,17 +112,11 @@ export const getKpiStats = async (req, res) => {
     res.status(200).json({
       success: true,
       data: {
-        // Ashol income
         netRevenue: stats.netRevenue[0]?.total || 0,
-        // Mot takar order (Gross)
         totalRevenue: stats.revenue[0]?.gross || 0,
-        // Mot koyti order
         totalOrders: stats.totalOrdersCount[0]?.count || 0,
-        // Aajker order count
         todayOrders: stats.today[0]?.count || 0,
-        // Pending order count
         pendingOrders: stats.pending[0]?.count || 0,
-        // Delivered order count
         deliveredOrders: stats.delivered[0]?.count || 0,
       },
     });
@@ -198,29 +135,29 @@ export const getKpiStats = async (req, res) => {
 export const getStockAnalysis = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
-    const limit = 8; // Proti page-e 8 ta item
+    const limit = 8;
     const skip = (page - 1) * limit;
 
     const LOW_STOCK_THRESHOLD = 5;
 
-    // Filter: Jei variant gulo low stock segulo khujbe
+    // Filter: Low stock variants
     const query = { "variants.stock": { $lte: LOW_STOCK_THRESHOLD } };
 
-    // Total count pagination-er total pages calculation er jonyo
+    // For calculating total pages in pagination
     const totalProducts = await Product.countDocuments(query);
 
     const products = await Product.find(query)
       .select("_id name variants")
       .lean();
 
-    // Custom Sort: Sobcheye kom stock thaka product sobar upore
+    // Custom Sort: Lowest stock first
     const sortedData = products
       .sort((a, b) => {
         const minA = Math.min(...a.variants.map((v) => v.stock || 0));
         const minB = Math.min(...b.variants.map((v) => v.stock || 0));
         return minA - minB;
       })
-      .slice(skip, skip + limit); // Pagination apply sorting-er por
+      .slice(skip, skip + limit);
 
     const formattedData = sortedData.map((product) => ({
       id: product._id,

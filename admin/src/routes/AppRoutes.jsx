@@ -5,7 +5,7 @@ import { LoginPage } from "../features/auth/LoginPage";
 import { SetupAdmin } from "../features/auth/SetupAdmin";
 
 import { AdminLayout } from "../layouts/AdminLayout";
-import { AddProduct } from "../features/products/AddProduct";
+
 import { PromoManager } from "../features/storefront/PromoManager";
 import { SocialMediaManager } from "../features/storefront/SocialMediaManager";
 
@@ -51,10 +51,7 @@ const router = createBrowserRouter([
         path: "products/",
         element: <ProductInventory />,
       },
-      {
-        path: "products/add",
-        element: <AddProduct />,
-      },
+
       {
         path: "website/banners",
         element: <PromoManager />,

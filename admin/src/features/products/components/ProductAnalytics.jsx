@@ -7,8 +7,12 @@ import {
   MessageSquare,
   Zap,
 } from "lucide-react";
+import { useTheme } from "../../../contexts/ThemeContext";
 
 export const ProductAnalytics = ({ formData, setFormData }) => {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+
   // 1. Internal function to calculate popularity score
   // Uses a weighted formula: (Sales * 10) + (Views * 1) + (Rating * Reviews)
   const calculateScore = (data) => {
@@ -73,11 +77,15 @@ export const ProductAnalytics = ({ formData, setFormData }) => {
   ];
 
   return (
-    <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 space-y-6">
+    <section className="space-y-6">
       {/* Header */}
-      <div className="flex items-center gap-2 border-b pb-4">
+      <div
+        className={`flex items-center gap-2 border-b pb-4 ${isDark ? "border-theme-line/10" : "border-gray-100"}`}
+      >
         <div className="w-2 h-6 bg-indigo-600 rounded-full"></div>
-        <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+        <h2
+          className={`text-xl font-bold flex items-center gap-2 ${isDark ? "text-theme-front" : "text-gray-800"}`}
+        >
           <BarChart3 className="w-5 h-5 text-indigo-600" /> Performance
           Analytics
         </h2>
@@ -87,7 +95,11 @@ export const ProductAnalytics = ({ formData, setFormData }) => {
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         {metrics.map((item) => (
           <div key={item.name} className="flex flex-col gap-2">
-            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1">
+            <label
+              className={`text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 ${
+                isDark ? "text-theme-muted" : "text-gray-500"
+              }`}
+            >
               {item.icon} {item.label}
             </label>
             <input
@@ -95,20 +107,24 @@ export const ProductAnalytics = ({ formData, setFormData }) => {
               name={item.name}
               value={formData.analytics?.[item.name] ?? ""}
               onChange={handleAnalyticsChange}
-              readOnly={item.isReadOnly} // Restricts manual input for popularity
+              readOnly={item.isReadOnly}
               placeholder="0"
               step={item.step || "1"}
               min="0"
               max={item.max}
               className={`w-full border p-3 rounded-xl outline-none transition-all font-mono text-sm ${
                 item.isReadOnly
-                  ? "bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed"
-                  : "bg-gray-50/50 border-gray-100 focus:ring-2 focus:ring-indigo-500"
+                  ? isDark
+                    ? "bg-theme-line/5 border-theme-line/10 text-orange-400 cursor-not-allowed"
+                    : "bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed"
+                  : isDark
+                    ? "bg-theme-base border-theme-line/20 text-theme-front focus:ring-2 focus:ring-indigo-500/50"
+                    : "bg-gray-50/50 border-gray-100 focus:ring-2 focus:ring-indigo-500"
               }`}
             />
           </div>
         ))}
       </div>
-    </div>
+    </section>
   );
 };

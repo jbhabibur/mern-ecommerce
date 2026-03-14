@@ -5,13 +5,16 @@ import {
   getProductsByCategory,
   getNewArrivals,
   createProduct,
+  updateProduct,
+  deleteProduct,
   getSingleProductBySlug,
   getPopularProducts,
   searchProducts,
   getAllProducts,
   getPaginatedProducts,
-  getAllUniqueSizes, // যুক্ত করা হয়েছে
-  getProductStockAnalysis, // যুক্ত করা হয়েছে
+  getAllUniqueSizes,
+  getProductStockAnalysis,
+  getStockStats,
 } from "../controllers/productController.js";
 
 // Middleware & Validation Imports
@@ -23,22 +26,43 @@ const router = express.Router();
 
 /**
  * -----------------------------------------------------------
- * STATIC & QUERY ROUTES (Specific paths first)
+ * STATIC & QUERY ROUTES
  * -----------------------------------------------------------
  */
 
-// @route   GET /api/products
+/**
+ * @desc    Get all products
+ * @route   GET /api/products
+ * @access  Public
+ */
 router.get("/", getAllProducts);
 
+/**
+ * @desc    Get products with pagination
+ * @route   GET /api/products/paginated
+ * @access  Public
+ */
 router.get("/paginated", getPaginatedProducts);
 
-// @route   GET /api/products/search
+/**
+ * @desc    Search products by keyword
+ * @route   GET /api/products/search
+ * @access  Public
+ */
 router.get("/search", searchProducts);
 
-// @route   GET /api/products/popular
+/**
+ * @desc    Get most popular products
+ * @route   GET /api/products/popular
+ * @access  Public
+ */
 router.get("/popular", getPopularProducts);
 
-// @route   GET /api/products/new-arrivals
+/**
+ * @desc    Get newly added products
+ * @route   GET /api/products/new-arrivals
+ * @access  Public
+ */
 router.get("/new-arrivals", getNewArrivals);
 
 /**
@@ -47,36 +71,82 @@ router.get("/new-arrivals", getNewArrivals);
  * -----------------------------------------------------------
  */
 
-// @route   GET /api/products/admin/all-sizes
+/**
+ * @desc    Get inventory stats (Low Stock and Out of Stock counts)
+ * @route   GET /api/products/admin/inventory-stats
+ * @access  Admin / Private
+ */
+router.get("/admin/inventory-stats", getStockStats);
+
+/**
+ * @desc    Get list of all unique product sizes
+ * @route   GET /api/products/admin/all-sizes
+ * @access  Admin / Private
+ */
 router.get("/admin/all-sizes", getAllUniqueSizes);
 
-// @route   GET /api/products/admin/stock-analysis/:id
+/**
+ * @desc    Get stock breakdown for a specific product
+ * @route   GET /api/products/admin/stock-analysis/:id
+ * @access  Admin / Private
+ */
 router.get("/admin/stock-analysis/:id", getProductStockAnalysis);
 
 /**
  * -----------------------------------------------------------
- * DYNAMIC ROUTES (Parameterized paths)
+ * DYNAMIC ROUTES
  * -----------------------------------------------------------
  */
 
-// @route   GET /api/products/categories/:categoryName
+/**
+ * @desc    Get products by category name
+ * @route   GET /api/products/categories/:categoryName
+ * @access  Public
+ */
 router.get("/categories/:categoryName", getProductsByCategory);
 
-// @route   GET /api/products/:slug (KEEP AT THE BOTTOM OF GET REQUESTS)
+/**
+ * @desc    Get product details by slug
+ * @route   GET /api/products/:slug
+ * @access  Public
+ */
 router.get("/:slug", getSingleProductBySlug);
 
 /**
  * -----------------------------------------------------------
- * POST ROUTES (Admin/Private)
+ * WRITE ROUTES (Admin/Private)
  * -----------------------------------------------------------
  */
 
-// @route   POST /api/products/add
+/**
+ * @desc    Create a new product
+ * @route   POST /api/products/add
+ * @access  Admin / Private
+ */
 router.post(
   "/add",
   upload.array("images", 5),
   validate(productSchema),
   createProduct,
 );
+
+/**
+ * @desc    Update an existing product
+ * @route   PUT /api/products/update/:id
+ * @access  Admin / Private
+ */
+router.put(
+  "/update/:id",
+  upload.array("images", 5),
+  validate(productSchema),
+  updateProduct,
+);
+
+/**
+ * @desc    Delete a product
+ * @route   DELETE /api/products/delete/:id
+ * @access  Admin / Private
+ */
+router.delete("/delete/:id", deleteProduct);
 
 export default router;

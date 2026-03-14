@@ -1,166 +1,125 @@
 import { useState } from "react";
-import { createProduct } from "../services/productApi";
+import { createProduct, updateProduct } from "../services/productApi";
 
-export const useProductForm = () => {
+export const useProductForm = (initialData = null) => {
   const [loading, setLoading] = useState(false);
+
+  // Initialize with initialData (for Edit) or defaults (for Create)
   const [formData, setFormData] = useState({
-    name: "",
-    slug: "",
-    description: "",
-    price: "",
-    compare_at_price: "",
-    currency: "BDT",
-    parentCategory: "",
-    category: "",
-    subcategory: "",
-    images: [], // Holds objects like { file: File, isPrimary: bool, isZoomView: bool }
-    color: "",
-    fabric: "",
-    variants: [{ size: "", stock: 0 }],
-    isNewArrival: false,
-    bestSeller: false,
-    analytics: {
+    name: initialData?.name || "",
+    slug: initialData?.slug || "",
+    description: initialData?.description || "",
+    price: initialData?.price || "",
+    compare_at_price: initialData?.compare_at_price || "",
+    currency: initialData?.currency || "BDT",
+    parentCategory: initialData?.parentCategory || "",
+    category: initialData?.category || "",
+    subcategory: initialData?.subcategory || "",
+    images: initialData?.images || [], // Can contain URLs (strings) or {file} objects
+    color: initialData?.color || "",
+    fabric: initialData?.fabric || "",
+    variants: initialData?.variants || [{ size: "", stock: 0 }],
+    isNewArrival: initialData?.isNewArrival || false,
+    bestSeller: initialData?.bestSeller || false,
+    analytics: initialData?.analytics || {
       totalSales: 0,
       totalViews: 0,
       reviewCount: 0,
       averageRating: 0,
       popularityScore: 0,
     },
-    itemType: "", // Added itemType field
+    itemType: initialData?.itemType || "",
   });
 
-  // Handle generic input changes (text, numbers, checkboxes)
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
-
     setFormData((prev) => ({
       ...prev,
-      // If checkbox, take 'checked' boolean, otherwise take 'value'
       [name]: type === "checkbox" ? checked : value,
     }));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleVariantChange = (index, field, value) => {
+    const newVariants = [...formData.variants];
+    newVariants[index] = { ...newVariants[index], [field]: value };
+    setFormData((prev) => ({ ...prev, variants: newVariants }));
+  };
 
-    // 1. Basic Name Validation
-    const name = formData.name.trim();
-    if (!name) return alert("Product name cannot be empty");
-
-    // 2. Slug Processing (Lowercase and trimmed)
-    const slug = formData.slug ? formData.slug.toLowerCase().trim() : "";
-
-    // 3. Description
-    const description = formData.description || "";
-
-    // 4. Price Validation
-    const price = Number(formData.price);
-    if (!formData.price || isNaN(price)) {
-      return alert("Price is required and must be a number");
-    }
-    if (price <= 0) return alert("Price must be a positive number");
-
-    // 5. Compare At Price Validation
-    let compare_at_price = undefined;
-    if (formData.compare_at_price && formData.compare_at_price !== "") {
-      compare_at_price = Number(formData.compare_at_price);
-      if (isNaN(compare_at_price) || compare_at_price <= 0) {
-        return alert("Compare price must be a positive number");
-      }
-    }
-
-    // 6. Currency
-    const currency = formData.currency || "BDT";
-
-    // 7. MongoDB ObjectId Validation (24-char hex)
-    const isValidId = (id) => /^[0-9a-fA-F]{24}$/.test(id);
-    if (formData.parentCategory && !isValidId(formData.parentCategory)) {
-      return alert("Invalid Parent Category ID");
-    }
-    if (formData.category && !isValidId(formData.category)) {
-      return alert("Invalid Category ID");
-    }
-    if (formData.subcategory && !isValidId(formData.subcategory)) {
-      return alert("Invalid Subcategory ID");
-    }
+  const handleSubmit = async (externalCallback = null) => {
+    // Basic Validation
+    if (!formData.name.trim()) return alert("Product name is required");
+    if (!formData.price || isNaN(formData.price))
+      return alert("Valid price is required");
 
     setLoading(true);
 
     try {
-      // 8. Prepare FormData for Multipart/form-data request
       const data = new FormData();
 
-      // Append standard text fields
-      data.append("name", name);
-      data.append("slug", slug);
-      data.append("description", description);
-      data.append("price", price);
-      if (compare_at_price) data.append("compare_at_price", compare_at_price);
-      data.append("currency", currency);
-      data.append("parentCategory", formData.parentCategory || "");
-      data.append("category", formData.category || "");
-      data.append("subcategory", formData.subcategory || "");
-      data.append("itemType", formData.itemType); // Appending Item Type
-
-      // 9. Append Flags & Nested Objects (Stringified)
+      // Append basic fields
+      data.append("name", formData.name);
+      data.append("slug", formData.slug.toLowerCase().trim());
+      data.append("description", formData.description);
+      data.append("price", formData.price);
+      data.append("compare_at_price", formData.compare_at_price || "");
+      data.append("currency", formData.currency);
+      data.append("parentCategory", formData.parentCategory);
+      data.append("category", formData.category);
+      data.append("subcategory", formData.subcategory);
+      data.append("itemType", formData.itemType);
       data.append("isNewArrival", formData.isNewArrival);
       data.append("bestSeller", formData.bestSeller);
-      data.append("analytics", JSON.stringify(formData.analytics));
-
-      // 10. Prepare and append Image Metadata (isPrimary, isZoomView)
-      const metadata = formData.images.map((img) => ({
-        isPrimary: img.isPrimary || false,
-        isZoomView: img.isZoomView || false,
-      }));
-      data.append("imageMetadata", JSON.stringify(metadata));
-
       data.append("color", formData.color);
       data.append("fabric", formData.fabric);
+
+      // Stringify objects/arrays
+      data.append("analytics", JSON.stringify(formData.analytics));
       data.append("variants", JSON.stringify(formData.variants));
 
-      // 11. Append actual file blobs (Must be the same key name as expected by Multer)
+      // Handle Images: Distinguish between existing URLs and new Files
+      const metadata = [];
       formData.images.forEach((img) => {
-        if (img.file) data.append("images", img.file);
+        if (img.file) {
+          data.append("images", img.file);
+          metadata.push({
+            isPrimary: img.isPrimary,
+            isZoomView: img.isZoomView,
+            isNew: true,
+          });
+        } else {
+          // If it's an existing image URL
+          metadata.push({
+            url: img.url,
+            isPrimary: img.isPrimary,
+            isZoomView: img.isZoomView,
+            isNew: false,
+          });
+        }
       });
+      data.append("imageMetadata", JSON.stringify(metadata));
 
-      // Execute API Call
-      const result = await createProduct(data);
+      let result;
+      if (initialData?._id) {
+        // UPDATE MODE
+        result = await updateProduct(initialData._id, data);
+      } else {
+        // CREATE MODE
+        result = await createProduct(data);
+      }
 
       if (result.success) {
-        alert("Product added successfully! 🚀");
-
-        // 12. Reset Form to initial state
-        setFormData({
-          name: "",
-          slug: "",
-          description: "",
-          price: "",
-          compare_at_price: "",
-          currency: "BDT",
-          parentCategory: "",
-          category: "",
-          subcategory: "",
-          images: [],
-          color: "",
-          fabric: "",
-          variants: [{ size: "", stock: 0 }],
-          isNewArrival: false,
-          bestSeller: false,
-          analytics: {
-            totalSales: 0,
-            totalViews: 0,
-            reviewCount: 0,
-            averageRating: 0,
-            popularityScore: 0,
-          },
-          itemType: "", // Reset itemType
-        });
+        alert(
+          initialData ? "Updated successfully! ✨" : "Created successfully! 🚀",
+        );
+        if (externalCallback) externalCallback(result.data);
+        return true;
+      } else {
+        alert("Error: " + result.message);
+        return false;
       }
     } catch (err) {
-      console.error("Submission Error:", err);
-      const errorMessage =
-        err.response?.data?.message || "Server error occurred.";
-      alert("Error: " + errorMessage);
+      alert("System Error occurred.");
+      return false;
     } finally {
       setLoading(false);
     }
@@ -171,6 +130,7 @@ export const useProductForm = () => {
     setFormData,
     loading,
     handleInputChange,
+    handleVariantChange,
     handleSubmit,
   };
 };

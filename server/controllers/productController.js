@@ -308,12 +308,12 @@ export const getAllProducts = asyncHandler(async (req, res) => {
 });
 
 /**
- * @desc    Fetch products with pagination
+ * @desc    Fetch products with pagination and category names
  * @route   GET /api/products/paginated
  * @access  Public
  */
 export const getPaginatedProducts = asyncHandler(async (req, res) => {
-  // 1. Get page and limit from query parameters (with default values)
+  // 1. Get page and limit from query parameters
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 8;
   const skip = (page - 1) * limit;
@@ -321,9 +321,10 @@ export const getPaginatedProducts = asyncHandler(async (req, res) => {
   // 2. Get the total number of products
   const totalProducts = await Product.countDocuments();
 
-  // 3. Fetch the products for the requested page from the database
+  // 3. Fetch products and POPULATE the category field
   const products = await Product.find()
-    .sort({ createdAt: -1 }) // Show newest products first
+    .populate("category", "name")
+    .sort({ createdAt: -1 })
     .skip(skip)
     .limit(limit);
 
@@ -393,3 +394,212 @@ export const getProductStockAnalysis = asyncHandler(async (req, res, next) => {
     data: stockData,
   });
 });
+
+/**
+ * @desc    Update an existing product with image and metadata management
+ * @route   PUT /api/products/update/:id
+ * @access  Admin / Private
+ */
+export const updateProduct = asyncHandler(async (req, res, next) => {
+  const { id } = req.params;
+
+  // Find the product in db
+  let product = await Product.findById(id);
+
+  if (!product) {
+    return res.status(404).json({
+      success: false,
+      message: "Product not found.",
+    });
+  }
+
+  // Extract product data from client
+  const {
+    name,
+    slug,
+    description,
+    price,
+    compare_at_price,
+    currency,
+    itemType,
+    parentCategory,
+    category,
+    subcategory,
+    imageMetadata, // JSON string
+    color,
+    fabric,
+    variants, // JSON string
+    isNewArrival,
+    bestSeller,
+    analytics, // JSON string
+  } = req.body;
+
+  // 3. Parse JSON data (these come as strings since they are sent via FormData)
+  const parsedMetadata = imageMetadata ? JSON.parse(imageMetadata) : [];
+  const parsedVariants = variants ? JSON.parse(variants) : product.variants;
+  const parsedAnalytics = analytics ? JSON.parse(analytics) : product.analytics;
+
+  // 4. Image Handling (Smart Merging)
+  let updatedImages = [];
+  let newFileIndex = 0;
+
+  // Loop through metadata from frontend to build the image list
+  parsedMetadata.forEach((meta) => {
+    if (meta.isNew === false && meta.url) {
+      // This is an existing image that the user did not delete
+      // Find the object from the product's current image list
+      const existingImg = product.images.find((img) => img.url === meta.url);
+      if (existingImg) {
+        updatedImages.push({
+          ...existingImg,
+          isPrimary: meta.isPrimary,
+          isZoomView: meta.isZoomView,
+        });
+      }
+    } else if (meta.isNew === true && req.files && req.files[newFileIndex]) {
+      // This is a newly uploaded file
+      const file = req.files[newFileIndex];
+      updatedImages.push({
+        url: file.path, // Cloudinary URL
+        public_id: file.filename,
+        isPrimary: meta.isPrimary,
+        isZoomView: meta.isZoomView,
+      });
+      newFileIndex++;
+    }
+  });
+
+  // If no images are selected, keep the old images (Safety check)
+  if (updatedImages.length === 0 && !imageMetadata) {
+    updatedImages = product.images;
+  }
+
+  // 5. Create the update data object
+  const updateData = {
+    name: name || product.name,
+    itemType: itemType || product.itemType,
+    slug: slug ? slugify(slug, { lower: true }) : product.slug,
+    description: description || product.description,
+    price: price ? Number(price) : product.price,
+    compare_at_price: compare_at_price
+      ? Number(compare_at_price)
+      : product.compare_at_price,
+    currency: currency || product.currency,
+    parentCategory: parentCategory || product.parentCategory,
+    category: category || product.category,
+    subcategory: subcategory || product.subcategory,
+    images: updatedImages,
+    color: color || product.color,
+    fabric: fabric || product.fabric,
+    variants: parsedVariants,
+    isNewArrival:
+      isNewArrival !== undefined
+        ? isNewArrival === "true" || isNewArrival === true
+        : product.isNewArrival,
+    bestSeller:
+      bestSeller !== undefined
+        ? bestSeller === "true" || bestSeller === true
+        : product.bestSeller,
+    analytics: {
+      totalSales:
+        Number(parsedAnalytics.totalSales) || product.analytics.totalSales,
+      totalViews:
+        Number(parsedAnalytics.totalViews) || product.analytics.totalViews,
+      reviewCount:
+        Number(parsedAnalytics.reviewCount) || product.analytics.reviewCount,
+      averageRating:
+        Number(parsedAnalytics.averageRating) ||
+        product.analytics.averageRating,
+      popularityScore:
+        Number(parsedAnalytics.popularityScore) ||
+        product.analytics.popularityScore,
+    },
+  };
+
+  // 6. Database Update
+  const updatedProduct = await Product.findByIdAndUpdate(id, updateData, {
+    new: true, // Returns the updated data
+    runValidators: true,
+  });
+
+  // 7. Send Response
+  res.status(200).json({
+    success: true,
+    message: "Product Updated Successfully",
+    data: updatedProduct,
+  });
+});
+
+/**
+ * @desc    Delete a product
+ * @route   DELETE /api/products/delete/:id
+ * @access  Admin / Private
+ */
+export const deleteProduct = asyncHandler(async (req, res, next) => {
+  const { id } = req.params;
+
+  const product = await Product.findById(id);
+
+  if (!product) {
+    return res.status(404).json({
+      success: false,
+      message: "Product not found.",
+    });
+  }
+
+  // Delete from the database
+  await Product.findByIdAndDelete(id);
+
+  res.status(200).json({
+    success: true,
+    message: "Product deleted successfully.",
+  });
+});
+/**
+ * @desc    Get inventory statistics for low stock and out of stock products
+ * @route   GET /api/products/stats/inventory
+ * @access  Admin / Private
+ */
+export const getStockStats = async (req, res) => {
+  try {
+    const LOW_STOCK_THRESHOLD = 5;
+
+    const stats = await Product.aggregate([
+      {
+        $facet: {
+          // Count products where ALL variants have 0 stock
+          outOfStock: [
+            {
+              $match: {
+                variants: { $not: { $elemMatch: { stock: { $gt: 0 } } } },
+              },
+            },
+            { $count: "count" },
+          ],
+          // Count products where at least one variant is low stock (but > 0)
+          lowStock: [
+            {
+              $match: {
+                variants: {
+                  $elemMatch: {
+                    stock: { $gt: 0, $lte: LOW_STOCK_THRESHOLD },
+                  },
+                },
+              },
+            },
+            { $count: "count" },
+          ],
+        },
+      },
+    ]);
+
+    const result = {
+      lowStock: stats[0].lowStock[0]?.count || 0,
+      outOfStock: stats[0].outOfStock[0]?.count || 0,
+    };
+
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

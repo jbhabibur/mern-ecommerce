@@ -337,3 +337,63 @@ export const getAllOrdersAdmin = async (req, res) => {
     });
   }
 };
+
+/**
+ * Controller: Update Order (Admin)
+ * Updates status, verification, and maintains a detailed audit history.
+ */
+export const updateOrderAdmin = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { orderStatus, internalNote, isVerified } = req.body;
+
+    // 1. Check if the order exists
+    const order = await Order.findById(id);
+    if (!order) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Order not found" });
+    }
+
+    // 2. Update status and log audit history
+    if (orderStatus) {
+      order.orderStatus = orderStatus;
+
+      // Construct admin identity from request user (set by your auth middleware)
+      const adminName =
+        `${req.user?.firstName || "Admin"} ${req.user?.lastName || ""}`.trim();
+
+      // Push history log with specific admin name and email
+      order.history.push({
+        status: orderStatus,
+        updatedBy: {
+          name: adminName,
+          email: req.user?.email || "system@admin.com",
+        },
+        updatedAt: new Date(),
+      });
+    }
+
+    // 3. Update internal remarks
+    if (internalNote !== undefined) {
+      order.internalNote = internalNote;
+    }
+
+    // 4. Update verification status
+    if (isVerified !== undefined) {
+      order.isVerified = isVerified;
+    }
+
+    // 5. Save changes to database
+    const updatedOrder = await order.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Order updated successfully",
+      order: updatedOrder,
+    });
+  } catch (error) {
+    console.error("🔥 Admin Update Order Error:", error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};

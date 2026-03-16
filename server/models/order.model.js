@@ -78,7 +78,8 @@ const orderSchema = new mongoose.Schema(
     // 6. Logistics & Tracking
     orderStatus: {
       type: String,
-      enum: ["Order Placed", "Processing", "Shipped", "Delivered", "Cancelled"],
+
+      enum: ["Order Placed", "Confirmed", "Shipped", "Delivered", "Cancelled"],
       default: "Order Placed",
     },
     courierDetails: {
@@ -90,9 +91,12 @@ const orderSchema = new mongoose.Schema(
     // 7. Status History (Audit Trail using ES6 Date defaults)
     history: [
       {
-        status: String,
+        status: { type: String, required: true },
         updatedAt: { type: Date, default: () => Date.now() },
-        updatedBy: { type: String, default: "system" },
+        updatedBy: {
+          name: { type: String, default: "system" },
+          email: { type: String, default: "system@admin.com" },
+        },
       },
     ],
   },

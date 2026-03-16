@@ -27,6 +27,7 @@
     "multer": "^2.0.2",
     "multer-storage-cloudinary": "^4.0.0",
     "nodemailer": "^7.0.13",
+    "socket.io": "^4.8.3",
     "sslcommerz-lts": "^1.2.0"
   },
   "devDependencies": {

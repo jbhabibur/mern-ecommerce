@@ -3,8 +3,12 @@ import { Plus } from "lucide-react";
 import { usePromoManager } from "./hooks/usePromoManager";
 import { PromoTable } from "./components/PromoTable";
 import { PromoModal } from "./components/PromoModal";
+import { useTheme } from "../../contexts/ThemeContext";
 
 export const PromoManager = () => {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+
   const {
     slots,
     categories,
@@ -23,32 +27,46 @@ export const PromoManager = () => {
   } = usePromoManager();
 
   return (
-    /* Responsive padding: p-4 on mobile, p-8 on desktop */
-    <div className="min-h-screen bg-theme-sub p-4 md:p-8 text-theme-front font-poppins">
+    <div
+      className={`
+      min-h-screen p-4 md:p-8 font-poppins transition-colors duration-300
+      ${isDark ? "bg-[#0F0F0F] text-white" : "bg-white text-slate-900"}
+    `}
+    >
       <div className="max-w-6xl mx-auto">
-        {/* Header Section: Column on mobile, Row on tablet/desktop */}
+        {/* Header Section */}
         <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-6 mb-8 lg:mb-12">
           <div className="space-y-1">
-            <h1 className="text-2xl md:text-3xl lg:text-4xl font-extrabold tracking-tight uppercase">
+            <h1 className="text-3xl font-black text-theme-front tracking-tight uppercase">
               Promotional Banners
             </h1>
-            <p className="text-theme-muted text-xs md:text-sm max-w-md">
-              Banners will automatically navigate to the selected category on
-              the storefront.
+            <p className="text-[10px] text-theme-muted uppercase font-bold tracking-[0.2em] mt-1 opacity-70">
+              Real-time management & store insights
             </p>
           </div>
 
           <button
             onClick={() => setIsModalOpen(true)}
-            className="flex items-center justify-center gap-2 bg-theme-act text-theme-actfg px-5 py-3 md:px-6 md:py-3.5 rounded-2xl font-bold shadow-lg shadow-theme-act/20 hover:opacity-90 active:scale-95 transition-all text-sm md:text-base w-full md:w-auto"
+            className="
+              flex items-center justify-center gap-2 px-5 py-3 md:px-8 md:py-4 rounded-2xl font-bold shadow-xl transition-all text-sm md:text-base w-full md:w-auto active:scale-95
+              bg-blue-600 text-white hover:bg-blue-700 shadow-blue-500/20
+            "
           >
             <Plus size={20} />
             <span>Create Promo</span>
           </button>
         </div>
 
-        {/* List View Component */}
-        <div className="bg-theme-base rounded-3xl border border-theme-line overflow-hidden">
+        <div
+          className={`
+          rounded-[2rem] border transition-all duration-300 overflow-hidden
+          ${
+            isDark
+              ? "bg-[#1A1A1A] border-white/5 shadow-2xl"
+              : "bg-white border-slate-200 shadow-sm"
+          }
+        `}
+        >
           <PromoTable
             slots={slots}
             onEdit={handleEdit}

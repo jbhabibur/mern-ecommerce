@@ -25,10 +25,10 @@ export const Dashboard = () => {
       {/* HEADER SECTION */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-black text-theme-front tracking-tight">
+          <h1 className="text-3xl font-black text-theme-front tracking-tight uppercase">
             Men's Fashion Dashboard
           </h1>
-          <p className="text-xs text-theme-muted uppercase font-bold tracking-widest mt-1">
+          <p className="text-[10px] text-theme-muted uppercase font-bold tracking-[0.2em] mt-1 opacity-70">
             Real-time Analytics & Store Insights
           </p>
         </div>

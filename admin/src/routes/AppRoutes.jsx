@@ -6,18 +6,17 @@ import { SetupAdmin } from "../features/auth/SetupAdmin";
 
 import { AdminLayout } from "../layouts/AdminLayout";
 
+import { CarouselManager } from "../features/storefront/CarouselManager";
 import { PromoManager } from "../features/storefront/PromoManager";
 import { SocialMediaManager } from "../features/storefront/SocialMediaManager";
 
-import { CategoriesManager } from "../components/CategoriesManager";
+import { CategoriesManager } from "../features/storefront/CategoriesManager";
 import { AddCategory } from "../components/AddCategory";
 
 import { Dashboard } from "../features/dashboard/Dashboard";
 import { ProductInventory } from "../features/products/ProductInventory";
 
 import { AllOrders } from "../features/orders/AllOrders";
-
-// New Feature Import
 import { InviteAdmin } from "../features/admins/InviteAdmin";
 import { StaffList } from "../features/admins/StaffList";
 
@@ -51,6 +50,10 @@ const router = createBrowserRouter([
         path: "products/",
         element: <ProductInventory />,
       },
+      {
+        path: "website/carousel",
+        element: <CarouselManager />,
+      },
 
       {
         path: "website/banners",
@@ -64,6 +67,7 @@ const router = createBrowserRouter([
         path: "categories",
         element: <CategoriesManager />,
       },
+
       {
         path: "categories/add",
         element: <AddCategory />,

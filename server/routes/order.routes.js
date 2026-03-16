@@ -6,6 +6,7 @@ import {
   retryPayment,
   //  Admin controllers
   getAllOrdersAdmin,
+  updateOrderAdmin,
 } from "../controllers/order.controller.js";
 import { verifyToken } from "../middleware/verifyToken.middleware.js";
 
@@ -40,5 +41,9 @@ router.get("/:id", getOrderById);
  * Query Params: ?page=1&limit=8
  */
 router.get("/admin/all", verifyToken, getAllOrdersAdmin);
+
+// Route: PATCH /api/orders/admin/update/:id
+// Description: Admin can update order status, verification, and internal notes.
+router.patch("/admin/update/:id", verifyToken, updateOrderAdmin);
 
 export default router;

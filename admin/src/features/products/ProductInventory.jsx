@@ -174,11 +174,11 @@ export const ProductInventory = () => {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h1 className="text-3xl font-black tracking-tight uppercase">
+          <h1 className="text-3xl font-black text-theme-front tracking-tight uppercase">
             Product Inventory
           </h1>
-          <p className="text-theme-muted text-sm mt-1 font-medium italic">
-            Manage your catalog and monitor stock levels
+          <p className="text-[10px] text-theme-muted uppercase font-bold tracking-[0.2em] mt-1 opacity-70">
+            MENS FASHION • Catalog Archive & Stock Control
           </p>
         </div>
         <div className="flex items-center gap-3">

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { X, Upload, Link, Image as ImageIcon, Hash } from "lucide-react";
+import { X, Upload, Link, Hash } from "lucide-react";
+import { useTheme } from "../../../contexts/ThemeContext";
 
 export const PromoModal = ({
   editingSlot,
@@ -11,88 +12,123 @@ export const PromoModal = ({
   onImageChange,
   onSubmit,
 }) => {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+
   const [uploadMethod, setUploadMethod] = useState(
     form.imagePreview?.startsWith("http") ? "url" : "file",
   );
 
   return (
-    <div className="fixed inset-0 bg-theme-front/30 backdrop-blur-sm flex items-center justify-center z-50 p-4 md:p-6">
-      <div className="bg-theme-base rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden border border-theme-line transition-all">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-[100] p-4 md:p-6 transition-all">
+      <div
+        className={`
+        w-full max-w-2xl rounded-[2.5rem] shadow-2xl overflow-hidden border transition-all duration-300
+        ${isDark ? "bg-[#1A1A1A] border-white/10" : "bg-white border-slate-200"}
+      `}
+      >
         {/* Header */}
-        <div className="flex justify-between items-center p-6 border-b border-theme-line bg-theme-sub/20">
+        <div
+          className={`
+          flex justify-between items-center p-8 border-b
+          ${isDark ? "border-white/5 bg-white/[0.02]" : "border-slate-100 bg-slate-50/50"}
+        `}
+        >
           <div>
-            <h2 className="text-xl md:text-2xl font-black tracking-tight">
+            <h2
+              className={`text-3xl font-black uppercase tracking-tight ${
+                isDark ? "text-white" : "text-slate-900"
+              }`}
+            >
               {editingSlot ? "Edit Banner" : "New Banner"}
             </h2>
-            <p className="text-xs text-theme-muted font-medium mt-1">
-              Configure your promotional display
+            <p
+              className={`text-[10px] font-bold uppercase tracking-[0.2em] mt-1 opacity-70 ${
+                isDark ? "text-slate-500" : "text-slate-400"
+              }`}
+            >
+              Configuration & Display Logic
             </p>
           </div>
           <button
             onClick={onClose}
-            className="text-theme-muted hover:text-theme-front p-2 hover:bg-theme-sub rounded-full transition-colors"
+            className={`p-3 rounded-2xl transition-all ${isDark ? "hover:bg-white/10 text-slate-400" : "hover:bg-slate-100 text-slate-500"}`}
           >
             <X size={24} />
           </button>
         </div>
 
-        <form onSubmit={onSubmit} className="p-6 space-y-6">
+        <form onSubmit={onSubmit} className="p-8 space-y-8">
           {/* Toggle Switch */}
-          <div className="space-y-2">
-            <label className="text-[11px] font-black uppercase tracking-widest text-theme-muted ml-1">
-              Upload Method
+          <div className="space-y-3">
+            <label
+              className={`text-[10px] font-black uppercase tracking-[0.2em] ml-1 ${isDark ? "text-slate-500" : "text-slate-400"}`}
+            >
+              Upload Strategy
             </label>
-            <div className="flex p-1 bg-theme-sub/20 rounded-2xl border border-theme-line w-fit">
+            <div
+              className={`flex p-1.5 rounded-2xl border w-fit ${isDark ? "bg-black/20 border-white/5" : "bg-slate-100 border-slate-200"}`}
+            >
               <button
                 type="button"
                 onClick={() => setUploadMethod("file")}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-black transition-all ${
                   uploadMethod === "file"
-                    ? "bg-theme-base shadow-sm text-theme-front"
-                    : "text-theme-muted hover:text-theme-front"
+                    ? isDark
+                      ? "bg-white/10 text-white shadow-xl"
+                      : "bg-white text-slate-900 shadow-sm"
+                    : "text-slate-500 hover:text-slate-400"
                 }`}
               >
-                <Upload size={14} /> File Upload
+                <Upload size={14} /> FILE
               </button>
               <button
                 type="button"
                 onClick={() => setUploadMethod("url")}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-black transition-all ${
                   uploadMethod === "url"
-                    ? "bg-theme-base shadow-sm text-theme-front"
-                    : "text-theme-muted hover:text-theme-front"
+                    ? isDark
+                      ? "bg-white/10 text-white shadow-xl"
+                      : "bg-white text-slate-900 shadow-sm"
+                    : "text-slate-500 hover:text-slate-400"
                 }`}
               >
-                <Link size={14} /> Image URL
+                <Link size={14} /> URL
               </button>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Left Column: Image Management */}
-            <div className="space-y-2">
-              <label className="text-[11px] font-black uppercase tracking-widest text-theme-muted ml-1">
-                Banner Visual
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* Left Column: Visual */}
+            <div className="space-y-3">
+              <label
+                className={`text-[10px] font-black uppercase tracking-[0.2em] ml-1 ${isDark ? "text-slate-500" : "text-slate-400"}`}
+              >
+                Banner Preview
               </label>
 
               {uploadMethod === "file" ? (
                 <div
-                  className="group relative border-2 border-dashed border-theme-line rounded-2xl p-2 flex flex-col items-center justify-center hover:border-theme-act bg-theme-sub/10 hover:bg-theme-sub/30 cursor-pointer transition-all min-h-[180px]"
+                  className={`
+                    group relative border-2 border-dashed rounded-[2rem] flex flex-col items-center justify-center cursor-pointer transition-all min-h-[220px] overflow-hidden
+                    ${isDark ? "border-white/10 bg-white/[0.02] hover:border-blue-500/50" : "border-slate-200 bg-slate-50 hover:border-blue-500"}
+                  `}
                   onClick={() => document.getElementById("fileInput").click()}
                 >
                   {form.imagePreview ? (
                     <img
                       src={form.imagePreview}
-                      className="h-44 w-full object-cover rounded-xl"
+                      className="absolute inset-0 w-full h-full object-cover"
                       alt="preview"
                     />
                   ) : (
-                    <div className="text-center py-6">
-                      <div className="w-12 h-12 bg-theme-sub rounded-full flex items-center justify-center mx-auto mb-3 border border-theme-line">
-                        <Upload className="text-theme-muted" size={20} />
-                      </div>
-                      <p className="text-xs text-theme-muted font-bold">
-                        Browse local files
+                    <div className="text-center">
+                      <Upload
+                        className="mx-auto mb-2 text-slate-400"
+                        size={28}
+                      />
+                      <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                        Select Image
                       </p>
                     </div>
                   )}
@@ -105,27 +141,31 @@ export const PromoModal = ({
                   />
                 </div>
               ) : (
-                <div className="space-y-3">
+                <div className="space-y-4">
                   <div className="relative">
                     <input
-                      className="w-full bg-theme-sub/20 border border-theme-line rounded-xl p-3.5 text-sm font-semibold focus:ring-2 focus:ring-theme-act outline-none pl-11"
-                      placeholder="https://example.com/image.jpg"
+                      className={`w-full border rounded-2xl p-4 text-sm font-bold outline-none pl-12 transition-all ${
+                        isDark
+                          ? "bg-black/20 border-white/10 text-white focus:border-blue-500"
+                          : "bg-white border-slate-200 focus:border-blue-500"
+                      }`}
+                      placeholder="Paste image link..."
                       value={form.imagePreview || ""}
                       onChange={(e) =>
                         setForm({ ...form, imagePreview: e.target.value })
                       }
                     />
                     <Link
-                      className="absolute left-4 top-1/2 -translate-y-1/2 text-theme-muted"
+                      className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500"
                       size={18}
                     />
                   </div>
                   {form.imagePreview && (
-                    <div className="relative rounded-2xl overflow-hidden border border-theme-line h-32">
+                    <div className="rounded-[2rem] overflow-hidden border border-white/10 h-32 shadow-2xl">
                       <img
                         src={form.imagePreview}
                         className="w-full h-full object-cover"
-                        alt="URL preview"
+                        alt="preview"
                       />
                     </div>
                   )}
@@ -133,19 +173,22 @@ export const PromoModal = ({
               )}
             </div>
 
-            {/* Right Column: Details */}
-            <div className="space-y-4">
-              {/* SLOT NUMBER FIELD */}
+            {/* Right Column: Meta */}
+            <div className="space-y-5">
               <div className="space-y-2">
-                <label className="text-[11px] font-black uppercase tracking-widest text-theme-muted ml-1">
-                  Slot Position (ID)
+                <label
+                  className={`text-[10px] font-black uppercase tracking-[0.2em] ml-1 ${isDark ? "text-slate-500" : "text-slate-400"}`}
+                >
+                  Slot Position
                 </label>
                 <div className="relative">
                   <input
                     type="number"
-                    min="1"
-                    className="w-full bg-theme-sub/20 border border-theme-line rounded-xl p-3.5 text-sm font-semibold focus:ring-2 focus:ring-theme-act outline-none pl-11"
-                    placeholder="e.g. 1"
+                    className={`w-full border rounded-2xl p-4 text-sm font-bold outline-none pl-12 transition-all ${
+                      isDark
+                        ? "bg-black/20 border-white/10 text-white focus:border-blue-500"
+                        : "bg-white border-slate-200 focus:border-blue-500"
+                    }`}
                     value={form.slot_number || ""}
                     onChange={(e) =>
                       setForm({ ...form, slot_number: e.target.value })
@@ -153,25 +196,31 @@ export const PromoModal = ({
                     required
                   />
                   <Hash
-                    className="absolute left-4 top-1/2 -translate-y-1/2 text-theme-muted"
+                    className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500"
                     size={18}
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <label className="text-[11px] font-black uppercase tracking-widest text-theme-muted ml-1">
-                  Linked Category
+                <label
+                  className={`text-[10px] font-black uppercase tracking-[0.2em] ml-1 ${isDark ? "text-slate-500" : "text-slate-400"}`}
+                >
+                  Target Category
                 </label>
                 <select
-                  className="w-full bg-theme-sub/20 border border-theme-line rounded-xl p-3.5 text-sm font-semibold focus:ring-2 focus:ring-theme-act outline-none appearance-none"
+                  className={`w-full border rounded-2xl p-4 text-sm font-bold outline-none appearance-none transition-all ${
+                    isDark
+                      ? "bg-black/20 border-white/10 text-white focus:border-blue-500"
+                      : "bg-white border-slate-200 focus:border-blue-500"
+                  }`}
                   value={form.category}
                   onChange={(e) =>
                     setForm({ ...form, category: e.target.value })
                   }
                   required
                 >
-                  <option value="">Select a category...</option>
+                  <option value="">Choose...</option>
                   {categories.map((c) => (
                     <option key={c._id} value={c._id}>
                       {c.name}
@@ -181,12 +230,18 @@ export const PromoModal = ({
               </div>
 
               <div className="space-y-2">
-                <label className="text-[11px] font-black uppercase tracking-widest text-theme-muted ml-1">
-                  Banner Title / Badge
+                <label
+                  className={`text-[10px] font-black uppercase tracking-[0.2em] ml-1 ${isDark ? "text-slate-500" : "text-slate-400"}`}
+                >
+                  Banner Label
                 </label>
                 <input
-                  className="w-full bg-theme-sub/20 border border-theme-line rounded-xl p-3.5 text-sm font-semibold focus:ring-2 focus:ring-theme-act outline-none"
-                  placeholder="e.g. Summer Collection"
+                  className={`w-full border rounded-2xl p-4 text-sm font-bold outline-none transition-all ${
+                    isDark
+                      ? "bg-black/20 border-white/10 text-white focus:border-blue-500"
+                      : "bg-white border-slate-200 focus:border-blue-500"
+                  }`}
+                  placeholder="e.g. NEW ARRIVALS"
                   value={form.title || ""}
                   onChange={(e) => setForm({ ...form, title: e.target.value })}
                 />
@@ -194,24 +249,28 @@ export const PromoModal = ({
             </div>
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex flex-col-reverse sm:flex-row gap-3 pt-2">
+          {/* Actions */}
+          <div className="flex flex-col-reverse sm:flex-row gap-4 pt-4">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-4 border border-theme-line rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-theme-sub transition-colors"
+              className={`flex-1 py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] transition-all border ${
+                isDark
+                  ? "bg-white/5 border-white/5 text-slate-400 hover:bg-white/10"
+                  : "bg-white border-slate-200 text-slate-500 hover:bg-slate-50"
+              }`}
             >
               Cancel
             </button>
             <button
               disabled={loading}
-              className="flex-1 px-4 py-4 bg-theme-act text-theme-actfg rounded-xl font-bold text-xs uppercase tracking-widest hover:opacity-90 disabled:opacity-50 shadow-lg shadow-theme-act/30 transition-all"
+              className="flex-1 py-4 bg-blue-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-blue-700 disabled:opacity-50 shadow-xl shadow-blue-500/20 transition-all"
             >
               {loading
-                ? "Saving..."
+                ? "Processing..."
                 : editingSlot
-                  ? "Update Banner"
-                  : "Create Banner"}
+                  ? "Update Changes"
+                  : "Deploy Banner"}
             </button>
           </div>
         </form>

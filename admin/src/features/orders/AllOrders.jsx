@@ -85,11 +85,11 @@ export const AllOrders = () => {
         {/* Header & Search */}
         <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-black text-theme-front">
+            <h1 className="text-3xl font-black text-theme-front tracking-tight uppercase">
               Orders Dashboard
             </h1>
-            <p className="text-xs text-theme-muted font-bold uppercase tracking-widest">
-              Manage your fashion commerce workflow
+            <p className="text-[10px] text-theme-muted uppercase font-bold tracking-[0.2em] mt-1 opacity-70">
+              REAL-TIME COMMERCE OPERATIONS & ORDER INSIGHTS
             </p>
           </div>
           <div className="relative w-full md:w-80">

@@ -2,6 +2,7 @@ import React from "react";
 import { useLocation, Link, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../redux/slices/authSlice";
+import { useGetOrdersQuery } from "../redux/service/adminOrderApi";
 import {
   LayoutDashboard,
   ShoppingBag,
@@ -56,6 +57,11 @@ export const Sidebar = ({ toggleSidebar }) => {
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
 
+  // [ADDED] Fetch Orders Data for Live Badge
+  // We fetch page 1 with 1 item just to get the 'totalOrders' count from the response
+  const { data: orderData } = useGetOrdersQuery({ page: 1, limit: 1 });
+  const totalOrdersCount = orderData?.totalOrders || 0;
+
   const handleLogout = () => {
     dispatch(logout());
     navigate("/login");
@@ -90,12 +96,13 @@ export const Sidebar = ({ toggleSidebar }) => {
           />
         </Link>
 
-        {/* Orders */}
+        {/* Orders [UPDATED] */}
         <Link to="/admin/orders">
           <SidebarItem
             icon={ShoppingBag}
             label="Orders"
-            badge="12"
+            // [UPDATED] badge value is now dynamic
+            badge={totalOrdersCount > 0 ? totalOrdersCount.toString() : null}
             active={path.startsWith("/admin/orders")}
           />
         </Link>

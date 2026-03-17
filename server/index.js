@@ -5,6 +5,8 @@ dotenv.config();
 import cors from "cors";
 
 import express from "express";
+import { createServer } from "http";
+import { initSocket } from "./config/initSocket.js";
 import connectDB from "./config/db.js";
 
 // Routes Import
@@ -21,6 +23,7 @@ import userRoutes from "./routes/user.routes.js";
 import wishlistRoutes from "./routes/wishlist.routes.js";
 import analyticsRoutes from "./routes/analytics.route.js";
 import adminRoutes from "./routes/admin.routes.js";
+import notificationRoutes from "./routes/notification.route.js";
 
 // Initialize Database Connection
 connectDB();
@@ -94,6 +97,9 @@ app.use("/api/wishlist", wishlistRoutes);
 // Analytics routes (Admin Only)
 app.use("/api/analytics", analyticsRoutes);
 
+// Notification routes (Admin Only)
+app.use("/api/notifications", notificationRoutes);
+
 /**
  * Health Check Route
  */
@@ -117,7 +123,9 @@ app.use((err, req, res, next) => {
  * Server Initialization
  */
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
+const httpServer = createServer(app);
+initSocket(httpServer);
+httpServer.listen(PORT, () => {
   console.log(
     `Server running in ${process.env.NODE_ENV || "development"} mode on port ${PORT}`,
   );

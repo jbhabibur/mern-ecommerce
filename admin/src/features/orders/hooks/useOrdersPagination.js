@@ -1,14 +1,22 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useGetOrdersQuery } from "../../../redux/service/adminOrderApi";
 
-export const useOrdersPagination = (initialLimit = 8) => {
+// Added statusFilter as the second parameter
+export const useOrdersPagination = (initialLimit = 8, statusFilter = "") => {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
 
-  // RTK Query: Fetching data from server based on page
+  // Reset to page 1 whenever search or filter changes to avoid "empty page" bugs
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, statusFilter]);
+
+  // RTK Query: Pass page, limit, search, and status to the server
   const { data, isLoading, isError, error, isFetching } = useGetOrdersQuery({
     page: currentPage,
     limit: initialLimit,
+    search: searchTerm,
+    status: statusFilter,
   });
 
   // Extracting data from response
@@ -20,17 +28,10 @@ export const useOrdersPagination = (initialLimit = 8) => {
     hasPrevPage: false,
   };
 
-  // Searching logic (Since search happens on the fetched page data)
-  const filteredOrders = useMemo(() => {
-    if (!searchTerm) return orders;
-    const s = searchTerm.toLowerCase();
-    return orders.filter(
-      (o) =>
-        o._id.toLowerCase().includes(s) ||
-        o.billingAddress?.fullName?.toLowerCase().includes(s) ||
-        o.billingAddress?.phoneNumber?.includes(s),
-    );
-  }, [orders, searchTerm]);
+  /**
+   * Note: We no longer need local useMemo filtering because
+   * the server is now handling the search and status filter globally.
+   */
 
   const handlePageChange = (newPage) => {
     setCurrentPage(newPage);
@@ -38,11 +39,10 @@ export const useOrdersPagination = (initialLimit = 8) => {
 
   const handleSearchChange = (value) => {
     setSearchTerm(value);
-    setCurrentPage(1); // Reset to first page on search
   };
 
   return {
-    orders: filteredOrders,
+    orders, // Returning global results from server
     pagination,
     currentPage,
     searchTerm,

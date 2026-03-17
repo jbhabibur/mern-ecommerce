@@ -1,9 +1,10 @@
 import React, { useState } from "react";
-import { Search, Bell, Menu, Moon, Sun, X, LogOut } from "lucide-react";
+import { Search, Menu, Moon, Sun, X, LogOut } from "lucide-react";
 import { useTheme } from "../contexts/ThemeContext";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../redux/slices/authSlice";
 import { useNavigate } from "react-router";
+import { NotificationDropdown } from "../features/notifications/NotificationDropdown";
 
 export const Header = ({ toggleSidebar }) => {
   const [notificationsOpen, setNotificationsOpen] = useState(false);
@@ -13,7 +14,6 @@ export const Header = ({ toggleSidebar }) => {
   const { theme, toggleTheme } = useTheme();
   const isDark = theme === "dark";
 
-  // Redux hooks
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { user } = useSelector((state) => state.auth);
@@ -23,29 +23,20 @@ export const Header = ({ toggleSidebar }) => {
     navigate("/login");
   };
 
-  // Helper to get initials
   const getInitials = () => {
     if (user?.firstName && user?.lastName) {
       return `${user.firstName[0]}${user.lastName[0]}`;
     }
-    return "AD"; // Fallback for Admin
+    return "AD";
   };
 
   return (
-    <header
-      className="
-        h-16 flex items-center justify-between px-4 md:px-6
-        sticky top-0 z-40
-        backdrop-blur-md
-        bg-theme-base/80
-        border-b border-theme-line
-      "
-    >
-      {/* LEFT */}
+    <header className="h-16 flex items-center justify-between px-4 md:px-6 sticky top-0 z-40 backdrop-blur-md bg-theme-base/80 border-b border-theme-line">
+      {/* LEFT: Menu & Search */}
       <div className="flex items-center gap-3 flex-1">
         <button
           onClick={toggleSidebar}
-          className="p-2 rounded-lg lg:hidden hover:bg-theme-sub transition-colors"
+          className="p-2 rounded-lg lg:hidden hover:bg-theme-sub"
         >
           <Menu size={20} className="text-theme-front" />
         </button>
@@ -57,32 +48,15 @@ export const Header = ({ toggleSidebar }) => {
           />
           <input
             type="text"
-            placeholder="Search products, orders..."
-            className="
-              w-full pl-10 pr-3 py-2
-              rounded-lg
-              border
-              text-sm
-              outline-none
-              bg-theme-sub
-              border-theme-line
-              text-theme-front
-              focus:border-theme-act focus:ring-1 focus:ring-theme-act
-              "
+            placeholder="Search..."
+            className="w-full pl-10 pr-3 py-2 rounded-lg border text-sm bg-theme-sub border-theme-line text-theme-front outline-none focus:border-theme-act"
           />
         </div>
-
-        <button
-          onClick={() => setMobileSearchOpen(true)}
-          className="p-2 md:hidden hover:bg-theme-sub rounded-lg transition-colors"
-        >
-          <Search size={20} className="text-theme-front" />
-        </button>
       </div>
 
-      {/* RIGHT */}
+      {/* RIGHT: Actions */}
       <div className="flex items-center gap-2 md:gap-4">
-        {/* THEME TOGGLE */}
+        {/* Theme Toggle */}
         <button
           onClick={toggleTheme}
           className="p-2 rounded-lg hover:bg-theme-sub transition-colors"
@@ -94,36 +68,15 @@ export const Header = ({ toggleSidebar }) => {
           )}
         </button>
 
-        {/* NOTIFICATIONS */}
-        <div className="relative">
-          <button
-            onClick={() => setNotificationsOpen(!notificationsOpen)}
-            className="p-2 rounded-lg hover:bg-theme-sub relative transition-colors"
-          >
-            <Bell size={20} className="text-theme-front" />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
-          </button>
+        {/* NOTIFICATIONS COMPONENT */}
+        <NotificationDropdown
+          isOpen={notificationsOpen}
+          setIsOpen={setNotificationsOpen}
+        />
 
-          {notificationsOpen && (
-            <div className="absolute right-0 mt-3 w-72 bg-theme-base border border-theme-line rounded-xl shadow-xl overflow-hidden z-50">
-              <div className="px-4 py-3 border-b border-theme-line text-sm font-semibold text-theme-front">
-                Notifications
-              </div>
-              <div className="max-h-60 overflow-y-auto">
-                <div className="px-4 py-3 hover:bg-theme-sub cursor-pointer">
-                  <p className="text-sm font-medium text-theme-front">
-                    New order received
-                  </p>
-                  <p className="text-xs text-theme-muted">2 minutes ago</p>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
+        <div className="hidden sm:block w-px h-6 bg-theme-line mx-1"></div>
 
-        <div className="hidden sm:block w-px h-6 bg-theme-line"></div>
-
-        {/* PROFILE & LOGOUT */}
+        {/* PROFILE SECTION */}
         <div className="relative">
           <div
             className="flex items-center gap-3 cursor-pointer"
@@ -139,8 +92,7 @@ export const Header = ({ toggleSidebar }) => {
                 {user?.role || "Administrator"}
               </p>
             </div>
-
-            <div className="relative group">
+            <div className="relative">
               {user?.avatar ? (
                 <img
                   src={user.avatar}
@@ -156,7 +108,7 @@ export const Header = ({ toggleSidebar }) => {
             </div>
           </div>
 
-          {/* Profile Dropdown with Logout */}
+          {/* Profile Dropdown */}
           {profileOpen && (
             <div className="absolute right-0 mt-3 w-48 bg-theme-base border border-theme-line rounded-xl shadow-xl overflow-hidden z-50">
               <div className="p-2">
@@ -164,30 +116,13 @@ export const Header = ({ toggleSidebar }) => {
                   onClick={handleLogout}
                   className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-lg transition-colors"
                 >
-                  <LogOut size={16} />
-                  Logout Session
+                  <LogOut size={16} /> Logout Session
                 </button>
               </div>
             </div>
           )}
         </div>
       </div>
-
-      {/* MOBILE SEARCH OVERLAY */}
-      {mobileSearchOpen && (
-        <div className="absolute inset-0 bg-theme-base flex items-center px-4 md:hidden z-50">
-          <Search size={20} className="text-theme-muted mr-2" />
-          <input
-            autoFocus
-            type="text"
-            placeholder="Search..."
-            className="flex-1 bg-transparent outline-none text-sm text-theme-front"
-          />
-          <button onClick={() => setMobileSearchOpen(false)}>
-            <X size={20} className="text-theme-front" />
-          </button>
-        </div>
-      )}
     </header>
   );
 };

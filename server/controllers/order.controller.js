@@ -1,10 +1,11 @@
 import Order from "../models/order.model.js";
+import { emitOrderNotification } from "../utils/orderNotification.utils.js";
 import SSLCommerzPayment from "sslcommerz-lts";
 import mongoose from "mongoose";
 
 export const createOrder = async (req, res) => {
   // 1. Log incoming body for debugging
-  console.log("🚀 Incoming Order Body:", JSON.stringify(req.body, null, 2));
+  console.log("Incoming Order Body:", JSON.stringify(req.body, null, 2));
 
   try {
     const {
@@ -40,7 +41,10 @@ export const createOrder = async (req, res) => {
     });
 
     const savedOrder = await newOrder.save();
-    console.log("✅ Order saved in DB:", savedOrder._id);
+    console.log("Order saved in DB:", savedOrder._id);
+
+    // Live order saving notification to admin
+    emitOrderNotification(savedOrder, "NEW_ORDER");
 
     // 4. SSLCommerz Logic
     if (payment.method === "ssl") {
@@ -104,7 +108,7 @@ export const createOrder = async (req, res) => {
           orderId: savedOrder._id,
         });
       } else {
-        console.error("❌ SSL Initialization Failed:", apiResponse);
+        console.error("SSL Initialization Failed:", apiResponse);
         return res.status(400).json({
           success: false,
           message: "SSL Session failed",
@@ -120,7 +124,7 @@ export const createOrder = async (req, res) => {
       orderId: savedOrder._id,
     });
   } catch (error) {
-    console.error("🔥 Order Controller Error:", error);
+    console.error("Order Controller Error:", error);
     res.status(500).json({ success: false, message: error.message });
   }
 };
@@ -284,7 +288,7 @@ export const retryPayment = async (req, res) => {
         paymentUrl: apiResponse.GatewayPageURL,
       });
     } else {
-      console.error("❌ SSL Retry Failed:", apiResponse);
+      console.error("SSL Retry Failed:", apiResponse);
       return res.status(400).json({
         success: false,
         message: "SSL Session failed",
@@ -292,33 +296,56 @@ export const retryPayment = async (req, res) => {
       });
     }
   } catch (error) {
-    console.error("🔥 Retry Payment Error:", error);
+    console.error("Retry Payment Error:", error);
     res.status(500).json({ success: false, message: error.message });
   }
 };
 
 /**
- * Controller: Get Orders with Dynamic Limit and Pagination
- * Used for both the Admin Dashboard (limited results) and the All Orders page (paginated).
+ * Controller: Get Orders with Dynamic Limit, Pagination, Search, and Status Filter
  */
 export const getAllOrdersAdmin = async (req, res) => {
   try {
-    // Extract page and limit from query parameters; defaults to page 1 and limit 8
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 8;
     const skip = (page - 1) * limit;
 
-    // Get the total count of orders for pagination metadata
-    const totalOrders = await Order.countDocuments();
+    // 1. Get search and status from query params
+    const { search, status } = req.query;
 
-    // Fetch orders with latest first, applying pagination skip and limit
-    const orders = await Order.find()
+    // 2. Build the dynamic query object
+    const query = {};
+
+    // Filter by Order Status (e.g., "Shipped", "Delivered")
+    if (status && status !== "" && status !== "All") {
+      query.orderStatus = status;
+    }
+
+    // Search by Customer Name, Phone, or Order ID
+    if (search) {
+      query.$or = [
+        { "billingAddress.fullName": { $regex: search, $options: "i" } },
+        { "billingAddress.phoneNumber": { $regex: search, $options: "i" } },
+      ];
+
+      // If search term looks like a MongoDB ID, add it to $or
+      if (search.match(/^[0-9a-fA-F]{24}$/)) {
+        query.$or.push({ _id: search });
+      }
+    }
+
+    // 3. Get total count based on the filter (Crucial for badge & pagination)
+    const totalOrders = await Order.countDocuments(query);
+
+    // 4. Fetch filtered and paginated orders
+    const orders = await Order.find(query)
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);
 
     res.status(200).json({
       success: true,
+      totalOrders: totalOrders, // Updates RTK Query badge
       orders: orders || [],
       pagination: {
         totalOrders,
@@ -340,14 +367,13 @@ export const getAllOrdersAdmin = async (req, res) => {
 
 /**
  * Controller: Update Order (Admin)
- * Updates status, verification, and maintains a detailed audit history.
+ * Updates status and emits a socket event so all admins see the change instantly.
  */
 export const updateOrderAdmin = async (req, res) => {
   try {
     const { id } = req.params;
     const { orderStatus, internalNote, isVerified } = req.body;
 
-    // 1. Check if the order exists
     const order = await Order.findById(id);
     if (!order) {
       return res
@@ -355,15 +381,13 @@ export const updateOrderAdmin = async (req, res) => {
         .json({ success: false, message: "Order not found" });
     }
 
-    // 2. Update status and log audit history
+    // Update status and push to audit history
     if (orderStatus) {
       order.orderStatus = orderStatus;
 
-      // Construct admin identity from request user (set by your auth middleware)
       const adminName =
         `${req.user?.firstName || "Admin"} ${req.user?.lastName || ""}`.trim();
 
-      // Push history log with specific admin name and email
       order.history.push({
         status: orderStatus,
         updatedBy: {
@@ -374,18 +398,20 @@ export const updateOrderAdmin = async (req, res) => {
       });
     }
 
-    // 3. Update internal remarks
-    if (internalNote !== undefined) {
-      order.internalNote = internalNote;
-    }
+    if (internalNote !== undefined) order.internalNote = internalNote;
+    if (isVerified !== undefined) order.isVerified = isVerified;
 
-    // 4. Update verification status
-    if (isVerified !== undefined) {
-      order.isVerified = isVerified;
-    }
-
-    // 5. Save changes to database
     const updatedOrder = await order.save();
+
+    // [REAL-TIME EMIT]
+    // This notifies all connected admins about the order update
+    try {
+      const io = getIO();
+      io.emit("orderUpdated", updatedOrder);
+    } catch (socketErr) {
+      console.error("Socket Emit Error (Update):", socketErr.message);
+      // We don't block the response even if socket fails
+    }
 
     res.status(200).json({
       success: true,
@@ -393,7 +419,7 @@ export const updateOrderAdmin = async (req, res) => {
       order: updatedOrder,
     });
   } catch (error) {
-    console.error("🔥 Admin Update Order Error:", error);
+    console.error("Admin Update Order Error:", error);
     res.status(500).json({ success: false, message: error.message });
   }
 };

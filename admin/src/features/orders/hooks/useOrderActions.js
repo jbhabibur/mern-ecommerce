@@ -13,6 +13,9 @@ export const useOrderActions = () => {
   const [newStatus, setNewStatus] = useState("");
   const [internalNote, setInternalNote] = useState("");
 
+  /**
+   * Opens the modal and populates the current order data
+   */
   const openModal = (order) => {
     setSelectedOrder(order);
     setNewStatus(order.orderStatus);
@@ -20,41 +23,54 @@ export const useOrderActions = () => {
     setIsModalOpen(true);
   };
 
+  /**
+   * Resets local state and closes the modal
+   */
   const closeModal = () => {
     setIsModalOpen(false);
     setSelectedOrder(null);
+    setNewStatus("");
+    setInternalNote("");
   };
 
+  /**
+   * Submits the changes to the backend
+   */
   const handleSaveChanges = async () => {
     if (!selectedOrder?._id) return;
 
     try {
-      // Automatic verification logic based on status
+      // 1. Automatic verification logic based on status
+      // We mark it as verified if it's progressing past the initial stage
       const isVerified = ["Confirmed", "Shipped", "Delivered"].includes(
         newStatus,
       )
         ? true
         : selectedOrder.isVerified;
 
-      // Passing the data to the mutation
-      // Note: If your backend uses req.user from a JWT token,
-      // you don't strictly need to pass 'adminInfo' here, but it's good for logging.
-      await updateOrder({
+      // 2. Prepare payload
+      const payload = {
         id: selectedOrder._id,
         orderStatus: newStatus,
         internalNote: internalNote,
         isVerified: isVerified,
-        // Optional: Include admin details if your backend doesn't use JWT middleware for identity
-        adminName: `${user?.firstName} ${user?.lastName}`,
+        // Passing admin details for the backend's history/audit log
+        adminName:
+          `${user?.firstName || "Admin"} ${user?.lastName || ""}`.trim(),
         adminEmail: user?.email,
-      }).unwrap();
+      };
 
+      // 3. Trigger RTK Query Mutation
+      await updateOrder(payload).unwrap();
+
+      // 4. Close modal on success
       closeModal();
 
-      // Industry standard success feedback
+      // [Note] In a production app, you might want to use a toast (like react-hot-toast)
+      // instead of a native alert for a better UI experience.
       alert("Order updated successfully!");
     } catch (err) {
-      console.error("Update failed:", err);
+      console.error("Order update failed:", err);
       alert(err?.data?.message || "Failed to update order. Please try again.");
     }
   };

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Edit3,
   AlertCircle,
@@ -10,6 +10,7 @@ import {
   ChevronLeft,
   ChevronRight,
   ChevronDown,
+  Filter, // Added icon
 } from "lucide-react";
 
 import { OrderActionModal } from "./components/OrderActionModal";
@@ -35,7 +36,19 @@ const getStatusStyles = (status) => {
 };
 
 export const AllOrders = () => {
-  // Using our Custom Hooks
+  // 1. Local state for filtering
+  const [activeStatus, setActiveStatus] = useState("All");
+
+  const filterOptions = [
+    "All",
+    "Order Placed",
+    "Confirmed",
+    "Shipped",
+    "Delivered",
+    "Cancelled",
+  ];
+
+  // 2. Pass the activeStatus to your pagination hook
   const {
     orders,
     pagination,
@@ -47,7 +60,7 @@ export const AllOrders = () => {
     error,
     handlePageChange,
     handleSearchChange,
-  } = useOrdersPagination(8);
+  } = useOrdersPagination(8, activeStatus === "All" ? "" : activeStatus);
 
   const {
     selectedOrder,
@@ -113,6 +126,32 @@ export const AllOrders = () => {
           </div>
         </header>
 
+        {/* Status Filter Section */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
+          <div className="flex items-center gap-2 pr-4 border-r border-theme-line mr-2">
+            <Filter size={14} className="text-theme-muted" />
+            <span className="text-[10px] font-black uppercase text-theme-muted tracking-widest">
+              Filter:
+            </span>
+          </div>
+          {filterOptions.map((status) => (
+            <button
+              key={status}
+              onClick={() => {
+                setActiveStatus(status);
+                handlePageChange(1); // Reset to page 1 when filter changes
+              }}
+              className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider whitespace-nowrap transition-all border ${
+                activeStatus === status
+                  ? "bg-theme-act text-theme-actfg border-transparent shadow-md shadow-theme-act/20 scale-105"
+                  : "bg-theme-sub text-theme-muted border-theme-line hover:border-theme-muted"
+              }`}
+            >
+              {status}
+            </button>
+          ))}
+        </div>
+
         {/* Table Container */}
         <div className="rounded-2xl border border-theme-line bg-theme-base shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
@@ -128,7 +167,9 @@ export const AllOrders = () => {
                 </tr>
               </thead>
               <tbody
-                className={`divide-y divide-theme-line transition-opacity ${isFetching ? "opacity-50" : "opacity-100"}`}
+                className={`divide-y divide-theme-line transition-opacity ${
+                  isFetching ? "opacity-50" : "opacity-100"
+                }`}
               >
                 {orders.map((order) => (
                   <tr
@@ -186,7 +227,9 @@ export const AllOrders = () => {
                     </td>
                     <td className="px-6 py-5">
                       <span
-                        className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase border whitespace-nowrap ${getStatusStyles(order.orderStatus)}`}
+                        className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase border whitespace-nowrap ${getStatusStyles(
+                          order.orderStatus,
+                        )}`}
                       >
                         {order.orderStatus}
                       </span>

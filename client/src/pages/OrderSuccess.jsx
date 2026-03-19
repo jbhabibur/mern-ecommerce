@@ -10,22 +10,30 @@ import {
   Banknote,
   MapPin,
   Calendar,
+  ArrowRight,
 } from "lucide-react";
 import axios from "axios";
 import { BASE_URL } from "../api/apiConfig";
 
+/**
+ * OrderSuccess Component
+ * Displays a high-contrast, modern B&W confirmation screen after a successful purchase.
+ * Uses 'state' navigation to pass data to the tracking page efficiently.
+ */
 export const OrderSuccess = () => {
   const [searchParams] = useSearchParams();
   const [orderData, setOrderData] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Extract orderId from the URL query parameters (e.g., ?orderId=123)
   const orderId = searchParams.get("orderId");
 
-  /* ---------------- Fetch Order ---------------- */
+  /* ---------------------------------------------------------
+     1. Lifecycle: Fetch order details from API on mount
+  --------------------------------------------------------- */
   useEffect(() => {
     const fetchOrder = async () => {
       if (!orderId) return setLoading(false);
-
       try {
         const res = await axios.get(`${BASE_URL}/api/orders/${orderId}`);
         if (res.data.success) {
@@ -37,178 +45,178 @@ export const OrderSuccess = () => {
         setLoading(false);
       }
     };
-
     fetchOrder();
   }, [orderId]);
 
-  /* ---------------- Loading State ---------------- */
+  /* ---------------------------------------------------------
+     2. Loading State: Minimalist B&W Spinner
+  --------------------------------------------------------- */
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 gap-4">
-        <Loader2 className="w-12 h-12 text-emerald-500 animate-spin" />
-        <p className="text-xs font-semibold tracking-widest uppercase text-slate-500">
-          Loading Order...
+      <div className="min-h-screen flex flex-col items-center justify-center bg-white gap-4">
+        <Loader2 className="w-10 h-10 text-black animate-spin stroke-[1.5]" />
+        <p className="text-[10px] font-bold tracking-[0.2em] uppercase text-black">
+          Authenticating Order
         </p>
       </div>
     );
   }
 
-  /* ---------------- Fallback if No Order ---------------- */
+  /* ---------------------------------------------------------
+     3. Error State: If orderId is invalid or not found
+  --------------------------------------------------------- */
   if (!orderData) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 p-6">
-        <div className="bg-white p-10 rounded-3xl shadow-md text-center max-w-md w-full">
-          <Package className="w-12 h-12 text-red-500 mx-auto mb-4" />
-          <h2 className="text-xl font-bold mb-2">Order Not Found</h2>
+      <div className="min-h-screen flex items-center justify-center bg-white p-6 text-black">
+        <div className="text-center max-w-sm w-full">
+          <div className="mb-6 flex justify-center">
+            <div className="p-5 border border-black rounded-full">
+              <Package className="w-8 h-8" />
+            </div>
+          </div>
+          <h2 className="text-2xl font-black uppercase tracking-tight mb-2">
+            Missing Records
+          </h2>
+          <p className="text-zinc-500 text-sm mb-8">
+            We couldn't find the order details you're looking for.
+          </p>
           <Link
             to="/"
-            className="mt-6 inline-block bg-black text-white px-6 py-3 rounded-xl text-sm font-semibold hover:opacity-90 transition"
+            className="block w-full bg-black text-white py-4 rounded-full text-xs font-bold uppercase tracking-widest hover:bg-zinc-800 transition-all no-underline"
           >
-            Back to Store
+            Return to Store
           </Link>
         </div>
       </div>
     );
   }
 
+  // Helper variables for cleaner JSX
   const isSSL = orderData.payment?.method === "ssl";
   const displayId = orderData._id?.toUpperCase();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-12 px-4">
-      <div className="max-w-6xl mx-auto space-y-8">
-        {/* ================= Success Header ================= */}
-        <div className="bg-white rounded-3xl shadow-lg overflow-hidden">
-          <div className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-center p-10">
-            {/* Success Icon */}
-            <div className="bg-white w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl">
-              <CheckCircle2 className="w-12 h-12 text-emerald-500" />
-            </div>
+    <div className="min-h-screen bg-white text-black py-16 px-4 selection:bg-black selection:text-white">
+      <div className="max-w-4xl mx-auto">
+        {/* ================= SUCCESS HEADER ================= */}
+        <div className="text-center mb-16">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full border-2 border-black mb-6">
+            <CheckCircle2 className="w-8 h-8 stroke-[1.5]" />
+          </div>
+          <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter mb-4">
+            Order Confirmed
+          </h1>
+          <p className="text-zinc-500 text-sm md:text-base max-w-md mx-auto leading-relaxed">
+            Your transaction was processed successfully. A confirmation receipt
+            has been sent to your registered email.
+          </p>
+        </div>
 
-            <h1 className="text-3xl md:text-4xl font-black mb-3">
-              Order Confirmed!
-            </h1>
-            <p className="opacity-90 text-sm md:text-base">
-              Thank you for your purchase. Your order has been successfully
-              placed.
+        {/* ================= SUMMARY GRID (B&W BORDER LAYOUT) ================= */}
+        <div className="border-y border-black py-10 grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+          {/* Order ID & Date */}
+          <div className="space-y-1">
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400">
+              Order Reference
+            </span>
+            <p className="font-mono text-lg font-bold">
+              #{displayId?.slice(-10)}
             </p>
+            <div className="flex items-center gap-1.5 text-xs text-zinc-500">
+              <Calendar className="w-3.5 h-3.5" />
+              {new Date().toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+              })}
+            </div>
           </div>
 
-          {/* Order Meta Info */}
-          <div className="grid md:grid-cols-3 divide-y md:divide-y-0 md:divide-x">
-            {/* Order ID */}
-            <div className="p-8 text-center">
-              <Package className="mx-auto w-5 h-5 text-slate-400 mb-2" />
-              <p className="text-xs uppercase tracking-widest text-slate-400">
-                Order ID
-              </p>
-              <p className="font-mono font-bold text-lg mt-1">
-                #{displayId?.slice(-10)}
-              </p>
-              <div className="flex justify-center items-center gap-1 text-xs text-slate-400 mt-2">
-                <Calendar className="w-3 h-3" />
-                {new Date().toLocaleDateString()}
-              </div>
+          {/* Payment Information */}
+          <div className="space-y-1">
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400">
+              Payment Mode
+            </span>
+            <div className="flex items-center gap-2 font-bold uppercase text-sm">
+              {isSSL ? (
+                <CreditCard className="w-4 h-4" />
+              ) : (
+                <Banknote className="w-4 h-4" />
+              )}
+              {isSSL ? "Secure Digital Pay" : "Cash on Delivery"}
             </div>
+          </div>
 
-            {/* Payment Method */}
-            <div className="p-8 text-center">
-              <CreditCard className="mx-auto w-5 h-5 text-slate-400 mb-2" />
-              <p className="text-xs uppercase tracking-widest text-slate-400">
-                Payment Method
-              </p>
-
-              <div className="mt-2 text-sm font-semibold">
-                {isSSL ? (
-                  <span className="text-emerald-600 flex justify-center items-center gap-1">
-                    <CreditCard className="w-4 h-4" />
-                    Online Payment
-                  </span>
-                ) : (
-                  <span className="text-orange-600 flex justify-center items-center gap-1">
-                    <Banknote className="w-4 h-4" />
-                    Cash on Delivery
-                  </span>
-                )}
-              </div>
-            </div>
-
-            {/* Total */}
-            <div className="p-8 text-center bg-slate-50">
-              <ShoppingBag className="mx-auto w-5 h-5 text-slate-400 mb-2" />
-              <p className="text-xs uppercase tracking-widest text-slate-400">
-                Total Amount
-              </p>
-              <p className="text-3xl font-black mt-1">
-                ৳{orderData.financials?.totalAmount}
-              </p>
-            </div>
+          {/* Amount Display */}
+          <div className="space-y-1 md:text-right">
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400">
+              Total Charged
+            </span>
+            <p className="text-3xl font-black tracking-tighter">
+              ৳{orderData.financials?.totalAmount}
+            </p>
           </div>
         </div>
 
-        {/* ================= Details Section ================= */}
-        <div className="grid md:grid-cols-2 gap-6">
-          {/* Shipping Info */}
-          <div className="bg-white p-8 rounded-3xl shadow-sm border">
-            <div className="flex items-center gap-3 mb-6">
-              <MapPin className="w-5 h-5 text-blue-500" />
-              <h4 className="text-sm font-bold uppercase tracking-widest">
-                Shipping Address
-              </h4>
+        {/* ================= DETAILS SECTION ================= */}
+        <div className="grid md:grid-cols-2 gap-12 mb-16">
+          {/* Shipping Address Column */}
+          <section>
+            <h3 className="text-[10px]! font-bold uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
+              <MapPin className="w-4 h-4" /> Destination
+            </h3>
+            <div className="space-y-1 text-sm leading-relaxed">
+              <p className="font-bold text-base">
+                {orderData.shippingAddress?.fullName}
+              </p>
+              <p className="text-zinc-600">
+                {orderData.shippingAddress?.houseAddress}
+              </p>
+              <p className="text-zinc-600">
+                {orderData.shippingAddress?.city},{" "}
+                {orderData.shippingAddress?.division}
+              </p>
+              <p className="pt-2 font-mono font-bold">
+                {orderData.shippingAddress?.phoneNumber}
+              </p>
             </div>
+          </section>
 
-            <p className="font-bold">{orderData.shippingAddress?.fullName}</p>
-            <p className="text-slate-600 text-sm">
-              {orderData.shippingAddress?.houseAddress},{" "}
-              {orderData.shippingAddress?.city}
+          {/* Status/Next Step Column */}
+          <section className="bg-zinc-50 p-8 rounded-2xl border border-zinc-100">
+            <h3 className="text-[10px]! font-bold uppercase tracking-[0.2em] mb-4 flex items-center gap-2 text-zinc-400">
+              <Truck className="w-4 h-4" /> Logistics Status
+            </h3>
+            <h4 className="font-bold text-lg mb-2 text-black">
+              Preparing for Dispatch
+            </h4>
+            <p className="text-sm text-zinc-500 leading-relaxed">
+              {isSSL
+                ? "Payment verified. Your items are currently being inspected and packed for immediate shipping."
+                : `Order acknowledged. Please ensure ৳${orderData.financials?.totalAmount} is available for the courier.`}
             </p>
-            <p className="text-slate-600 text-sm">
-              {orderData.shippingAddress?.division}, Bangladesh
-            </p>
-            <p className="text-blue-600 font-semibold text-sm mt-2">
-              {orderData.shippingAddress?.phoneNumber}
-            </p>
-          </div>
+          </section>
+        </div>
 
-          {/* Next Step Card */}
-          <div
-            className={`p-8 rounded-3xl border shadow-sm ${
-              isSSL
-                ? "bg-emerald-50 border-emerald-100"
-                : "bg-blue-50 border-blue-100"
-            }`}
+        {/* ================= ACTION BAR (NAVIGATION) ================= */}
+        <div className="flex flex-col sm:flex-row gap-4">
+          {/* Track Shipment Link: Navigates to tracking page passing order data via state */}
+          <Link
+            to={`/track-order/${orderId}`}
+            state={{ order: orderData }} // Passes the full object to avoid extra API calls
+            className="flex-1 bg-black text-white h-14 rounded-full font-bold text-xs! uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-zinc-800 transition-all active:scale-[0.98] no-underline!"
           >
-            <div className="flex gap-4 items-start">
-              <div className="bg-white p-3 rounded-xl shadow">
-                <Truck className="w-5 h-5" />
-              </div>
-
-              <div>
-                <h4 className="font-bold mb-2">Next Step: Order Processing</h4>
-
-                <p className="text-sm text-slate-600 leading-relaxed">
-                  {isSSL
-                    ? "Your payment has been verified. We are preparing your order for shipment."
-                    : `Please keep ৳${orderData.financials?.totalAmount} ready in cash during delivery.`}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* ================= Action Buttons ================= */}
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <button className="flex items-center justify-center gap-2 bg-black text-white px-8 py-4 rounded-2xl font-semibold text-sm hover:opacity-90 transition">
             <Package className="w-4 h-4" />
-            Track Order
-          </button>
+            Track Shipment
+          </Link>
 
+          {/* Continue Shopping Link */}
           <Link
             to="/"
-            className="flex items-center justify-center gap-2 bg-white border px-8 py-4 rounded-2xl font-semibold text-sm hover:bg-slate-100 transition"
+            className="flex-1 bg-white border border-zinc-200 text-black h-14 rounded-full font-bold text-xs uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-zinc-50 transition-all active:scale-[0.98] no-underline!"
           >
-            <ShoppingBag className="w-4 h-4" />
-            Continue Shopping
+            Continue Browsing
+            <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
       </div>

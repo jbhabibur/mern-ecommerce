@@ -423,3 +423,47 @@ export const updateOrderAdmin = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+// @desc    Get order tracking details by ID
+// @route   GET /api/orders/track/:orderId
+// @access  Public
+export const getOrderTracking = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+
+    // Database theke order find kora
+    const order = await Order.findById(orderId).select(
+      "orderStatus shippingAddress history createdAt",
+    );
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
+      });
+    }
+
+    // Frontend er tracking steps er sathe match koranor jonno status normalize kora
+    const formattedOrder = {
+      _id: order._id,
+      // "Order Placed" -> "ORDER PLACED"
+      status: order.orderStatus.toUpperCase(),
+      shippingAddress: {
+        city: order.shippingAddress.city,
+      },
+      history: order.history,
+      createdAt: order.createdAt,
+    };
+
+    return res.status(200).json({
+      success: true,
+      order: formattedOrder,
+    });
+  } catch (error) {
+    console.error("Tracking Fetch Error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+};

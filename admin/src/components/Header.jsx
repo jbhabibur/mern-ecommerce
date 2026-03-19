@@ -5,10 +5,10 @@ import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../redux/slices/authSlice";
 import { useNavigate } from "react-router";
 import { NotificationDropdown } from "../features/notifications/NotificationDropdown";
+import { GlobalSearch } from "./GlobalSearch"; // Assuming it's in the same folder
 
 export const Header = ({ toggleSidebar }) => {
   const [notificationsOpen, setNotificationsOpen] = useState(false);
-  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
 
   const { theme, toggleTheme } = useTheme();
@@ -18,11 +18,17 @@ export const Header = ({ toggleSidebar }) => {
   const navigate = useNavigate();
   const { user } = useSelector((state) => state.auth);
 
+  /**
+   * Handle user logout and redirection
+   */
   const handleLogout = () => {
     dispatch(logout());
     navigate("/login");
   };
 
+  /**
+   * Get user initials for the avatar fallback
+   */
   const getInitials = () => {
     if (user?.firstName && user?.lastName) {
       return `${user.firstName[0]}${user.lastName[0]}`;
@@ -32,7 +38,7 @@ export const Header = ({ toggleSidebar }) => {
 
   return (
     <header className="h-16 flex items-center justify-between px-4 md:px-6 sticky top-0 z-40 backdrop-blur-md bg-theme-base/80 border-b border-theme-line">
-      {/* LEFT: Menu & Search */}
+      {/* LEFT: Sidebar Toggle & Global Search Integration */}
       <div className="flex items-center gap-3 flex-1">
         <button
           onClick={toggleSidebar}
@@ -41,22 +47,15 @@ export const Header = ({ toggleSidebar }) => {
           <Menu size={20} className="text-theme-front" />
         </button>
 
-        <div className="relative hidden md:block w-full max-w-md">
-          <Search
-            size={18}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-theme-muted"
-          />
-          <input
-            type="text"
-            placeholder="Search..."
-            className="w-full pl-10 pr-3 py-2 rounded-lg border text-sm bg-theme-sub border-theme-line text-theme-front outline-none focus:border-theme-act"
-          />
+        {/* Integrated Global Search Component */}
+        <div className="hidden md:block w-full max-w-md">
+          <GlobalSearch />
         </div>
       </div>
 
-      {/* RIGHT: Actions */}
+      {/* RIGHT: Theme Toggle, Notifications, and Profile */}
       <div className="flex items-center gap-2 md:gap-4">
-        {/* Theme Toggle */}
+        {/* Dark/Light Mode Switcher */}
         <button
           onClick={toggleTheme}
           className="p-2 rounded-lg hover:bg-theme-sub transition-colors"
@@ -68,7 +67,7 @@ export const Header = ({ toggleSidebar }) => {
           )}
         </button>
 
-        {/* NOTIFICATIONS COMPONENT */}
+        {/* Notifications Dropdown Component */}
         <NotificationDropdown
           isOpen={notificationsOpen}
           setIsOpen={setNotificationsOpen}
@@ -76,31 +75,32 @@ export const Header = ({ toggleSidebar }) => {
 
         <div className="hidden sm:block w-px h-6 bg-theme-line mx-1"></div>
 
-        {/* PROFILE SECTION */}
+        {/* Profile Dropdown Section */}
         <div className="relative">
           <div
-            className="flex items-center gap-3 cursor-pointer"
+            className="flex items-center gap-3 cursor-pointer group"
             onClick={() => setProfileOpen(!profileOpen)}
           >
             <div className="hidden sm:block text-right">
-              <p className="text-sm font-medium text-theme-front">
+              <p className="text-sm font-bold text-theme-front">
                 {user?.firstName
                   ? `${user.firstName} ${user.lastName}`
                   : "Admin"}
               </p>
-              <p className="text-xs text-theme-muted capitalize">
+              <p className="text-[10px] text-theme-muted uppercase font-black tracking-tighter">
                 {user?.role || "Administrator"}
               </p>
             </div>
+
             <div className="relative">
               {user?.avatar ? (
                 <img
                   src={user.avatar}
-                  className="w-9 h-9 rounded-full border border-theme-line object-cover"
+                  className="w-9 h-9 rounded-full border border-theme-line object-cover group-hover:border-theme-act transition-all"
                   alt="avatar"
                 />
               ) : (
-                <div className="w-9 h-9 rounded-full bg-theme-act text-theme-actfg flex items-center justify-center text-xs font-bold border border-theme-line uppercase">
+                <div className="w-9 h-9 rounded-full bg-theme-act text-theme-actfg flex items-center justify-center text-xs font-bold border border-theme-line uppercase group-hover:border-white transition-all">
                   {getInitials()}
                 </div>
               )}
@@ -108,18 +108,25 @@ export const Header = ({ toggleSidebar }) => {
             </div>
           </div>
 
-          {/* Profile Dropdown */}
+          {/* Profile Dropdown Menu */}
           {profileOpen && (
-            <div className="absolute right-0 mt-3 w-48 bg-theme-base border border-theme-line rounded-xl shadow-xl overflow-hidden z-50">
-              <div className="p-2">
-                <button
-                  onClick={handleLogout}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-lg transition-colors"
-                >
-                  <LogOut size={16} /> Logout Session
-                </button>
+            <>
+              {/* Overlay to close dropdown when clicking outside */}
+              <div
+                className="fixed inset-0 z-10"
+                onClick={() => setProfileOpen(false)}
+              ></div>
+              <div className="absolute right-0 mt-3 w-48 bg-theme-base border border-theme-line rounded-xl shadow-xl overflow-hidden z-50 animate-in zoom-in-95 duration-150">
+                <div className="p-2">
+                  <button
+                    onClick={handleLogout}
+                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-lg transition-colors font-semibold"
+                  >
+                    <LogOut size={16} /> Logout Session
+                  </button>
+                </div>
               </div>
-            </div>
+            </>
           )}
         </div>
       </div>

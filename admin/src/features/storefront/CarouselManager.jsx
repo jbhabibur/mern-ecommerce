@@ -33,7 +33,7 @@ export const CarouselManager = () => {
     );
 
   return (
-    <div className="min-h-screen bg-theme-base text-theme-front p-6 md:p-10 font-sans">
+    <div className="min-h-screen bg-theme-base text-theme-front p-4 md:p-8 font-sans">
       <div className="mx-auto max-w-7xl space-y-8">
         {/* HEADER */}
         <header className="flex flex-col md:flex-row md:items-center justify-between gap-6">

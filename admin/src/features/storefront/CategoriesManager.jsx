@@ -52,7 +52,7 @@ export const CategoriesManager = () => {
   }
 
   return (
-    <div className="p-4 md:p-10 bg-theme-base min-h-screen">
+    <div className="p-4 md:p-8 bg-theme-base min-h-screen">
       <div className="max-w-7xl mx-auto space-y-8">
         {/* HEADER */}
         <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">

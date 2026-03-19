@@ -51,8 +51,8 @@ export const LandingPage = () => {
               </span>
             </h1>
             <p className="text-blue-100 text-lg max-w-sm font-light leading-relaxed">
-              Managing the future of men's style. Our admin suite provides
-              seamless control over premium collections.
+              Empowering your vision with seamless inventory management and
+              real-time insights for every collection.
             </p>
           </div>
           <div className="relative z-10 mt-12">
@@ -73,7 +73,7 @@ export const LandingPage = () => {
               </div>
             </div>
             <p className="mt-4 text-sm text-blue-200/80 font-medium font-inter">
-              Joined by 200+ global stylists
+              Trusted by a community of 200+ elite stylists
             </p>
           </div>
         </div>
@@ -92,7 +92,7 @@ export const LandingPage = () => {
                 Welcome Back
               </h2>
               <p className="text-gray-500 font-inter">
-                Please enter your credentials to access the hub.
+                Please enter your credentials to access your dashboard.
               </p>
             </div>
 

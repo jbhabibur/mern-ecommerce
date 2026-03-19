@@ -4,6 +4,7 @@ import {
   getOrderById,
   getUserOrders,
   retryPayment,
+  getOrderTracking,
   //  Admin controllers
   getAllOrdersAdmin,
   updateOrderAdmin,
@@ -22,6 +23,9 @@ router.post("/", createOrder);
 
 // Route: GET /api/orders/my-orders (User's personal orders)
 router.get("/my-orders", verifyToken, getUserOrders);
+
+// Route: GET /api/orders/track/:orderId (Tracking Route)
+router.get("/track/:orderId", getOrderTracking);
 
 // Route: GET /api/orders/retry-payment/:orderId
 router.get("/retry-payment/:orderId", verifyToken, retryPayment);

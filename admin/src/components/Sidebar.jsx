@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useLocation, Link, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../redux/slices/authSlice";
@@ -17,21 +17,39 @@ import {
   Layers,
   Users,
   UserPlus,
+  ChevronDown,
+  UserCheck,
+  TrendingUp,
+  Activity,
 } from "lucide-react";
+import { AdminLogo } from "./AdminLogo";
 
-const SidebarItem = ({ icon: Icon, label, badge, active }) => {
+/**
+ * SidebarItem Component
+ * Manages individual navigation links and sub-menu items with dynamic styling.
+ */
+const SidebarItem = ({ icon: Icon, label, badge, active, isSubItem }) => {
   return (
     <div
-      className={`flex items-center w-full px-4 py-3 rounded-lg transition-all duration-200
+      className={`flex items-center w-full px-4 rounded-lg transition-all duration-200
+      ${isSubItem ? "pl-5 py-2" : "py-3"}
       ${
         active
-          ? "bg-theme-act text-theme-actfg shadow-sm"
+          ? isSubItem
+            ? "bg-theme-act/15 text-theme-act font-bold shadow-none" // Subtle highlight for active sub-item
+            : "bg-theme-act text-theme-actfg shadow-md scale-[1.02]" // Solid highlight for main item
           : "text-theme-muted hover:bg-theme-sub hover:text-theme-front"
       }`}
     >
-      <Icon size={18} />
+      <Icon size={isSubItem ? 14 : 18} />
 
-      <span className="ml-3 text-sm font-medium flex-1 text-left">{label}</span>
+      <span
+        className={`ml-3 flex-1 text-left ${
+          isSubItem ? "text-[13px]" : "text-sm font-medium"
+        }`}
+      >
+        {label}
+      </span>
 
       {badge && (
         <span
@@ -51,14 +69,17 @@ const SidebarItem = ({ icon: Icon, label, badge, active }) => {
 export const Sidebar = ({ toggleSidebar }) => {
   const location = useLocation();
   const path = location.pathname;
-
-  // Redux logic
   const navigate = useNavigate();
   const dispatch = useDispatch();
+
+  // State to manage the visibility of the Analytics dropdown
+  const [isAnalyticsOpen, setIsAnalyticsOpen] = useState(
+    path.includes("/admin/analytics"),
+  );
+
   const { user } = useSelector((state) => state.auth);
 
-  // [ADDED] Fetch Orders Data for Live Badge
-  // We fetch page 1 with 1 item just to get the 'totalOrders' count from the response
+  // RTK Query: Fetch real-time order count for the notification badge
   const { data: orderData } = useGetOrdersQuery({ page: 1, limit: 1 });
   const totalOrdersCount = orderData?.totalOrders || 0;
 
@@ -69,25 +90,20 @@ export const Sidebar = ({ toggleSidebar }) => {
 
   return (
     <aside className="w-64 h-screen flex flex-col bg-theme-base border-r border-theme-line">
-      {/* Header */}
+      {/* Sidebar Header: Brand Logo and Title */}
       <div className="flex items-center justify-between px-6 py-5 border-b border-theme-line">
         <div className="flex items-center gap-3">
-          <div className="p-1.5 bg-theme-act/10 rounded-lg">
-            <Package size={20} className="text-theme-act" />
-          </div>
-          <span className="font-bold text-lg text-theme-front tracking-tight">
-            Admin
-          </span>
+          <AdminLogo />
         </div>
-
+        {/* Mobile close button */}
         <button onClick={toggleSidebar} className="lg:hidden text-theme-front">
           <X size={18} />
         </button>
       </div>
 
-      {/* Navigation */}
+      {/* Main Navigation Container */}
       <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1 custom-scrollbar">
-        {/* Dashboard */}
+        {/* Section: Core Business Logic */}
         <Link to="/admin/dashboard">
           <SidebarItem
             icon={LayoutDashboard}
@@ -96,18 +112,15 @@ export const Sidebar = ({ toggleSidebar }) => {
           />
         </Link>
 
-        {/* Orders [UPDATED] */}
         <Link to="/admin/orders">
           <SidebarItem
             icon={ShoppingBag}
             label="Orders"
-            // [UPDATED] badge value is now dynamic
             badge={totalOrdersCount > 0 ? totalOrdersCount.toString() : null}
             active={path.startsWith("/admin/orders")}
           />
         </Link>
 
-        {/* Products */}
         <Link to="/admin/products">
           <SidebarItem
             icon={Package}
@@ -116,7 +129,6 @@ export const Sidebar = ({ toggleSidebar }) => {
           />
         </Link>
 
-        {/* Categories */}
         <Link to="/admin/categories">
           <SidebarItem
             icon={Layers}
@@ -125,7 +137,7 @@ export const Sidebar = ({ toggleSidebar }) => {
           />
         </Link>
 
-        {/* Admin Management Section */}
+        {/* Section: Admin & Staff Management */}
         <div className="pt-4 mt-4 border-t border-theme-line">
           <p className="px-4 mb-2 text-[10px] font-black uppercase text-theme-muted tracking-widest opacity-50">
             Admin Management
@@ -146,7 +158,7 @@ export const Sidebar = ({ toggleSidebar }) => {
           </Link>
         </div>
 
-        {/* Website Controls */}
+        {/* Section: Website Content Management (CMS) */}
         <div className="pt-4 mt-4 border-t border-theme-line">
           <p className="px-4 mb-2 text-[10px] font-black uppercase text-theme-muted tracking-widest opacity-50">
             Website CMS
@@ -158,7 +170,6 @@ export const Sidebar = ({ toggleSidebar }) => {
               active={path === "/admin/website/carousel"}
             />
           </Link>
-
           <Link to="/admin/website/banners">
             <SidebarItem
               icon={MonitorPlay}
@@ -166,7 +177,6 @@ export const Sidebar = ({ toggleSidebar }) => {
               active={path === "/admin/website/banners"}
             />
           </Link>
-
           <Link to="/admin/website/social">
             <SidebarItem
               icon={Images}
@@ -176,17 +186,62 @@ export const Sidebar = ({ toggleSidebar }) => {
           </Link>
         </div>
 
-        {/* Settings & Analytics */}
+        {/* Section: Analytics & Business Reports */}
         <div className="pt-4 mt-4 border-t border-theme-line">
-          <Link to="/admin/analytics">
-            <SidebarItem
-              icon={BarChart3}
-              label="Analytics"
-              active={path === "/admin/analytics"}
-            />
-          </Link>
+          <p className="px-4 mb-2 text-[10px] font-black uppercase text-theme-muted tracking-widest opacity-50">
+            Reports & Config
+          </p>
 
-          <Link to="/admin/settings">
+          {/* Collapsible Analytics Dropdown */}
+          <div className="relative group">
+            <button
+              onClick={() => setIsAnalyticsOpen(!isAnalyticsOpen)}
+              className="w-full flex items-center justify-between outline-none"
+            >
+              <SidebarItem
+                icon={BarChart3}
+                label="Analytics"
+                active={path.includes("/admin/analytics")}
+              />
+              <div
+                className={`absolute right-4 transition-transform duration-300 ${
+                  isAnalyticsOpen ? "rotate-180" : ""
+                }`}
+              >
+                <ChevronDown size={14} className="text-theme-muted" />
+              </div>
+            </button>
+
+            {/* Sub-menu with Vertical Visual Indicator */}
+            {isAnalyticsOpen && (
+              <div className="mt-1 ml-2 relative space-y-1 animate-in slide-in-from-top-1 duration-300">
+                {/* Vertical Line UI */}
+                <div className="absolute left-0 top-0 bottom-2 w-[1.5px] bg-theme-line/80 rounded-full"></div>
+
+                {/* Sub-item: Customer Insights */}
+                <Link to="/admin/analytics/customers" className="block">
+                  <SidebarItem
+                    icon={UserCheck}
+                    label="Customer Insights"
+                    isSubItem={true}
+                    active={path === "/admin/analytics/customers"}
+                  />
+                </Link>
+
+                {/* Sub-item: Product Performance */}
+                <Link to="/admin/analytics/products" className="block">
+                  <SidebarItem
+                    icon={Activity}
+                    label="Product Performance"
+                    isSubItem={true}
+                    active={path === "/admin/analytics/products"}
+                  />
+                </Link>
+              </div>
+            )}
+          </div>
+
+          <Link to="/admin/settings" className="block mt-1">
             <SidebarItem
               icon={Settings}
               label="Settings"
@@ -196,21 +251,20 @@ export const Sidebar = ({ toggleSidebar }) => {
         </div>
       </nav>
 
-      {/* Footer - Dynamic User Info */}
-      <div className="p-4 border-t border-theme-line bg-theme-sub/20">
+      {/* User Profile Footer: Displays logged-in admin details */}
+      <div className="p-4 border-t border-theme-line bg-theme-sub/10">
         <div className="flex items-center gap-3">
           <div className="relative">
             {user?.avatar ? (
               <img
                 src={user.avatar}
                 className="w-9 h-9 rounded-full border border-theme-line object-cover"
-                alt="avatar"
+                alt="admin avatar"
               />
             ) : (
-              <div className="w-9 h-9 rounded-full bg-theme-act text-theme-actfg flex items-center justify-center text-xs font-bold border border-theme-line uppercase">
-                {user?.firstName && user?.lastName
-                  ? `${user.firstName[0]}${user.lastName[0]}`
-                  : "AD"}
+              <div className="w-9 h-9 rounded-full bg-theme-act text-theme-actfg flex items-center justify-center text-xs font-bold border border-theme-line">
+                {user?.firstName?.[0] || "H"}
+                {user?.lastName?.[0] || "R"}
               </div>
             )}
             <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-theme-base rounded-full"></span>
@@ -220,10 +274,10 @@ export const Sidebar = ({ toggleSidebar }) => {
             <p className="text-sm font-bold text-theme-front truncate">
               {user?.firstName
                 ? `${user.firstName} ${user.lastName}`
-                : "Guest Admin"}
+                : "Habibur Rahman"}
             </p>
-            <p className="text-[10px] text-theme-muted font-medium truncate uppercase tracking-tighter">
-              {user?.role || "Administrator"}
+            <p className="text-[10px] text-theme-muted font-bold truncate uppercase tracking-tighter">
+              {user?.role || "Super-Admin"}
             </p>
           </div>
 
@@ -233,7 +287,7 @@ export const Sidebar = ({ toggleSidebar }) => {
           >
             <LogOut
               size={16}
-              className="group-hover:-translate-x-0.5 transition-transform"
+              className="group-hover:-translate-x-1 transition-transform"
             />
           </button>
         </div>

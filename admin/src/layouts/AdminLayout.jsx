@@ -24,7 +24,7 @@ export const AdminLayout = () => {
         ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"}
         border-r border-theme-line bg-theme-base`}
       >
-        <Sidebar isDarkMode={isDarkMode} />
+        <Sidebar toggleSidebar={toggleSidebar} />
       </aside>
 
       {/* Main Section */}

@@ -31,6 +31,7 @@ import { RecoverPage } from "../pages/RecoverPage";
 
 import { CheckoutPage } from "../pages/CheckoutPage";
 import { OrderSuccess } from "../pages/OrderSuccess";
+import { OrderTracking } from "../pages/OrderTracking";
 
 // Comming soon
 import { ComingSoon } from "../components/shared/ComingSoon";
@@ -99,6 +100,10 @@ const router = createBrowserRouter([
       {
         path: "/account/verify-success",
         element: <VerifySuccess />,
+      },
+      {
+        path: "/track-order/:orderId",
+        element: <OrderTracking />,
       },
 
       // --- Password Reset Routes ---

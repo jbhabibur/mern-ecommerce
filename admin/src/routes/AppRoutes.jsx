@@ -15,6 +15,7 @@ import { SocialMediaManager } from "../features/storefront/SocialMediaManager";
 
 // Product & Category Management
 import { CategoriesManager } from "../features/storefront/CategoriesManager";
+import { ReviewManager } from "../features/reviews/ReviewManager";
 import { AddCategory } from "../components/AddCategory";
 import { ProductInventory } from "../features/products/ProductInventory";
 
@@ -81,6 +82,10 @@ const router = createBrowserRouter([
       {
         path: "categories",
         element: <CategoriesManager />,
+      },
+      {
+        path: "reviews",
+        element: <ReviewManager />,
       },
       {
         path: "categories/add",

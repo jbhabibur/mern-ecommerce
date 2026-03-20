@@ -9,11 +9,9 @@ import {
   CartesianGrid,
 } from "recharts";
 import { TrendingUp } from "lucide-react";
-// Integrated your new React Query hook
 import { useRevenueStats } from "../hooks/useRevenueStats";
 
 export const RevenueChart = ({ cardStyle }) => {
-  // Using the specific revenue stats hook instead of general KPI stats
   const { data: chartData, isLoading } = useRevenueStats();
 
   if (isLoading) {
@@ -33,7 +31,7 @@ export const RevenueChart = ({ cardStyle }) => {
       <div
         className="border border-theme-line shadow-xl p-3"
         style={{
-          backgroundColor: "var(--bg-sub)", // Theme background
+          backgroundColor: "var(--bg-sub)",
         }}
       >
         <p className="font-bold mb-2 text-theme-front text-sm">{label}</p>
@@ -59,7 +57,6 @@ export const RevenueChart = ({ cardStyle }) => {
 
       <div className="h-[350px] w-full">
         <ResponsiveContainer width="100%" height="100%">
-          {/* Using chartData from the backend instead of hardcoded data */}
           <BarChart data={chartData} barSize={28} barGap={-28}>
             <CartesianGrid
               strokeDasharray="3 3"
@@ -88,7 +85,7 @@ export const RevenueChart = ({ cardStyle }) => {
               cursor={{ fill: "var(--fg-main)", fillOpacity: 0.05 }}
             />
 
-            {/* Background: Total Revenue */}
+            {/* Background: Total Revenue (Lighter Blue/Gray) */}
             <Bar
               dataKey="totalRevenue"
               fill="var(--accent)"
@@ -97,10 +94,10 @@ export const RevenueChart = ({ cardStyle }) => {
               fillOpacity={0.2}
             />
 
-            {/* Foreground: Net Revenue */}
+            {/* Foreground: Net Revenue (Solid Blue) */}
             <Bar
               dataKey="netRevenue"
-              fill="var(--success)"
+              fill="#2563eb"
               name="Net Revenue"
               radius={0}
             />

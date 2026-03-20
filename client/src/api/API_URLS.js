@@ -30,6 +30,15 @@ export const API_URLS = {
   // Storefront endpoints
   GET_SOCIAL_MEDIA: `${BASE_URL}/api/storefront/social-feed`,
 
+  // Review endpoints
+  REVIEWS: {
+    BASE: `${BASE_URL}/api/reviews`,
+    GET_BY_PRODUCT: (productId) =>
+      `${BASE_URL}/api/reviews/product/${productId}`,
+    UPDATE_STATUS: (id) => `${BASE_URL}/api/reviews/${id}/status`,
+    DELETE: (id) => `${BASE_URL}/api/reviews/${id}`,
+  },
+
   // Checkout endpoints
   CHECKOUT: {
     INITIATE: `${BASE_URL}/api/checkouts/initiate`,

@@ -5,6 +5,7 @@ import { useParams, useLocation } from "react-router-dom";
 import { SectionLayout } from "../layout/SectionLayout";
 import { Breadcrumb } from "../components/atoms/Breadcrumb";
 import { ProductDetailsView } from "../features/product-details/components/ProductDetailsView";
+import { ReviewSection } from "../features/product-details/components/ReviewSection";
 import { RelatedProducts } from "../features/product-details/components/RelatedProducts";
 import { ComponentLoader } from "../components/loaders/ComponentLoader";
 import { ErrorState } from "../components/shared/ErrorState";
@@ -22,30 +23,42 @@ import {
 } from "../redux/slices/productSlice";
 import { resetSelection, setSize } from "../redux/slices/selectionSlice";
 
+/**
+ * ProductOverview Component
+ * Serves as the main container for individual product pages.
+ * Handles data fetching, synchronization with Redux, and scroll-based UI states.
+ */
 export const ProductOverview = () => {
   const { slug } = useParams();
   const location = useLocation();
 
-  // Custom hook to track scroll position for UI elements like sticky add-to-cart
+  // Tracks scroll position to manage sticky UI elements (e.g., sticky add-to-cart)
   const isVisible = useScrollThreshold(730);
 
-  // Data Fetching based on product slug
+  // Fetch product data based on URL slug
   const { data: product, isLoading, isError } = useProduct(slug);
 
   const dispatch = useDispatch();
 
   /**
-   * Effect: Handles product data synchronization and initial variant selection logic.
+   * Effect: Synchronizes product data and manages initial variant selection.
    * Logic:
-   * 1. If a size is already in Redux/LocalStorage (from ProductCard), keep it.
-   * 2. If no size is selected (Image click), find the first available in-stock variant.
+   * 1. Resets previous selections and sets current product to global state.
+   * 2. Prioritizes size passed via navigation state (e.g., from ProductCard).
+   * 3. Falls back to the first available in-stock variant if no size is pre-selected.
+   * * Optimization: We use product?._id as a dependency instead of the entire 'product' object
+   * or 'location' object. This prevents state resets when URL search parameters (like 'sp'
+   * for reviews) are modified or removed.
    */
   useEffect(() => {
     if (product) {
+      // Clear previous variant/quantity selections
       dispatch(resetSelection());
 
+      // Update global active product state
       dispatch(setActiveProduct(product));
 
+      // Check if a specific size was passed from the previous page
       const passedSize = location.state?.selectedSize;
 
       if (
@@ -54,6 +67,7 @@ export const ProductOverview = () => {
       ) {
         dispatch(setSize(passedSize));
       } else {
+        // Default to the first in-stock variant
         const firstAvailable = product.variants?.find((v) => v.stock > 0);
 
         if (firstAvailable) {
@@ -62,24 +76,25 @@ export const ProductOverview = () => {
       }
     }
 
+    // Cleanup: Clear active product from Redux when navigating away
     return () => {
       dispatch(clearActiveProduct());
     };
-  }, [product, location.state, dispatch]);
+  }, [product?._id, dispatch]); // Optimized dependency array to prevent flickering
 
   /**
-   * Effect: Syncs sticky element visibility state with Redux for global UI components.
+   * Effect: Updates Redux with the visibility state of the sticky add-to-cart bar.
    */
   useEffect(() => {
     dispatch(setStickyVisibility(isVisible));
   }, [isVisible, dispatch]);
 
-  // Handle Loading State
+  // Render loading state while fetching data
   if (isLoading) {
     return <ComponentLoader />;
   }
 
-  // Handle Error or Not Found State
+  // Render error state if fetching fails or product is missing
   if (isError || !product) {
     return <ErrorState />;
   }
@@ -91,14 +106,17 @@ export const ProductOverview = () => {
           {/* Breadcrumb Navigation */}
           <Breadcrumb />
 
-          {/* Main Product Section: 
-            Renders core product details including Gallery, Pricing, and CTA 
-          */}
+          {/* Main Product View: Includes Gallery, Info, and CTA buttons */}
           <ProductDetailsView product={product} />
 
-          {/* Supplementary Content: 
-            Displays related items to drive cross-selling and engagement 
-          */}
+          {/* Customer Reviews: Handles review display and submission logic */}
+          <ReviewSection
+            productId={product._id}
+            productAnalytics={product.analytics}
+            isAdmin={false}
+          />
+
+          {/* Cross-selling Section: Displays contextually relevant products */}
           <RelatedProducts product={product} />
         </div>
       </SectionLayout>

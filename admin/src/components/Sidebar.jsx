@@ -19,7 +19,7 @@ import {
   UserPlus,
   ChevronDown,
   UserCheck,
-  TrendingUp,
+  MessageSquare,
   Activity,
 } from "lucide-react";
 import { AdminLogo } from "./AdminLogo";
@@ -134,6 +134,14 @@ export const Sidebar = ({ toggleSidebar }) => {
             icon={Layers}
             label="Categories"
             active={path.startsWith("/admin/categories")}
+          />
+        </Link>
+
+        <Link to="/admin/reviews">
+          <SidebarItem
+            icon={MessageSquare}
+            label="Customer Reviews"
+            active={path.startsWith("/admin/reviews")}
           />
         </Link>
 

@@ -24,6 +24,7 @@ import wishlistRoutes from "./routes/wishlist.routes.js";
 import analyticsRoutes from "./routes/analytics.route.js";
 import adminRoutes from "./routes/admin.routes.js";
 import notificationRoutes from "./routes/notification.route.js";
+import reviewRoutes from "./routes/review.routes.js";
 
 // Initialize Database Connection
 connectDB();
@@ -99,6 +100,9 @@ app.use("/api/analytics", analyticsRoutes);
 
 // Notification routes (Admin Only)
 app.use("/api/notifications", notificationRoutes);
+
+// Review routes
+app.use("/api/reviews", reviewRoutes);
 
 /**
  * Health Check Route

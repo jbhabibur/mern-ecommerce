@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useSelector } from "react-redux";
-import { useUpdateOrderMutation } from "../../../redux/service/adminOrderApi";
+import { useUpdateOrderMutation } from "../redux/service/adminOrderApi";
 
 export const useOrderActions = () => {
   const [updateOrder, { isLoading: isUpdating }] = useUpdateOrderMutation();

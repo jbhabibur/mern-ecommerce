@@ -6,10 +6,10 @@ import {
   Image as ImageIcon,
   UploadCloud,
   X,
-  Instagram,
-  LayoutGrid,
+  Loader2,
 } from "lucide-react";
 import { useSocialFeedManager } from "./hooks/useSocialFeedManager";
+import { hasAccess } from "../../utils/authUtils"; // Auth utility import kora hoyeche
 
 export const SocialMediaManager = () => {
   const {
@@ -27,11 +27,14 @@ export const SocialMediaManager = () => {
     removePost,
   } = useSocialFeedManager();
 
+  // --- Permission Check ---
+  const canModify = hasAccess("super-admin", "manager");
+
   if (loading)
     return (
       <div className="flex h-96 items-center justify-center bg-theme-base">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-10 h-10 border-4 border-theme-act border-t-transparent rounded-full animate-spin" />
+          <Loader2 className="w-10 h-10 text-theme-act animate-spin" />
           <p className="text-[10px] font-black uppercase tracking-widest text-theme-muted">
             Loading Feed...
           </p>
@@ -43,7 +46,9 @@ export const SocialMediaManager = () => {
     <div className="min-h-screen bg-theme-base p-4 md:p-8 text-theme-front font-poppins transition-colors duration-300">
       <div className="max-w-7xl mx-auto space-y-10">
         {/* Header & Input Card */}
-        <div className="bg-theme-sub/40 border border-theme-line rounded-[2.5rem] p-8 backdrop-blur-md shadow-xl">
+        <div
+          className={`bg-theme-sub/40 border border-theme-line rounded-[2.5rem] p-8 backdrop-blur-md shadow-xl transition-opacity ${!canModify ? "opacity-80" : ""}`}
+        >
           <div className="flex flex-col lg:flex-row gap-10 items-start">
             {/* Branding Section */}
             <div className="flex-1 space-y-3">
@@ -51,31 +56,37 @@ export const SocialMediaManager = () => {
                 Social Gallery
               </h1>
               <p className="text-[10px] text-theme-muted uppercase font-bold tracking-[0.2em] mt-1 opacity-70">
-                Manage visual aesthetics & brand feed
+                {canModify
+                  ? "Manage visual aesthetics & brand feed"
+                  : "View brand feed aesthetics"}
               </p>
             </div>
 
-            {/* Controls Section */}
-            <div className="flex flex-col gap-4 w-full lg:w-[450px]">
+            {/* Controls Section (Disabled for others) */}
+            <div
+              className={`flex flex-col gap-4 w-full lg:w-[450px] ${!canModify ? "pointer-events-none" : ""}`}
+            >
               {/* Tab Switcher */}
               <div className="flex bg-theme-base/60 p-1.5 rounded-2xl border border-theme-line shadow-inner">
                 <button
                   onClick={() => setUseExternalLink(false)}
+                  disabled={!canModify}
                   className={`flex-1 py-3 text-[10px] font-black uppercase flex items-center justify-center gap-2 rounded-xl transition-all ${
                     !useExternalLink
                       ? "bg-theme-act text-theme-actfg shadow-lg"
                       : "text-theme-muted hover:text-theme-front"
-                  }`}
+                  } ${!canModify ? "grayscale opacity-50" : ""}`}
                 >
                   <ImageIcon size={14} /> Upload Local
                 </button>
                 <button
                   onClick={() => setUseExternalLink(true)}
+                  disabled={!canModify}
                   className={`flex-1 py-3 text-[10px] font-black uppercase flex items-center justify-center gap-2 rounded-xl transition-all ${
                     useExternalLink
                       ? "bg-theme-act text-theme-actfg shadow-lg"
                       : "text-theme-muted hover:text-theme-front"
-                  }`}
+                  } ${!canModify ? "grayscale opacity-50" : ""}`}
                 >
                   <LinkIcon size={14} /> Remote URL
                 </button>
@@ -85,23 +96,32 @@ export const SocialMediaManager = () => {
               {useExternalLink ? (
                 <input
                   type="url"
-                  placeholder="https://image-url.com/photo.jpg"
+                  placeholder={
+                    canModify
+                      ? "https://image-url.com/photo.jpg"
+                      : "Admin access required to add links"
+                  }
                   value={externalUrl}
+                  disabled={!canModify}
                   onChange={(e) => setExternalUrl(e.target.value)}
-                  className="px-5 py-4 text-xs border border-theme-line rounded-2xl bg-theme-base outline-none focus:ring-2 focus:ring-theme-act/30 transition-all placeholder:opacity-30"
+                  className="px-5 py-4 text-xs border border-theme-line rounded-2xl bg-theme-base outline-none focus:ring-2 focus:ring-theme-act/30 transition-all placeholder:opacity-30 disabled:opacity-50"
                 />
               ) : (
-                <label className="flex flex-col items-center justify-center w-full h-20 border-2 border-dashed border-theme-line rounded-2xl cursor-pointer hover:bg-theme-base hover:border-theme-act transition-all group overflow-hidden relative">
+                <label
+                  className={`flex flex-col items-center justify-center w-full h-20 border-2 border-dashed border-theme-line rounded-2xl transition-all group overflow-hidden relative ${canModify ? "cursor-pointer hover:bg-theme-base hover:border-theme-act" : "opacity-50"}`}
+                >
                   <div className="flex items-center gap-3 text-[11px] font-black uppercase group-hover:scale-110 transition-transform">
                     <Plus size={18} className="text-theme-act" /> Select Assets
                   </div>
-                  <input
-                    type="file"
-                    hidden
-                    multiple
-                    accept="image/*"
-                    onChange={handleFileUpload}
-                  />
+                  {canModify && (
+                    <input
+                      type="file"
+                      hidden
+                      multiple
+                      accept="image/*"
+                      onChange={handleFileUpload}
+                    />
+                  )}
                 </label>
               )}
 
@@ -109,7 +129,9 @@ export const SocialMediaManager = () => {
               <button
                 onClick={uploadFeed}
                 disabled={
-                  isUploading || (!externalUrl && selectedImages.length === 0)
+                  !canModify ||
+                  isUploading ||
+                  (!externalUrl && selectedImages.length === 0)
                 }
                 className="flex justify-center items-center gap-2 py-4 bg-theme-front text-theme-base font-black uppercase text-xs rounded-2xl disabled:opacity-20 hover:opacity-90 active:scale-95 transition-all shadow-lg"
               >
@@ -125,7 +147,7 @@ export const SocialMediaManager = () => {
           </div>
 
           {/* Local Previews */}
-          {!useExternalLink && selectedImages.length > 0 && (
+          {canModify && !useExternalLink && selectedImages.length > 0 && (
             <div className="mt-8 pt-8 border-t border-theme-line animate-in fade-in slide-in-from-bottom-2">
               <p className="text-[10px] uppercase font-black mb-4 text-theme-act tracking-[0.2em]">
                 Pending Uploads ({selectedImages.length})
@@ -165,33 +187,36 @@ export const SocialMediaManager = () => {
                 loading="lazy"
               />
 
-              {/* Overlay */}
-              <div className="absolute inset-0 bg-black/60 opacity-0 transition-opacity duration-300 group-hover:opacity-100 backdrop-blur-[2px]" />
-
-              <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-all duration-500 translate-y-4 group-hover:translate-y-0 group-hover:opacity-100">
-                <button
-                  onClick={() => {
-                    if (
-                      window.confirm(
-                        "Permanent Action: Delete this post from feed?",
-                      )
-                    ) {
-                      removePost(post._id);
-                    }
-                  }}
-                  className="group/btn relative flex h-14 w-14 items-center justify-center rounded-2xl bg-white transition-all duration-500 ease-out hover:w-36 hover:bg-red-500 active:scale-90"
-                >
-                  <div className="flex items-center justify-center overflow-hidden">
-                    <Trash2
-                      size={20}
-                      className="text-red-500 transition-colors duration-300 group-hover/btn:text-white"
-                    />
-                    <span className="w-0 overflow-hidden whitespace-nowrap text-[10px] font-black text-white transition-all duration-500 group-hover/btn:w-20 group-hover/btn:ml-2">
-                      DELETE
-                    </span>
+              {/* Delete Overlay - Only visible if user has access */}
+              {canModify && (
+                <>
+                  <div className="absolute inset-0 bg-black/60 opacity-0 transition-opacity duration-300 group-hover:opacity-100 backdrop-blur-[2px]" />
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-all duration-500 translate-y-4 group-hover:translate-y-0 group-hover:opacity-100">
+                    <button
+                      onClick={() => {
+                        if (
+                          window.confirm(
+                            "Permanent Action: Delete this post from feed?",
+                          )
+                        ) {
+                          removePost(post._id);
+                        }
+                      }}
+                      className="group/btn relative flex h-14 w-14 items-center justify-center rounded-2xl bg-white transition-all duration-500 ease-out hover:w-36 hover:bg-red-500 active:scale-90"
+                    >
+                      <div className="flex items-center justify-center overflow-hidden">
+                        <Trash2
+                          size={20}
+                          className="text-red-500 transition-colors duration-300 group-hover/btn:text-white"
+                        />
+                        <span className="w-0 overflow-hidden whitespace-nowrap text-[10px] font-black text-white transition-all duration-500 group-hover/btn:w-20 group-hover/btn:ml-2">
+                          DELETE
+                        </span>
+                      </div>
+                    </button>
                   </div>
-                </button>
-              </div>
+                </>
+              )}
             </div>
           ))}
         </div>

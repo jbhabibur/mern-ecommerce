@@ -9,8 +9,10 @@ import {
   Trash2,
   RefreshCcw,
   CheckCircle,
-  ShieldAlert,
+  AlertCircle,
 } from "lucide-react";
+// Import the dynamic access utility
+import { hasAccess } from "../../utils/authUtils";
 
 export const InviteAdmin = () => {
   const {
@@ -19,13 +21,18 @@ export const InviteAdmin = () => {
     loading,
     invitations,
     processingId,
-    isSuperAdmin,
     handleSubmit,
     handleAcceptAndNotify,
     handleRoleChange,
     handleResend,
     handleDelete,
   } = useInviteAdmin();
+
+  /** * DYNAMIC PERMISSION CHECK
+   * We check if the user is a super-admin.
+   * Only super-admins can interact with the invitation system.
+   */
+  const canManageInvitations = hasAccess("super-admin");
 
   // Updated Status Config to use Theme-compliant semantic colors
   const statusConfig = {
@@ -54,17 +61,6 @@ export const InviteAdmin = () => {
 
   return (
     <div className="p-4 md:p-8 max-w-6xl mx-auto space-y-8 bg-theme-base min-h-screen">
-      {/* --- ACCESS ALERT --- */}
-      {!isSuperAdmin && (
-        <div className="bg-theme-sub/50 border border-theme-line p-4 rounded-xl flex items-center gap-3 text-theme-front text-sm">
-          <ShieldAlert className="text-amber-500" size={20} />
-          <p>
-            <span className="font-bold text-amber-500">View Only Mode:</span>{" "}
-            Only Super Admins can send invitations or manage roles.
-          </p>
-        </div>
-      )}
-
       {/* --- INVITATION FORM SECTION --- */}
       <section>
         <div className="mb-6">
@@ -77,9 +73,21 @@ export const InviteAdmin = () => {
           </p>
         </div>
 
+        {/* --- VIEW ONLY BANNER (Styled to match StaffList) --- */}
+        {!canManageInvitations && (
+          <div className="flex items-center gap-3 bg-theme-sub/40 border border-theme-line p-4 rounded-xl mb-6">
+            <AlertCircle className="text-amber-500 shrink-0" size={20} />
+            <p className="text-sm text-theme-front">
+              <span className="font-bold text-amber-500">View Only Mode:</span>{" "}
+              You can view the invitations but do not have permission to modify
+              data or send new invites.
+            </p>
+          </div>
+        )}
+
         <div
           className={`bg-theme-base border border-theme-line rounded-2xl shadow-sm overflow-hidden transition-opacity ${
-            !isSuperAdmin ? "opacity-60 grayscale-[0.5]" : ""
+            !canManageInvitations ? "opacity-60 grayscale-[0.5]" : ""
           }`}
         >
           <form
@@ -105,7 +113,7 @@ export const InviteAdmin = () => {
                     setFormData({ ...formData, name: e.target.value })
                   }
                   required
-                  disabled={!isSuperAdmin}
+                  disabled={!canManageInvitations}
                 />
               </div>
             </div>
@@ -129,7 +137,7 @@ export const InviteAdmin = () => {
                     setFormData({ ...formData, email: e.target.value })
                   }
                   required
-                  disabled={!isSuperAdmin}
+                  disabled={!canManageInvitations}
                 />
               </div>
             </div>
@@ -145,7 +153,7 @@ export const InviteAdmin = () => {
                 onChange={(e) =>
                   setFormData({ ...formData, role: e.target.value })
                 }
-                disabled={!isSuperAdmin}
+                disabled={!canManageInvitations}
               >
                 <option value="super-admin">Super Admin</option>
                 <option value="admin">Admin</option>
@@ -158,9 +166,9 @@ export const InviteAdmin = () => {
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={loading || !isSuperAdmin}
+              disabled={loading || !canManageInvitations}
               className={`w-full py-2.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all cursor-pointer ${
-                loading || !isSuperAdmin
+                loading || !canManageInvitations
                   ? "bg-theme-line text-theme-muted cursor-not-allowed"
                   : "bg-theme-act text-white hover:opacity-90 shadow-lg shadow-theme-act/20"
               }`}
@@ -227,7 +235,7 @@ export const InviteAdmin = () => {
                         <select
                           className="bg-theme-sub border border-theme-line rounded px-2 py-1 text-[10px] font-bold uppercase outline-none focus:border-theme-act text-theme-front disabled:cursor-not-allowed mx-auto block"
                           defaultValue={invite.role}
-                          disabled={!isSuperAdmin}
+                          disabled={!canManageInvitations}
                           onChange={(e) =>
                             handleRoleChange(invite._id, e.target.value)
                           }
@@ -259,7 +267,7 @@ export const InviteAdmin = () => {
                       <td className="px-6 py-4 text-right">
                         <div
                           className={`flex justify-end gap-2 ${
-                            !isSuperAdmin
+                            !canManageInvitations
                               ? "opacity-20 pointer-events-none"
                               : ""
                           }`}
@@ -271,7 +279,8 @@ export const InviteAdmin = () => {
                                   handleAcceptAndNotify(invite._id, invite.role)
                                 }
                                 disabled={
-                                  processingId === invite._id || !isSuperAdmin
+                                  processingId === invite._id ||
+                                  !canManageInvitations
                                 }
                                 className="flex items-center gap-1 px-3 py-1.5 bg-theme-success text-white rounded-lg text-xs font-bold hover:opacity-90 disabled:bg-theme-line transition-all"
                               >
@@ -284,7 +293,7 @@ export const InviteAdmin = () => {
                               </button>
                               <button
                                 onClick={() => handleResend(invite._id)}
-                                disabled={!isSuperAdmin}
+                                disabled={!canManageInvitations}
                                 className="p-2 text-theme-muted hover:text-theme-act cursor-pointer disabled:opacity-50 transition-colors"
                                 title="Resend Invitation"
                               >
@@ -298,7 +307,7 @@ export const InviteAdmin = () => {
                           )}
                           <button
                             onClick={() => handleDelete(invite._id)}
-                            disabled={!isSuperAdmin}
+                            disabled={!canManageInvitations}
                             className="p-2 text-theme-muted hover:text-theme-error disabled:opacity-50 transition-colors"
                             title="Delete/Revoke"
                           >
@@ -313,7 +322,7 @@ export const InviteAdmin = () => {
                 <tr>
                   <td
                     colSpan="4"
-                    className="px-6 py-10 text-center text-theme-muted italic"
+                    className="px-6 py-10 text-center text-theme-muted"
                   >
                     No pending invitations found.
                   </td>

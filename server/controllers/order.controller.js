@@ -4,9 +4,6 @@ import SSLCommerzPayment from "sslcommerz-lts";
 import mongoose from "mongoose";
 
 export const createOrder = async (req, res) => {
-  // 1. Log incoming body for debugging
-  console.log("Incoming Order Body:", JSON.stringify(req.body, null, 2));
-
   try {
     const {
       customer,
@@ -304,40 +301,44 @@ export const retryPayment = async (req, res) => {
 /**
  * Controller: Get Orders with Dynamic Limit, Pagination, Search, and Status Filter
  */
+
 export const getAllOrdersAdmin = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 8;
     const skip = (page - 1) * limit;
 
-    // 1. Get search and status from query params
     const { search, status } = req.query;
-
-    // 2. Build the dynamic query object
     const query = {};
 
-    // Filter by Order Status (e.g., "Shipped", "Delivered")
     if (status && status !== "" && status !== "All") {
       query.orderStatus = status;
     }
 
-    // Search by Customer Name, Phone, or Order ID
     if (search) {
-      query.$or = [
-        { "billingAddress.fullName": { $regex: search, $options: "i" } },
-        { "billingAddress.phoneNumber": { $regex: search, $options: "i" } },
-      ];
+      // '#' thakle seta remove kore search korbo
+      const cleanSearch = search.startsWith("#") ? search.slice(1) : search;
+      const searchRegex = new RegExp(cleanSearch, "i");
 
-      // If search term looks like a MongoDB ID, add it to $or
-      if (search.match(/^[0-9a-fA-F]{24}$/)) {
-        query.$or.push({ _id: search });
-      }
+      query.$or = [
+        { "billingAddress.fullName": searchRegex },
+        { "billingAddress.phoneNumber": searchRegex },
+        { "shippingAddress.phone": searchRegex },
+        { "customer.email": searchRegex },
+        // Partial ID Search Logic: ObjectId-ke string-e convert kore regex match
+        {
+          $expr: {
+            $regexMatch: {
+              input: { $toString: "$_id" },
+              regex: cleanSearch,
+              options: "i",
+            },
+          },
+        },
+      ];
     }
 
-    // 3. Get total count based on the filter (Crucial for badge & pagination)
     const totalOrders = await Order.countDocuments(query);
-
-    // 4. Fetch filtered and paginated orders
     const orders = await Order.find(query)
       .sort({ createdAt: -1 })
       .skip(skip)
@@ -345,7 +346,7 @@ export const getAllOrdersAdmin = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      totalOrders: totalOrders, // Updates RTK Query badge
+      totalOrders,
       orders: orders || [],
       pagination: {
         totalOrders,
@@ -356,12 +357,7 @@ export const getAllOrdersAdmin = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Admin Fetch Orders Error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Internal server error",
-      error: error.message,
-    });
+    res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
 

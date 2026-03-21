@@ -181,6 +181,8 @@ export const updateUserRole = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const { role } = req.body;
 
+  console.log("double check", role);
+
   // 1. Find the user and update their role in the database
   const user = await User.findByIdAndUpdate(
     id,
@@ -197,15 +199,15 @@ export const updateUserRole = asyncHandler(async (req, res) => {
     await transporter.sendMail({
       from: process.env.EMAIL_USER,
       to: user.email,
-      subject: "Account Role Updated - BEMAN",
+      subject: "Account Role Updated - MENSFASHION",
       html: `
         <div style="font-family: sans-serif; line-height: 1.5;">
           <h2>Hello ${user.firstName},</h2>
-          <p>Your account role on <b>BEMAN</b> has been officially updated.</p>
+          <p>Your account role on <b>MENSFASHION</b> has been officially updated.</p>
           <p>New Assigned Role: <span style="color: #2563eb; font-weight: bold;">${role}</span></p>
           <p>If you did not expect this change, please contact the system administrator.</p>
           <br />
-          <p>Best Regards,<br />The BEMAN Team</p>
+          <p>Best Regards,<br />The MENSFASHION Team</p>
         </div>
       `,
     });

@@ -1,9 +1,10 @@
 import React from "react";
-import { Plus } from "lucide-react";
+import { Plus, Lock } from "lucide-react"; // Lock icon added for visual cue
 import { usePromoManager } from "./hooks/usePromoManager";
 import { PromoTable } from "./components/PromoTable";
 import { PromoModal } from "./components/PromoModal";
 import { useTheme } from "../../contexts/ThemeContext";
+import { hasAccess } from "../../utils/authUtils";
 
 export const PromoManager = () => {
   const { theme } = useTheme();
@@ -26,6 +27,9 @@ export const PromoManager = () => {
     handleActive,
   } = usePromoManager();
 
+  // --- Permission Check ---
+  const canModify = hasAccess("super-admin", "manager");
+
   return (
     <div
       className={`
@@ -41,18 +45,27 @@ export const PromoManager = () => {
               Promotional Banners
             </h1>
             <p className="text-[10px] text-theme-muted uppercase font-bold tracking-[0.2em] mt-1 opacity-70">
-              Real-time management & store insights
+              {canModify
+                ? "Real-time management & store insights"
+                : "Store insights (View Only)"}
             </p>
           </div>
 
+          {/* Create Button - Disabled if not authorized */}
           <button
             onClick={() => setIsModalOpen(true)}
-            className="
+            disabled={!canModify}
+            className={`
               flex items-center justify-center gap-2 px-5 py-3 md:px-8 md:py-4 rounded-2xl font-bold shadow-xl transition-all text-sm md:text-base w-full md:w-auto active:scale-95
-              bg-blue-600 text-white hover:bg-blue-700 shadow-blue-500/20
-            "
+              ${
+                canModify
+                  ? "bg-blue-600 text-white hover:bg-blue-700 shadow-blue-500/20"
+                  : "bg-slate-500/20 text-slate-500 cursor-not-allowed shadow-none"
+              }
+            `}
+            title={!canModify ? "Admin access required" : ""}
           >
-            <Plus size={20} />
+            {canModify ? <Plus size={20} /> : <Lock size={18} />}
             <span>Create Promo</span>
           </button>
         </div>
@@ -65,19 +78,22 @@ export const PromoManager = () => {
               ? "bg-[#1A1A1A] border-white/5 shadow-2xl"
               : "bg-white border-slate-200 shadow-sm"
           }
+          ${!canModify ? "opacity-90" : ""}
         `}
         >
+          {/* Table - Passing canModify to handle internal button states */}
           <PromoTable
             slots={slots}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-            onActive={handleActive}
+            onEdit={canModify ? handleEdit : null}
+            onDelete={canModify ? handleDelete : null}
+            onActive={canModify ? handleActive : null}
+            canModify={canModify} // Ensure PromoTable handles this prop
           />
         </div>
       </div>
 
-      {/* Form Modal Component */}
-      {isModalOpen && (
+      {/* Form Modal - Double check if open and user is authorized */}
+      {isModalOpen && canModify && (
         <PromoModal
           editingSlot={editingSlot}
           form={form}

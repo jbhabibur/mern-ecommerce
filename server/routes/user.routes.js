@@ -32,7 +32,7 @@ router.get("/", verifyToken, getProfile);
 router.get(
   "/all-staff",
   verifyToken,
-  restrictTo("super-admin", "admin"),
+  restrictTo("super-admin", "manager", "editor"),
   getAllStaff,
 );
 

@@ -9,6 +9,7 @@ import {
   Search,
 } from "lucide-react";
 import { useCategories } from "./hooks/useCategories";
+import { hasAccess } from "../../utils/authUtils";
 
 export const CategoriesManager = () => {
   const {
@@ -22,6 +23,9 @@ export const CategoriesManager = () => {
     loadCategories,
     handleToggle,
   } = useCategories();
+
+  // Role check: Only super-admin and manager have write permissions
+  const canModify = hasAccess("super-admin", "manager");
 
   if (isLoading) {
     return (
@@ -43,7 +47,8 @@ export const CategoriesManager = () => {
         </h3>
         <button
           onClick={() => loadCategories()}
-          className="mt-6 px-8 py-3 bg-theme-act text-theme-actfg rounded-2xl font-bold"
+          disabled={!canModify}
+          className="mt-6 px-8 py-3 bg-theme-act text-theme-actfg rounded-2xl font-bold disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Retry Connection
         </button>
@@ -67,15 +72,17 @@ export const CategoriesManager = () => {
 
           <button
             onClick={() => loadCategories(false)}
-            disabled={isFetching}
-            className="group flex items-center gap-3 px-6 py-3 bg-theme-sub border border-theme-line rounded-2xl hover:border-theme-act transition-all"
+            // Disabled if fetching OR if user doesn't have role
+            disabled={isFetching || !canModify}
+            className="group flex items-center gap-3 px-6 py-3 bg-theme-sub border border-theme-line rounded-2xl hover:border-theme-act transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            title={!canModify ? "Admin/Manager access required" : ""}
           >
             <RefreshCw size={18} className={isFetching ? "animate-spin" : ""} />
             <span className="text-sm font-black uppercase">Refresh Grid</span>
           </button>
         </header>
 
-        {/* SEARCH BAR */}
+        {/* SEARCH BAR - Active for everyone to allow viewing */}
         <div className="w-full">
           <div className="relative group">
             <Search
@@ -100,6 +107,7 @@ export const CategoriesManager = () => {
               cat={cat}
               isPending={pendingId === cat._id}
               onToggle={handleToggle}
+              canModify={canModify}
             />
           ))}
         </div>
@@ -117,7 +125,7 @@ export const CategoriesManager = () => {
   );
 };
 
-const CategoryCard = ({ cat, isPending, onToggle }) => {
+const CategoryCard = ({ cat, isPending, onToggle, canModify }) => {
   const isActive = cat.showInCategories;
   const thumbnailImg = cat.thumbnail || cat.bannerImage;
 
@@ -147,13 +155,15 @@ const CategoryCard = ({ cat, isPending, onToggle }) => {
           {cat.name}
         </h3>
         <button
-          disabled={isPending}
+          // Disabled if update is in progress OR if user doesn't have role
+          disabled={isPending || !canModify}
           onClick={() => onToggle(cat._id)}
-          className={`w-full mt-4 py-3 rounded-xl font-black text-xs uppercase flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-95 ${
+          className={`w-full mt-4 py-3 rounded-xl font-black text-xs uppercase flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed ${
             isActive
               ? "bg-theme-act text-theme-actfg shadow-md shadow-theme-act/20"
               : "bg-theme-base border border-theme-line text-theme-muted hover:text-theme-front"
           }`}
+          title={!canModify ? "ReadOnly Mode" : ""}
         >
           {isPending ? (
             <Loader2 size={16} className="animate-spin" />

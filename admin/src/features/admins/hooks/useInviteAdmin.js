@@ -4,7 +4,7 @@ import { BASE_URL } from "../../../api/apiConfig.js";
 import {
   getAuthUser,
   isSuperAdmin as checkSuperAdmin,
-} from "../utils/authUtils.js";
+} from "../../../utils/authUtils.js";
 
 export const useInviteAdmin = () => {
   const [formData, setFormData] = useState({

@@ -28,7 +28,7 @@ router.post("/", verifyToken, createReview);
  */
 // Apply protection to all routes below this line
 router.use(verifyToken);
-router.use(restrictTo("admin", "superadmin", "editor")); // Adjust roles based on your setup
+router.use(restrictTo("super-admin", "manager", "editor")); // Adjust roles based on your setup
 
 // GET /api/reviews - Admin management
 router.get("/", getAllReviews);

@@ -11,10 +11,8 @@ import {
   AlertCircle,
   Loader2,
 } from "lucide-react";
-import {
-  getAuthUser,
-  isSuperAdmin as checkSuperAdmin,
-} from "./utils/authUtils";
+// Import the dynamic hasAccess helper
+import { getAuthUser, hasAccess } from "../../utils/authUtils";
 
 export const StaffList = () => {
   // --- STATE MANAGEMENT ---
@@ -22,11 +20,15 @@ export const StaffList = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // --- AUTH CHECK ---
+  // --- AUTH & PERMISSION CHECK ---
   const currentUser = getAuthUser();
-  const isSuperAdmin = checkSuperAdmin();
 
-  // Helper for Authorization Headers
+  /** * DYNAMIC PERMISSIONS
+   * You can easily change who has write access here.
+   * Example: allow only 'super-admin' or both 'super-admin' and 'manager'
+   */
+  const canModify = hasAccess("super-admin");
+
   const getAuthHeaders = () => ({
     headers: {
       Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -67,9 +69,10 @@ export const StaffList = () => {
 
   // --- HANDLER: Update Staff Role ---
   const handleRoleChange = async (id, newRole) => {
-    if (!isSuperAdmin) return;
-    if (id === currentUser?._id) {
-      alert("You cannot change your own role.");
+    if (!canModify) return;
+
+    if (id === currentUser?.id) {
+      alert("Role changes for your own account are restricted.");
       return;
     }
 
@@ -79,6 +82,7 @@ export const StaffList = () => {
         { role: newRole },
         getAuthHeaders(),
       );
+
       if (res.data.success) {
         alert("Staff role updated successfully.");
         fetchStaff();
@@ -90,10 +94,17 @@ export const StaffList = () => {
 
   // --- HANDLER: Revoke Staff Access ---
   const handleRemoveStaff = async (id) => {
-    if (!isSuperAdmin) return;
-    if (id === currentUser?._id) {
+    // Check if user has permission to delete (maybe only super-admin can delete)
+    const canDelete = hasAccess("super-admin");
+
+    if (!canDelete) {
+      alert("Only a Super Admin can remove staff members.");
+      return;
+    }
+
+    if (id === currentUser?.id) {
       alert(
-        "Security Alert: You cannot remove your own administrative access.",
+        "Security Alert: Administrative access removal must be performed by another admin.",
       );
       return;
     }
@@ -132,13 +143,12 @@ export const StaffList = () => {
             Official Staff Directory
           </h1>
           <p className="text-[10px] text-theme-muted uppercase font-bold tracking-[0.2em] mt-1 opacity-70">
-            {isSuperAdmin
-              ? "Full administrative control over team members and permissions."
-              : "Official record of active management and staff personnel."}
+            {canModify
+              ? "Full management control enabled for privileged accounts."
+              : "Read-only access granted for standard personnel."}
           </p>
         </div>
 
-        {/* Search Bar */}
         <div className="relative w-full md:w-72">
           <Search
             className="absolute left-3 top-1/2 -translate-y-1/2 text-theme-muted"
@@ -146,7 +156,7 @@ export const StaffList = () => {
           />
           <input
             type="text"
-            placeholder="Search by name or email..."
+            placeholder="Search team members..."
             className="w-full pl-10 pr-4 py-2 bg-theme-sub border border-theme-line rounded-xl focus:outline-none focus:border-theme-act text-sm transition-all text-theme-front"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -154,13 +164,14 @@ export const StaffList = () => {
         </div>
       </div>
 
-      {/* --- VIEW ONLY NOTIFICATION --- */}
-      {!isSuperAdmin && (
+      {/* --- VIEW ONLY BANNER --- */}
+      {!canModify && (
         <div className="flex items-center gap-3 bg-theme-sub/40 border border-theme-line p-4 rounded-xl">
           <AlertCircle className="text-amber-500 shrink-0" size={20} />
           <p className="text-sm text-theme-front">
             <span className="font-bold text-amber-500">View Only Mode:</span>{" "}
-            Only Super Admins can modify roles or remove staff members.
+            You can view the directory but do not have permission to modify
+            data.
           </p>
         </div>
       )}
@@ -192,7 +203,7 @@ export const StaffList = () => {
                         size={24}
                       />
                       <span className="italic">
-                        Fetching secure team data...
+                        Synchronizing staff data...
                       </span>
                     </div>
                   </td>
@@ -205,7 +216,7 @@ export const StaffList = () => {
                   >
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-theme-act/10 flex items-center justify-center text-theme-act font-bold border border-theme-act/20 shrink-0">
+                        <div className="w-10 h-10 rounded-full bg-theme-act/10 flex items-center justify-center text-theme-act font-bold border border-theme-act/20">
                           {member.name?.charAt(0) || "U"}
                         </div>
                         <div className="truncate">
@@ -215,7 +226,6 @@ export const StaffList = () => {
                               <ShieldCheck
                                 size={14}
                                 className="text-blue-500"
-                                title="Super Admin"
                               />
                             )}
                           </div>
@@ -229,16 +239,14 @@ export const StaffList = () => {
                       <select
                         className="bg-theme-sub border border-theme-line rounded-lg px-2 py-1 text-[11px] font-bold uppercase outline-none focus:border-theme-act text-theme-front disabled:opacity-50 disabled:cursor-not-allowed mx-auto block"
                         defaultValue={member.role}
-                        disabled={
-                          !isSuperAdmin || member._id === currentUser?._id
-                        }
+                        disabled={!canModify || member._id === currentUser?.id}
                         onChange={(e) =>
                           handleRoleChange(member._id, e.target.value)
                         }
                       >
                         <option value="super-admin">Super Admin</option>
-                        <option value="admin">Admin</option>
                         <option value="manager">Manager</option>
+                        <option value="editor">Editor</option>
                         <option value="stylist">Stylist</option>
                         <option value="customer-support">Support</option>
                       </select>
@@ -250,7 +258,11 @@ export const StaffList = () => {
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div
-                        className={`flex justify-end gap-2 ${!isSuperAdmin || member._id === currentUser?._id ? "opacity-20 pointer-events-none grayscale" : ""}`}
+                        className={`flex justify-end gap-2 ${
+                          !canModify || member._id === currentUser?.id
+                            ? "opacity-20 pointer-events-none grayscale"
+                            : ""
+                        }`}
                       >
                         <button
                           onClick={() => handleRemoveStaff(member._id)}
@@ -271,7 +283,7 @@ export const StaffList = () => {
                     colSpan="4"
                     className="px-6 py-10 text-center text-theme-muted"
                   >
-                    No matching staff members found for "{searchTerm}".
+                    No matching staff members found.
                   </td>
                 </tr>
               )}

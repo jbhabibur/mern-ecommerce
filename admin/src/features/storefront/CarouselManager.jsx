@@ -7,8 +7,10 @@ import {
   Loader2,
   RefreshCw,
   Search,
+  Lock,
 } from "lucide-react";
 import { useCarouselManager } from "./hooks/useCarouselManager";
+import { hasAccess } from "../../utils/authUtils"; // Import auth utility
 
 export const CarouselManager = () => {
   const {
@@ -22,8 +24,11 @@ export const CarouselManager = () => {
     handleImageChange,
     toggleCarousel,
     removeImage,
-    stats, // Using the stats from the hook
+    stats,
   } = useCarouselManager();
+
+  // --- Permission Check ---
+  const canModify = hasAccess("super-admin", "manager");
 
   if (isLoading)
     return (
@@ -123,21 +128,29 @@ export const CarouselManager = () => {
                   )}
                 </div>
 
-                {/* Upload Overlay */}
-                <label className="absolute inset-0 bg-theme-act/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all cursor-pointer backdrop-blur-[3px] z-20">
-                  <div className="bg-theme-act text-theme-actfg p-5 rounded-3xl shadow-2xl transform translate-y-8 group-hover:translate-y-0 transition-all duration-300">
-                    {uploadingId === cat._id ? (
-                      <Loader2 className="animate-spin" size={32} />
-                    ) : (
-                      <Upload size={32} />
-                    )}
+                {/* Upload Overlay - Only if canModify */}
+                {canModify ? (
+                  <label className="absolute inset-0 bg-theme-act/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all cursor-pointer backdrop-blur-[3px] z-20">
+                    <div className="bg-theme-act text-theme-actfg p-5 rounded-3xl shadow-2xl transform translate-y-8 group-hover:translate-y-0 transition-all duration-300">
+                      {uploadingId === cat._id ? (
+                        <Loader2 className="animate-spin" size={32} />
+                      ) : (
+                        <Upload size={32} />
+                      )}
+                    </div>
+                    <input
+                      type="file"
+                      className="hidden"
+                      onChange={(e) => handleImageChange(e, cat._id)}
+                    />
+                  </label>
+                ) : (
+                  <div className="absolute top-6 left-6 z-10">
+                    <div className="bg-theme-base/40 backdrop-blur-sm p-2 rounded-xl border border-theme-line text-theme-muted">
+                      <Lock size={14} />
+                    </div>
                   </div>
-                  <input
-                    type="file"
-                    className="hidden"
-                    onChange={(e) => handleImageChange(e, cat._id)}
-                  />
-                </label>
+                )}
               </div>
 
               {/* Content Area */}
@@ -156,16 +169,19 @@ export const CarouselManager = () => {
                 <div className="mt-auto flex items-center gap-4">
                   <button
                     onClick={() => toggleCarousel(cat._id, cat.showInCarousel)}
-                    className={`flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl font-black text-xs uppercase tracking-[0.15em] transition-all active:scale-95 ${
+                    // Disabled if not authorized
+                    disabled={!canModify}
+                    className={`flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl font-black text-xs uppercase tracking-[0.15em] transition-all active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed ${
                       cat.showInCarousel
                         ? "bg-theme-error/10 text-theme-error border border-theme-error/20 hover:bg-theme-error hover:text-white"
                         : "bg-theme-act text-theme-actfg hover:brightness-110 shadow-lg shadow-theme-act/20"
                     }`}
                   >
+                    {!canModify && <Lock size={12} />}
                     {cat.showInCarousel ? "Take Down" : "Push to Home"}
                   </button>
 
-                  {cat.carouselImage && (
+                  {cat.carouselImage && canModify && (
                     <button
                       onClick={() => removeImage(cat._id)}
                       className="p-4 rounded-2xl bg-theme-base text-theme-muted border border-theme-line hover:text-theme-error hover:border-theme-error hover:bg-theme-error/5 transition-all active:scale-95"

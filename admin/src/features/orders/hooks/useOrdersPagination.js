@@ -5,17 +5,28 @@ import { useGetOrdersQuery } from "../../../redux/service/adminOrderApi";
 export const useOrdersPagination = (initialLimit = 8, statusFilter = "") => {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
+  // 1. Notun state debounced value-r jonno
+  const [debouncedSearch, setDebouncedSearch] = useState("");
 
-  // Reset to page 1 whenever search or filter changes to avoid "empty page" bugs
+  // 2. Debounce logic: User type kora thamanor 500ms por search trigger hobe
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+    }, 500);
+
+    return () => clearTimeout(handler);
+  }, [searchTerm]);
+
+  // Reset to page 1 whenever search or filter changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, statusFilter]);
+  }, [debouncedSearch, statusFilter]);
 
-  // RTK Query: Pass page, limit, search, and status to the server
+  // RTK Query: search-e ekhon debouncedSearch pass korbe
   const { data, isLoading, isError, error, isFetching } = useGetOrdersQuery({
     page: currentPage,
     limit: initialLimit,
-    search: searchTerm,
+    search: debouncedSearch, // Passing the delayed search term
     status: statusFilter,
   });
 
@@ -28,11 +39,6 @@ export const useOrdersPagination = (initialLimit = 8, statusFilter = "") => {
     hasPrevPage: false,
   };
 
-  /**
-   * Note: We no longer need local useMemo filtering because
-   * the server is now handling the search and status filter globally.
-   */
-
   const handlePageChange = (newPage) => {
     setCurrentPage(newPage);
   };
@@ -42,7 +48,7 @@ export const useOrdersPagination = (initialLimit = 8, statusFilter = "") => {
   };
 
   return {
-    orders, // Returning global results from server
+    orders,
     pagination,
     currentPage,
     searchTerm,

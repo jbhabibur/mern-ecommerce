@@ -6,10 +6,15 @@ import {
   Layout,
   Store,
   AlertTriangle,
+  ShieldAlert,
 } from "lucide-react";
+import { hasAccess } from "../../utils/authUtils";
 
 export const AdminSettings = () => {
   const [activeTab, setActiveTab] = useState("general");
+
+  // --- Strict Permission Check ---
+  const isSuperAdmin = hasAccess("super-admin");
 
   // State to manage MENSFASHION configurations
   const [settings, setSettings] = useState({
@@ -35,11 +40,30 @@ export const AdminSettings = () => {
     }));
   };
 
-  // Save logic for the dashboard
+  // Save logic
   const handleSave = () => {
+    if (!isSuperAdmin) return;
     console.log("Updating MENSFASHION Settings:", settings);
     alert("MENSFASHION settings updated successfully!");
   };
+
+  // Unauthorized UI jodi super-admin na hoy
+  if (!isSuperAdmin) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[80vh] p-4 text-center">
+        <div className="bg-red-500/10 p-6 rounded-full mb-6">
+          <ShieldAlert size={64} className="text-red-500" />
+        </div>
+        <h2 className="text-2xl font-black text-theme-front uppercase tracking-tight">
+          Access Restricted
+        </h2>
+        <p className="text-theme-muted mt-2 max-w-md">
+          System settings are only accessible by a <strong>Super Admin</strong>.
+          Please contact your administrator if you believe this is an error.
+        </p>
+      </div>
+    );
+  }
 
   const tabs = [
     { id: "general", label: "General", icon: <Store size={18} /> },
@@ -48,7 +72,6 @@ export const AdminSettings = () => {
     { id: "ui", label: "Appearance", icon: <Layout size={18} /> },
   ];
 
-  // Tailwind v4 utility classes
   const inputClass =
     "mt-1 w-full bg-theme-base border border-theme-line p-2.5 rounded-lg focus:outline-none focus:border-theme-act text-theme-front transition-all";
 
@@ -58,7 +81,7 @@ export const AdminSettings = () => {
         {/* Header Section */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">
+            <h1 className="text-2xl font-bold tracking-tight uppercase">
               System Settings
             </h1>
             <p className="text-sm text-theme-muted">

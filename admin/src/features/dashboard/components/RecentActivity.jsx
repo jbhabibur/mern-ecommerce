@@ -1,49 +1,62 @@
 import React from "react";
 import {
   ShoppingBag,
-  Eye,
-  Clock,
-  CheckCircle,
-  Truck,
-  XCircle,
-  RefreshCcw,
+  Edit3,
+  PhoneCall,
   ArrowRight,
   Mail,
+  Calendar,
 } from "lucide-react";
+
+// Components
+import { OrderActionModal } from "../../../components/OrderActionModal";
+
+// Hooks - AllOrders er moto same hooks use kora hoyeche
+import { useOrderActions } from "../../../hooks/useOrderActions";
 import { useGetOrdersQuery } from "../../../redux/service/adminOrderApi";
 
+// Utils
+import { hasAccess } from "../../../utils/authUtils";
+
+const getStatusStyles = (status) => {
+  const s = status?.toLowerCase();
+  switch (s) {
+    case "order placed":
+      return "bg-amber-500/10 text-amber-600 border-amber-200";
+    case "confirmed":
+      return "bg-blue-500/10 text-blue-600 border-blue-200";
+    case "shipped":
+      return "bg-purple-500/10 text-purple-600 border-purple-200";
+    case "delivered":
+      return "bg-theme-success/10 text-theme-success border-theme-success/20";
+    case "cancelled":
+      return "bg-theme-error/10 text-theme-error border-theme-error/20";
+    default:
+      return "bg-theme-sub text-theme-muted border-theme-line";
+  }
+};
+
 export const RecentActivity = () => {
+  // 1. Data Fetching (Limit 8 rakha hoyeche recent activity jonno)
   const { data, isLoading, isError } = useGetOrdersQuery({ limit: 8 });
   const orders = data?.orders || [];
 
-  // Mapping based on your console: "Order Placed", etc.
-  const statusConfig = {
-    "order placed": {
-      color: "text-orange-500",
-      bg: "bg-orange-500/10",
-      icon: <Clock size={12} strokeWidth={2.5} />,
-    },
-    processing: {
-      color: "text-blue-500",
-      bg: "bg-blue-500/10",
-      icon: <RefreshCcw size={12} strokeWidth={2.5} />,
-    },
-    shipped: {
-      color: "text-purple-500",
-      bg: "bg-purple-500/10",
-      icon: <Truck size={12} strokeWidth={2.5} />,
-    },
-    delivered: {
-      color: "text-theme-success",
-      bg: "bg-theme-success/10",
-      icon: <CheckCircle size={12} strokeWidth={2.5} />,
-    },
-    cancelled: {
-      color: "text-theme-error",
-      bg: "bg-theme-error/10",
-      icon: <XCircle size={12} strokeWidth={2.5} />,
-    },
-  };
+  // 2. Action Hooks (AllOrders theke copy kora logic)
+  const {
+    selectedOrder,
+    isModalOpen,
+    newStatus,
+    setNewStatus,
+    internalNote,
+    setInternalNote,
+    isUpdating,
+    openModal,
+    closeModal,
+    handleSaveChanges,
+  } = useOrderActions();
+
+  // 3. Permission Check
+  const canManage = hasAccess("super-admin", "manager");
 
   if (isLoading) {
     return (
@@ -67,87 +80,74 @@ export const RecentActivity = () => {
   }
 
   return (
-    <div className="bg-theme-sub border border-theme-line rounded-3xl overflow-hidden shadow-sm">
-      {/* Header */}
-      <div className="px-6 py-5 flex justify-between items-center border-b border-theme-line bg-theme-sub/40 backdrop-blur-sm">
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 bg-theme-act/10 rounded-2xl">
-            <ShoppingBag size={18} className="text-theme-act" />
+    <>
+      <div className="bg-theme-sub border border-theme-line rounded-3xl overflow-hidden shadow-sm">
+        {/* Header Section */}
+        <div className="px-6 py-5 flex justify-between items-center border-b border-theme-line bg-theme-sub/40 backdrop-blur-sm">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 bg-theme-act/10 rounded-2xl">
+              <ShoppingBag size={18} className="text-theme-act" />
+            </div>
+            <div>
+              <h3 className="text-sm font-black text-theme-front tracking-tight uppercase">
+                Recent Activity
+              </h3>
+              <p className="text-[10px] text-theme-muted font-bold tracking-tight opacity-70 uppercase">
+                Latest 8 transactions
+              </p>
+            </div>
           </div>
-          <div>
-            <h3 className="text-sm font-black text-theme-front tracking-tight uppercase">
-              Recent Activity
-            </h3>
-            <p className="text-[10px] text-theme-muted font-bold tracking-tight opacity-70">
-              Real-time transaction stream
-            </p>
-          </div>
+          <button className="group flex items-center gap-2 text-[10px] font-black text-theme-muted hover:text-theme-act transition-all uppercase tracking-[0.15em]">
+            View Archive{" "}
+            <ArrowRight
+              size={12}
+              className="group-hover:translate-x-1 transition-transform"
+            />
+          </button>
         </div>
-        <button className="group flex items-center gap-2 text-[10px] font-black text-theme-muted hover:text-theme-act transition-all uppercase tracking-[0.15em]">
-          View Archive{" "}
-          <ArrowRight
-            size={12}
-            className="group-hover:translate-x-1 transition-transform"
-          />
-        </button>
-      </div>
 
-      {/* Table */}
-      <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="bg-theme-base/20">
-              <th className="px-6 py-4 text-[10px] font-black text-theme-muted uppercase tracking-widest">
-                Order ID
-              </th>
-              <th className="px-6 py-4 text-[10px] font-black text-theme-muted uppercase tracking-widest">
-                Customer
-              </th>
-              <th className="px-6 py-4 text-[10px] font-black text-theme-muted uppercase tracking-widest">
-                Amount
-              </th>
-              <th className="px-6 py-4 text-[10px] font-black text-theme-muted uppercase tracking-widest">
-                Status
-              </th>
-              <th className="px-6 py-4 text-[10px] font-black text-theme-muted uppercase tracking-widest text-right">
-                Action
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-theme-line/30">
-            {orders.length > 0 ? (
-              orders.map((order) => {
-                // Using orderStatus from your image
-                const currentStatus =
-                  order.orderStatus?.toLowerCase() || "pending";
-                const status =
-                  statusConfig[currentStatus] || statusConfig["order placed"];
-
-                return (
-                  <tr
-                    key={order._id}
-                    className="group hover:bg-theme-base/60 transition-colors duration-200"
-                  >
-                    <td className="px-6 py-4">
-                      <span className="text-[11px] font-bold text-theme-front font-mono tracking-tighter opacity-60 group-hover:opacity-100 transition-opacity">
-                        #{order._id.slice(-6).toUpperCase()}
+        {/* Table Section */}
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead className="bg-theme-base/20 border-b border-theme-line">
+              <tr className="text-[10px] font-black text-theme-muted uppercase tracking-widest">
+                <th className="px-6 py-4">Order ID</th>
+                <th className="px-6 py-4">Customer</th>
+                <th className="px-6 py-4">Amount</th>
+                <th className="px-6 py-4">Status</th>
+                <th className="px-6 py-4 text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-theme-line/30">
+              {orders.map((order) => (
+                <tr
+                  key={order._id}
+                  className="group hover:bg-theme-base/60 transition-colors duration-200"
+                >
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex flex-col">
+                      <span className="font-mono text-[11px] text-theme-act font-black uppercase tracking-tighter">
+                        #{order._id.slice(-8).toUpperCase()}
                       </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex flex-col gap-0.5">
-                        <span className="text-[11px] font-black text-theme-front uppercase tracking-tighter">
-                          {order.shippingAddress?.fullName || "Anonymous"}
-                        </span>
-                        <div className="flex items-center gap-1.5 text-[9px] text-theme-muted font-bold">
-                          <Mail size={10} className="opacity-50" />
-                          <span className="lowercase">
-                            {order.customer?.email || "no-email"}
-                          </span>
-                        </div>
+                      <span className="text-[9px] text-theme-muted mt-0.5 flex items-center gap-1 font-bold">
+                        <Calendar size={10} />{" "}
+                        {new Date(order.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex flex-col">
+                      <span className="text-[11px] font-black text-theme-front uppercase tracking-tighter">
+                        {order.billingAddress?.fullName || "Guest"}
+                      </span>
+                      <div className="flex items-center gap-1 text-[9px] text-theme-muted font-bold lowercase">
+                        <Mail size={10} /> {order.customer?.email || "N/A"}
                       </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="text-xs font-black text-theme-front tracking-tighter">
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex flex-col">
+                      <span className="text-xs font-black text-theme-front">
                         ৳{" "}
                         {(
                           order.financials?.totalAmount ||
@@ -155,34 +155,63 @@ export const RecentActivity = () => {
                           0
                         ).toLocaleString()}
                       </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span
-                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider ${status.bg} ${status.color}`}
-                      >
-                        {status.icon} {order.orderStatus}
+                      <span className="text-[9px] font-bold uppercase text-theme-muted">
+                        {order.payment?.method || "N/A"}
                       </span>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <button className="inline-flex items-center justify-center h-9 w-9 rounded-2xl bg-theme-base border border-theme-line text-theme-muted hover:text-theme-act hover:border-theme-act/30 hover:shadow-sm transition-all">
-                        <Eye size={14} />
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <span
+                      className={`inline-flex items-center px-3 py-1.5 rounded-lg text-[9px] font-black uppercase border whitespace-nowrap ${getStatusStyles(
+                        order.orderStatus,
+                      )}`}
+                    >
+                      {order.orderStatus}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 text-right">
+                    {canManage ? (
+                      <button
+                        onClick={() => openModal(order)}
+                        className={`p-2 rounded-xl border transition-all active:scale-95 ${
+                          order.payment?.method === "cod" &&
+                          order.orderStatus === "Order Placed"
+                            ? "bg-theme-act text-theme-actfg border-transparent shadow-lg shadow-theme-act/20"
+                            : "bg-theme-sub text-theme-front border-theme-line hover:bg-theme-line"
+                        }`}
+                      >
+                        {order.payment?.method === "cod" &&
+                        order.orderStatus === "Order Placed" ? (
+                          <PhoneCall size={14} />
+                        ) : (
+                          <Edit3 size={14} />
+                        )}
                       </button>
-                    </td>
-                  </tr>
-                );
-              })
-            ) : (
-              <tr>
-                <td colSpan="5" className="px-6 py-20 text-center">
-                  <span className="text-[10px] font-black text-theme-muted uppercase tracking-[0.2em] opacity-40">
-                    No records found
-                  </span>
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+                    ) : (
+                      <span className="text-[10px] text-theme-muted font-bold uppercase opacity-50">
+                        View Only
+                      </span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
+
+      {/* Action Modal - AllOrders er moto props pass kora hoyeche */}
+      <OrderActionModal
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        order={selectedOrder}
+        newStatus={newStatus}
+        setNewStatus={setNewStatus}
+        internalNote={internalNote}
+        setInternalNote={setInternalNote}
+        isUpdating={isUpdating}
+        onSave={handleSaveChanges}
+      />
+    </>
   );
 };

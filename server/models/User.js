@@ -38,14 +38,15 @@ const userSchema = new mongoose.Schema(
     role: {
       type: String,
       enum: [
-        "super-admin", // Full system access, including user management and platform settings
-        "admin", // General management access, except for sensitive system configurations
-        "manager", // Store and inventory operations management
-        "stylist", // Product curation, fashion collections, and lookbook management
-        "customer-support", // Access to order tracking, customer queries, and tickets
-        "customer", // Standard end-user with purchasing privileges
+        "super-admin", // Full system access: manage users, settings, and site configuration
+        "admin", // Administrative access: general management but restricted from system settings
+        "manager", // Operations access: focus on store management and inventory control
+        "editor", // Content access: permitted to manage blog posts, products, and banners
+        "stylist", // Creative access: manages product curation, lookbooks, and collections
+        "customer-support", // Service access: handles order tracking, customer tickets, and inquiries
+        "customer", // Default access: standard user account for purchasing and profile management
       ],
-      default: "customer",
+      default: "customer", // New accounts default to standard customer privileges
     },
     accountStatus: {
       type: String,

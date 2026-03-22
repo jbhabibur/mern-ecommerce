@@ -41,8 +41,8 @@ app.use(express.json()); // Parse incoming JSON requests
 const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:5174",
-  "https://mern-ecommerce-cfee.vercel.app/",
-  "https://mern-ecommerce-two-orpin.vercel.app/",
+  "https://mern-ecommerce-cfee.vercel.app",
+  "https://mern-ecommerce-two-orpin.vercel.app",
 ];
 
 app.use(

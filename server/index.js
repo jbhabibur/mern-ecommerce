@@ -1,18 +1,17 @@
-// Load environment variables
 import dotenv from "dotenv";
-dotenv.config();
-
-import cors from "cors";
-
 import express from "express";
+import cors from "cors";
 import { createServer } from "http";
-import { initSocket } from "./config/initSocket.js";
-import connectDB from "./config/db.js";
 
-// Routes Import
+// Internal Configuration & Utils
+import connectDB from "./config/db.js";
+import { initSocket } from "./config/initSocket.js";
+
+// Route Imports
 import productRoutes from "./routes/productRoutes.js";
 import categoryRoutes from "./routes/categoryRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
+import adminRoutes from "./routes/admin.routes.js";
 import promoslotRoutes from "./routes/promoslot.routes.js";
 import socialmediaRoutes from "./routes/socialmedia.routes.js";
 import addressRoutes from "./routes/addressRoutes.js";
@@ -22,35 +21,38 @@ import paymentRoutes from "./routes/payment.routes.js";
 import userRoutes from "./routes/user.routes.js";
 import wishlistRoutes from "./routes/wishlist.routes.js";
 import analyticsRoutes from "./routes/analytics.route.js";
-import adminRoutes from "./routes/admin.routes.js";
 import notificationRoutes from "./routes/notification.route.js";
 import reviewRoutes from "./routes/review.routes.js";
 
-// Initialize Database Connection
+// 1. Initialize Configuration
+dotenv.config();
+const app = express();
+const PORT = process.env.PORT || 5000;
+
+// 2. Database Connection
 connectDB();
 
-const app = express();
-
 /**
- * Global Middlewares
+ * 3. Global Middleware Setup
  */
-app.use(express.json()); // Body parser
+app.use(express.json()); // Parse incoming JSON requests
 
-// EKDHOM IMPORTANT: Domain gulo thikmoto thakte hobe
+// CORS Configuration
 const allowedOrigins = [
-  "http://localhost:5173", // Local development
-  "http://localhost:5174", // Local development
-  "https://mern-ecommerce-cfee.vercel.app", // Purono domain
-  "https://mern-ecommerce-kappa-seven.vercel.app", // NOTUN DOMAIN (Vercel-e jeta active)
+  "http://localhost:5173",
+  "http://localhost:5174",
+  "https://mern-ecommerce-cfee.vercel.app",
+  "https://mern-ecommerce-kappa-seven.vercel.app",
 ];
 
 app.use(
   cors({
     origin: function (origin, callback) {
+      // Allow requests with no origin (like mobile apps or curl)
       if (!origin || allowedOrigins.indexOf(origin) !== -1) {
         callback(null, true);
       } else {
-        callback(new Error("Not allowed by CORS"));
+        callback(new Error("Not allowed by CORS policy"));
       }
     },
     credentials: true,
@@ -59,61 +61,44 @@ app.use(
   }),
 );
 
-/**
- * Static Assets
- */
+// Serve static files from the uploads directory
 app.use("/uploads", express.static("uploads"));
 
 /**
- * API Routes mounting
+ * 4. API Route Mounting
  */
-app.use("/api/categories", categoryRoutes);
-app.use("/api/products", productRoutes);
+
+// Core Routes
 app.use("/api/auth", authRoutes);
+app.use("/api/profile", userRoutes);
 app.use("/api/admin", adminRoutes);
 
-// Promo Slots Routes
+// Catalog & Storefront
+app.use("/api/categories", categoryRoutes);
+app.use("/api/products", productRoutes);
 app.use("/api/storefront/promo-slots", promoslotRoutes);
-// Social Feed Routes
 app.use("/api/storefront/social-feed", socialmediaRoutes);
 
-// Address routes
+// Transactional & Customer Routes
 app.use("/api/address", addressRoutes);
-
-// Checkout routes
-app.use("/api/checkouts/", checkoutRoutes);
-
-// Order routes
+app.use("/api/wishlist", wishlistRoutes);
+app.use("/api/reviews", reviewRoutes);
+app.use("/api/checkouts", checkoutRoutes);
 app.use("/api/orders", orderRoutes);
-
-// Payment routes
 app.use("/api/payment", paymentRoutes);
 
-// Profile routes
-app.use("/api/profile", userRoutes);
-
-// Wishlist routes
-app.use("/api/wishlist", wishlistRoutes);
-
-// Analytics routes (Admin Only)
+// Utility & Admin Monitoring
 app.use("/api/analytics", analyticsRoutes);
-
-// Notification routes (Admin Only)
 app.use("/api/notifications", notificationRoutes);
 
-// Review routes
-app.use("/api/reviews", reviewRoutes);
-
 /**
- * Health Check Route
+ * 5. Health Check & Error Handling
  */
 app.get("/", (req, res) => {
   res.send("API is running successfully...");
 });
 
-/**
- * Global Error Handling
- */
+// Centralized Error Middleware
 app.use((err, req, res, next) => {
   const statusCode = res.statusCode === 200 ? 500 : res.statusCode;
   res.status(statusCode).json({
@@ -124,11 +109,11 @@ app.use((err, req, res, next) => {
 });
 
 /**
- * Server Initialization
+ * 6. Server & Socket Initialization
  */
-const PORT = process.env.PORT || 5000;
 const httpServer = createServer(app);
 initSocket(httpServer);
+
 httpServer.listen(PORT, () => {
   console.log(
     `Server running in ${process.env.NODE_ENV || "development"} mode on port ${PORT}`,

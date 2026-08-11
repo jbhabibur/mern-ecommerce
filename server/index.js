@@ -24,17 +24,15 @@ import analyticsRoutes from "./routes/analytics.route.js";
 import notificationRoutes from "./routes/notification.route.js";
 import reviewRoutes from "./routes/review.routes.js";
 
-// 1. Initialize Configuration
+// Initialize Configuration
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// 2. Database Connection
+// Database Connection
 connectDB();
 
-/**
- * 3. Global Middleware Setup
- */
+// Global Middleware Setup
 app.use(express.json()); // Parse incoming JSON requests
 
 // CORS Configuration
@@ -45,10 +43,11 @@ const allowedOrigins = [
   "https://mern-ecommerce-two-orpin.vercel.app",
 ];
 
+// CORS Middleware
 app.use(
   cors({
     origin: function (origin, callback) {
-      // Allow requests with no origin (like mobile apps or curl)
+      // Allow requests with no origin (like mobile apps or curl requests)
       if (!origin || allowedOrigins.indexOf(origin) !== -1) {
         callback(null, true);
       } else {
@@ -64,10 +63,7 @@ app.use(
 // Serve static files from the uploads directory
 app.use("/uploads", express.static("uploads"));
 
-/**
- * 4. API Route Mounting
- */
-
+//  API Route Mounting
 // Core Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/profile", userRoutes);
@@ -91,9 +87,7 @@ app.use("/api/payment", paymentRoutes);
 app.use("/api/analytics", analyticsRoutes);
 app.use("/api/notifications", notificationRoutes);
 
-/**
- * 5. Health Check & Error Handling
- */
+// Health Check & Error Handling
 app.get("/", (req, res) => {
   res.send("API is running successfully...");
 });
@@ -108,9 +102,7 @@ app.use((err, req, res, next) => {
   });
 });
 
-/**
- * 6. Server & Socket Initialization
- */
+// Server & Socket Initialization
 const httpServer = createServer(app);
 initSocket(httpServer);
 

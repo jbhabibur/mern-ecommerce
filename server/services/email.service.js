@@ -4,9 +4,7 @@ import { successTemplate } from "../templetes/successEmail.js";
 import { resetPasswordTemplate } from "../templetes/resetPasswordTemplate.js";
 import { adminInviteTemplate } from "../templetes/adminInviteTemplate.js";
 
-/**
- * Sends a verification email containing an OTP
- */
+// Sends a verification email containing an OTP
 export const sendVerificationEmail = async ({
   email,
   otp,
@@ -28,9 +26,7 @@ export const sendVerificationEmail = async ({
   }
 };
 
-/**
- * Sends a welcome/success email after verification
- */
+// Sends a welcome/success email after verification
 export const sendSuccessEmail = async ({ email, name }) => {
   try {
     const info = await transporter.sendMail({
@@ -46,9 +42,7 @@ export const sendSuccessEmail = async ({ email, name }) => {
   }
 };
 
-/**
- * Sends a password reset email containing a reset link
- */
+// Sends a password reset email containing a reset link
 export const sendResetPasswordEmail = async ({ email, name, resetUrl }) => {
   try {
     const info = await transporter.sendMail({
@@ -65,9 +59,7 @@ export const sendResetPasswordEmail = async ({ email, name, resetUrl }) => {
   }
 };
 
-/**
- * Sends an admin invitation email with a setup URL and role details
- */
+// Sends an admin invitation email with a setup URL and role details
 export const sendAdminInviteEmail = async ({ email, name, role, setupUrl }) => {
   try {
     const info = await transporter.sendMail({

@@ -8,13 +8,13 @@ import Notification from "../models/notification.model.js";
  */
 export const emitOrderNotification = async (order, type = "NEW_ORDER") => {
   try {
-    // 1. Generate custom message based on type
+    //  Generate custom message based on type
     const message =
       type === "NEW_ORDER"
         ? `New order placed by ${order.shippingAddress?.fullName || "a customer"}`
         : `Payment retry initiated by ${order.shippingAddress?.fullName || "a customer"}`;
 
-    // 2. Save the notification to MongoDB
+    // Save the notification to MongoDB
     const newNotification = new Notification({
       type,
       message,
@@ -26,7 +26,7 @@ export const emitOrderNotification = async (order, type = "NEW_ORDER") => {
 
     const savedNotification = await newNotification.save();
 
-    // 3. Emit via Socket.io
+    // Emit via Socket.io
     // We send the 'savedNotification' object because it contains the DB _id and createdAt timestamp
     const io = getIO();
     io.emit("adminOrderNotification", savedNotification);

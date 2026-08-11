@@ -7,6 +7,7 @@ import { LoginForm } from "../features/auth/components/forms/LoginFrom";
 import { RegisterForm } from "../features/auth/components/forms/RegisterForm";
 import { Toast } from "../components/atoms/Toast";
 import { SectionLayout } from "../layout/SectionLayout";
+import { SocialLogin } from "../features/auth/components/SocialLogin";
 
 // Hooks
 import { useLogin } from "../features/auth/hooks/useLogin";
@@ -123,9 +124,9 @@ export const LoginPage = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 w-full max-w-6xl mx-auto px-2 pt-4 pb-24">
         {/* Login Column */}
-        <div className="w-full py-6 md:py-10">
+        <div className="w-full py-6 md:py-10 space-y-6">
           {urlError && (
-            <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 text-red-700 text-xs font-bold uppercase tracking-tight rounded shadow-sm animate-in fade-in slide-in-from-top-2">
+            <div className="p-4 bg-red-50 border-l-4 border-red-500 text-red-700 text-xs font-bold uppercase tracking-tight rounded shadow-sm animate-in fade-in slide-in-from-top-2">
               {urlError}
             </div>
           )}
@@ -140,6 +141,20 @@ export const LoginPage = () => {
             onShowRecover={() => navigate("/account/recover")}
             emailRef={loginEmailRef}
           />
+
+          {/* Social Login Divider & Component */}
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-200" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-white px-3 text-gray-500 tracking-wider font-semibold">
+                Or continue with
+              </span>
+            </div>
+          </div>
+
+          <SocialLogin />
         </div>
 
         {/* Register Column */}

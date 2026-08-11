@@ -16,6 +16,7 @@ export const registerSchema = Joi.object({
     "string.empty": "Email is required",
     "string.email": "Please enter a valid email",
   }),
+
   // Logic: Required if firebaseUid is missing
   password: Joi.string()
     .min(6)

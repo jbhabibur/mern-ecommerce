@@ -1,20 +1,20 @@
 import mongoose from "mongoose";
-import Category from "./models/Category.js"; // Ensure path is correct
+import Category from "./models/Category.js";
 import dotenv from "dotenv";
 
 dotenv.config();
 
 const seedCategories = async () => {
   try {
-    // 1. Connect to MongoDB
+    // Connect to MongoDB
     await mongoose.connect(process.env.MONGO_URI);
     console.log("Connected to MongoDB...");
 
-    // 2. Clear existing categories to avoid duplicates
+    // Clear existing categories to avoid duplicates
     await Category.deleteMany({});
     console.log("Old categories cleared.");
 
-    // 3. Create Parent (Level 1)
+    // Create Parent (Level 1)
     const menTop = await Category.create({
       name: "WINTER COLLECTION",
       slug: "winter-25-26",
@@ -25,7 +25,7 @@ const seedCategories = async () => {
       showOnHome: false,
     });
 
-    // 4. Create Child (Level 2)
+    // Create Child (Level 2)
     const panjabi = await Category.create({
       name: "Panjabi",
       slug: "panjabi",
@@ -35,7 +35,7 @@ const seedCategories = async () => {
       showOnHome: true,
     });
 
-    // 5. Create Child (Level 2)
+    // Create Child (Level 2)
     const shirt = await Category.create({
       name: "Shirt",
       slug: "shirt",
@@ -46,7 +46,7 @@ const seedCategories = async () => {
       showOnHome: true,
     });
 
-    // 6. Create Child (Level 2)
+    // Create Child (Level 2)
     const polo = await Category.create({
       name: "Polo",
       slug: "polo",
@@ -56,7 +56,7 @@ const seedCategories = async () => {
       showOnHome: true,
     });
 
-    // 5. Create Child (Level 2)
+    // Create Child (Level 2)
     const accessories = await Category.create({
       name: "Accessories",
       slug: "accessories",
@@ -68,7 +68,7 @@ const seedCategories = async () => {
 
     console.log("Database Seeded Successfully! 🌱");
 
-    // 6. Close connection
+    // Close connection
     process.exit();
   } catch (error) {
     console.error("Error seeding data:", error);

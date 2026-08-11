@@ -5,7 +5,7 @@ import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
 
-// .env file load korar jonno path set kora
+// Get the current directory name
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.join(__dirname, ".env") });
@@ -18,14 +18,13 @@ const migrateData = async () => {
     await mongoose.connect(uri);
     console.log("Connected to Database...");
 
-    // 1. Shob category khunje ber kora
+    // Fetch all categories from the Category collection
     const categories = await Category.find({});
 
     for (const cat of categories) {
       console.log(`Processing Category: ${cat.name}`);
 
-      // 2. Product-er itemType-er shathe Category-r slug match korano
-      // Aponar image_ca572b.png anujayi itemType: "men-top" thakle sheti category id-te convert hobe
+      // Update products in the Product collection that match the category slug or its parent category slug
       const result = await Product.updateMany(
         {
           $or: [
@@ -36,8 +35,8 @@ const migrateData = async () => {
         },
         {
           $set: {
-            category: cat._id, // Category collection-er _id link kora
-            parentCategory: cat.parent, // Jodi parent thake
+            category: cat._id, // Set the category field to the current category's ID
+            parentCategory: cat.parent, // Set the parentCategory field to the current category's parent ID
           },
         },
       );

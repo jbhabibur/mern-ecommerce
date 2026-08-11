@@ -7,6 +7,7 @@ import { useLogin } from "../hooks/useLogin";
 import { useRegister } from "../hooks/useRegister";
 import { ButtonSpinner } from "../../../components/loaders/ButtonSpinner";
 import { PrimaryButton } from "../../../components/atoms/PrimaryButton";
+import { SocialLogin } from "../components/SocialLogin"; // Make sure to adjust the import path if needed
 
 export const AuthDrawer = () => {
   const { isOpen } = useSelector((state) => state.authDrawer);
@@ -191,6 +192,19 @@ export const AuthDrawer = () => {
                   <ButtonSpinner color="white" text="Processing..." />
                 }
               />
+
+              {/* Social Login Integration */}
+              <div className="relative py-2">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-zinc-100"></span>
+                </div>
+                <div className="relative flex justify-center text-[10px] uppercase font-black tracking-widest">
+                  <span className="bg-white px-3 text-zinc-400">
+                    Or continue with
+                  </span>
+                </div>
+              </div>
+              <SocialLogin />
 
               <div className="flex justify-center">
                 <a

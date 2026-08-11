@@ -16,16 +16,15 @@ import { QuickViewModal } from "../components/shared/QuickViewModal";
 import { FloatingActions } from "../components/shared/FloatingActions";
 import { CookieConsent } from "../components/shared/CookieConsent";
 import { PromoModal } from "../components/shared/PromoModal";
+import { DemoAccountCard } from "../components/shared/DemoAccountCard";
 
 // Hooks
 import { useScrollToTop } from "../hooks/useScrollToTop";
 import { usePreloader } from "../hooks/usePreloader";
 
-/**
- * MainLayout Component
- * Manages the global shell. Includes a "Silent Scroll" reset logic
- * using pathname keys and Framer Motion transitions.
- */
+// MainLayout Component
+// Manages the global shell. Includes a "Silent Scroll" reset logic
+// using pathname keys and Framer Motion transitions.
 export const MainLayout = () => {
   const { pathname } = useLocation();
 
@@ -46,20 +45,19 @@ export const MainLayout = () => {
 
   return (
     <div className="relative min-h-screen flex flex-col overflow-x-hidden">
-      {/* 1. Entrance Preloader: Higher z-index to mask initial load scroll */}
+      {/* Top-bar Demo Account Card */}
+      <DemoAccountCard />
+      {/* Entrance Preloader: Higher z-index to mask initial load scroll */}
       <AnimatePresence mode="wait">
         {showLoader && (
           <Preloader key="preloader" onFinish={handleLoaderComplete} />
         )}
       </AnimatePresence>
 
-      {/* 2. Global Overlay Loader: For async state changes */}
+      {/* Global Overlay Loader: For async state changes */}
       {isAppLoading && <GlobalLoader />}
 
-      {/* 3. Main Content Wrapper: 
-          'key={pathname}' triggers a re-render/animation on route change,
-          effectively masking the instant scroll jump with a fade.
-      */}
+      {/* Main Content Wrapper */}
       <motion.div
         // key={pathname}
         initial={{ opacity: 0 }}

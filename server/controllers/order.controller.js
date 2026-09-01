@@ -3,6 +3,9 @@ import { emitOrderNotification } from "../utils/orderNotification.utils.js";
 import SSLCommerzPayment from "sslcommerz-lts";
 import mongoose from "mongoose";
 
+// @desc    Create a new order
+// @route   POST /api/orders
+// @access  Public
 export const createOrder = async (req, res) => {
   try {
     const {
@@ -14,14 +17,14 @@ export const createOrder = async (req, res) => {
       payment,
     } = req.body;
 
-    // 2. Basic Validation
+    // Validate items array
     if (!items || items.length === 0) {
       return res
         .status(400)
         .json({ success: false, message: "No items found" });
     }
 
-    // 3. Create Order in Database
+    // Create Order in Database
     const newOrder = new Order({
       customer,
       items,
@@ -43,7 +46,7 @@ export const createOrder = async (req, res) => {
     // Live order saving notification to admin
     emitOrderNotification(savedOrder, "NEW_ORDER");
 
-    // 4. SSLCommerz Logic
+    // SSLCommerz Logic
     if (payment.method === "ssl") {
       const isLive = process.env.SSL_IS_LIVE === "true";
       const sslcz = new SSLCommerzPayment(
@@ -126,15 +129,15 @@ export const createOrder = async (req, res) => {
   }
 };
 
-/**
- * Get Order Details by MongoDB _id
- */
+// @desc    Get Order by ID
+// @route   GET /api/orders/:id
+// @access  Public
 export const getOrderById = async (req, res) => {
   console.log("Request received for ID:", req.params.id);
   try {
     const { id } = req.params;
 
-    // 1. Validate if the 'id' is a valid MongoDB ObjectId
+    // Validate if the 'id' is a valid MongoDB ObjectId
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({
         success: false,
@@ -142,11 +145,11 @@ export const getOrderById = async (req, res) => {
       });
     }
 
-    // 2. Finding the order by its unique ID
+    // Finding the order by its unique ID
     // Note: Mongoose automatically converts the string 'id' into an ObjectId
     const order = await Order.findById(id);
 
-    // 3. If order does not exist in the collection
+    // If order does not exist in the collection
     if (!order) {
       return res.status(404).json({
         success: false,
@@ -154,7 +157,7 @@ export const getOrderById = async (req, res) => {
       });
     }
 
-    // 4. Returning the found order object
+    // Returning the found order object
     res.status(200).json({
       success: true,
       order: order,
@@ -169,6 +172,9 @@ export const getOrderById = async (req, res) => {
   }
 };
 
+// @desc    Get Orders for Logged-in User
+// @route   GET /api/orders/user
+// @access  Private/User
 export const getUserOrders = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -196,6 +202,9 @@ export const getUserOrders = async (req, res) => {
   }
 };
 
+// @desc    Retry Payment for an Existing Order
+// @route   POST /api/orders/:orderId/retry-payment
+// @access  Public
 export const retryPayment = async (req, res) => {
   try {
     const { orderId } = req.params;
@@ -209,7 +218,7 @@ export const retryPayment = async (req, res) => {
         .json({ success: false, message: "Order not found" });
     }
 
-    // 1. Initialize SSLCommerz (Same logic as createOrder)
+    // Initialize SSLCommerz (Same logic as createOrder)
     const isLive = process.env.SSL_IS_LIVE === "true";
     const sslcz = new SSLCommerzPayment(
       process.env.SSL_STORE_ID,
@@ -217,10 +226,10 @@ export const retryPayment = async (req, res) => {
       isLive, // true for live, false for sandbox
     );
 
-    // 2. Generate a fresh Transaction ID (SSL requires a unique ID for every attempt)
+    // Generate a fresh Transaction ID (SSL requires a unique ID for every attempt)
     const newTranId = `RE${orderId.toString().slice(-4)}${Date.now().toString().slice(-6)}`;
 
-    // 3. Prepare SSLCommerz Data with proper fallbacks to prevent undefined errors
+    // Prepare SSLCommerz Data with proper fallbacks to prevent undefined errors
     const data = {
       total_amount: order.financials.totalAmount,
       currency: "BDT",
@@ -271,7 +280,7 @@ export const retryPayment = async (req, res) => {
     const apiResponse = await sslcz.init(data);
 
     if (apiResponse?.GatewayPageURL) {
-      // 4. IMPORTANT: Update the database with the new Transaction ID
+      // IMPORTANT: Update the database with the new Transaction ID
       // so the success/fail routes can identify this order attempt
       order.payment.transactionId = newTranId;
       await order.save();
@@ -298,10 +307,9 @@ export const retryPayment = async (req, res) => {
   }
 };
 
-/**
- * Controller: Get Orders with Dynamic Limit, Pagination, Search, and Status Filter
- */
-
+// @desc    Get all orders for admin with pagination and search
+// @route   GET /api/orders/admin
+// @access  Private/Admin
 export const getAllOrdersAdmin = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
@@ -361,10 +369,9 @@ export const getAllOrdersAdmin = async (req, res) => {
   }
 };
 
-/**
- * Controller: Update Order (Admin)
- * Updates status and emits a socket event so all admins see the change instantly.
- */
+// @desc    Update order status and internal note by admin
+// @route   PUT /api/orders/admin/:id
+// @access  Private/Admin
 export const updateOrderAdmin = async (req, res) => {
   try {
     const { id } = req.params;
@@ -439,7 +446,7 @@ export const getOrderTracking = async (req, res) => {
       });
     }
 
-    // Frontend er tracking steps er sathe match koranor jonno status normalize kora
+    // Response formate coverting for tracking page
     const formattedOrder = {
       _id: order._id,
       // "Order Placed" -> "ORDER PLACED"

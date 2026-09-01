@@ -145,7 +145,7 @@ export const ProductCard = ({ product, view, isSearchOverlay = false }) => {
           </div>
         )}
 
-        {/* ✅ Primary Image */}
+        {/* Primary Image */}
         <img
           src={primaryImage || product.images?.[0]?.url || product.images?.[0]}
           alt={product.name}
@@ -154,7 +154,7 @@ export const ProductCard = ({ product, view, isSearchOverlay = false }) => {
           } ${isFullySoldOut ? "grayscale-[0.5] opacity-80" : ""}`}
         />
 
-        {/* ✅ Secondary Image */}
+        {/* Secondary Image */}
         {product.images?.[1] && (
           <img
             src={secondaryImage}

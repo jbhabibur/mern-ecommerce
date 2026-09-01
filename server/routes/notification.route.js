@@ -6,10 +6,14 @@ import {
 
 const router = express.Router();
 
-// Route to get notifications (GET /api/notifications)
+// @desc    Get all admin notifications
+// @route   GET /api/notifications
+// @access  Private (Admin Only)
 router.get("/", getAdminNotifications);
 
-// Route to mark all as read (PATCH /api/notifications/mark-read)
+// @desc    Mark all notifications as read
+// @route   PATCH /api/notifications/mark-read
+// @access  Private (Admin Only)
 router.patch("/mark-read", markAllAsRead);
 
 export default router;

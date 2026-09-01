@@ -2,19 +2,19 @@ import Order from "../models/order.model.js";
 import Product from "../models/Product.js";
 import User from "../models/User.js";
 
-/**
- * Controller: Get Top 5 Performing Items with Real-time Stock
- */
+// @desc    Get top 5 performing products based on units sold
+// @route   GET /api/analytics/top-performing-items
+// @access  Private/Admin
 export const getTopPerformingItems = async (req, res) => {
   try {
     const topItems = await Order.aggregate([
-      // 1. Filter only delivered orders
+      // Filter only delivered orders
       { $match: { orderStatus: "Delivered" } },
 
-      // 2. Unwind items array
+      // Unwind items array
       { $unwind: "$items" },
 
-      // 3. Group by productId and sum quantities
+      // Group by productId and sum quantities
       {
         $group: {
           _id: "$items.productId",
@@ -23,7 +23,7 @@ export const getTopPerformingItems = async (req, res) => {
         },
       },
 
-      // 4. Join with Product collection
+      // Join with Product collection
       {
         $lookup: {
           from: "products",
@@ -33,10 +33,10 @@ export const getTopPerformingItems = async (req, res) => {
         },
       },
 
-      // 5. Unwind product details
+      // Unwind product details
       { $unwind: "$productDetails" },
 
-      // 6. Project final fields and calculate total stock from variants array
+      // Project final fields and calculate total stock from variants array
       {
         $project: {
           _id: 1,
@@ -47,7 +47,7 @@ export const getTopPerformingItems = async (req, res) => {
         },
       },
 
-      // 7. Sort by performance and limit results
+      // Sort by performance and limit results
       { $sort: { unitsSold: -1 } },
       { $limit: 5 },
     ]);
@@ -127,12 +127,9 @@ export const getKpiStats = async (req, res) => {
   }
 };
 
-/**
- * @desc    Get only products that have at least one low stock variant
- * @route   GET /api/products/admin/stock-analysis
- * @access  Admin / Private
- */
-
+// @desc    Get stock analysis for products with low stock
+// @route   GET /api/analytics/stock-analysis
+// @access  Private/Admin
 export const getStockAnalysis = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
@@ -182,11 +179,9 @@ export const getStockAnalysis = async (req, res) => {
   }
 };
 
-/**
- * @desc    Get monthly revenue statistics (Gross vs Net) for the last 12 months
- * @route   GET /api/analytics/monthly-revenue-stats
- * @access  Private/Admin
- */
+// @desc    Get monthly revenue stats for the last 12 months
+// @route   GET /api/analytics/monthly-revenue
+// @access  Private/Admin
 export const getMonthlyRevenueStats = async (req, res) => {
   try {
     const today = new Date();
@@ -277,6 +272,9 @@ export const getMonthlyRevenueStats = async (req, res) => {
   }
 };
 
+// @desc    Get customer insights for dashboard (Stats + Charts)
+// @route   GET /api/analytics/customer-insights
+// @access  Private/Admin
 export const getCustomerInsights = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
@@ -290,7 +288,7 @@ export const getCustomerInsights = async (req, res) => {
       1,
     );
 
-    // 1. MAIN PIPELINE: Unified Customers + Order Counts + Pagination
+    // MAIN PIPELINE: Unified Customers + Order Counts + Pagination
     const result = await User.aggregate([
       { $match: { role: "customer" } },
       {
@@ -349,7 +347,7 @@ export const getCustomerInsights = async (req, res) => {
     const customers = result[0].data;
     const totalCount = result[0].metadata[0]?.total || 0;
 
-    // 2. GROWTH & RETENTION CALCULATIONS
+    // GROWTH & RETENTION CALCULATIONS
     const sixMonthsAgo = new Date(today.getFullYear(), today.getMonth() - 5, 1);
 
     const [newReg, guestStats, growthStats, loyaltyStats] = await Promise.all([
@@ -403,7 +401,7 @@ export const getCustomerInsights = async (req, res) => {
       ]),
     ]);
 
-    // 3. DATA FORMATTING FOR CHARTS
+    // DATA FORMATTING FOR CHARTS
     const monthNames = [
       "Jan",
       "Feb",
@@ -440,7 +438,7 @@ export const getCustomerInsights = async (req, res) => {
     const totalNewAcquisitions =
       newReg + (guestStats[0].newGuests[0]?.count || 0);
 
-    // 4. FINAL RESPONSE
+    // FINAL RESPONSE
     res.status(200).json({
       success: true,
       data: {
@@ -472,11 +470,9 @@ export const getCustomerInsights = async (req, res) => {
   }
 };
 
-/**
- * @desc    Get Product Performance for Dashboard (Stats + Chart)
- * @route   GET /api/analytics/product-performance
- * @access  Private/Admin
- */
+// @desc    Get product performance stats for dashboard (Stats + Charts)
+// @route   GET /api/analytics/product-performance
+// @access  Private/Admin
 export const getProductPerformanceStats = async (req, res) => {
   try {
     const LOW_STOCK_THRESHOLD = 5;
@@ -537,7 +533,7 @@ export const getProductPerformanceStats = async (req, res) => {
       data: {
         stats: {
           totalProducts: totalProducts.toString(),
-          bestSellerRate: "18.2%", // Apni chaile eita static ba dynamic rakhte paren
+          bestSellerRate: "18.2%",
           lowStockItems: lowStockItems.toString(),
           avgDailySales: avgDaily.toString(),
         },

@@ -11,7 +11,7 @@ export const useProducts = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const debounceTimer = useRef(null);
 
-  /* -------------------- Initial Fetch -------------------- */
+  // Initial Fetch
   useEffect(() => {
     let mounted = true;
 
@@ -35,13 +35,13 @@ export const useProducts = () => {
     };
   }, []);
 
-  /* -------------------- Dynamic Max Price -------------------- */
+  // Dynamic Max Price
   const maxPriceInRange = useMemo(() => {
     if (!products.length) return 0;
     return Math.max(...products.map((p) => Number(p.price) || 0));
   }, [products]);
 
-  /* -------------------- URL Derived States -------------------- */
+  // URL Derived States
   const selectedStock = searchParams.getAll("filter.v.availability");
 
   const priceRange = useMemo(() => {
@@ -54,7 +54,7 @@ export const useProducts = () => {
   const itemsPerPage = parseInt(searchParams.get("limit")) || 10;
   const sortOption = searchParams.get("sort") || "featured";
 
-  /* -------------------- Update Filters -------------------- */
+  // Update Filters
   const updateFilters = useCallback(
     async (newStock, newPrice, newLimit, newSort, forceUpdate = false) => {
       setFilterLoading(true);
@@ -88,7 +88,7 @@ export const useProducts = () => {
     [setSearchParams, itemsPerPage, sortOption],
   );
 
-  /* -------------------- Processed Data -------------------- */
+  // Processed Data
   const processedData = useMemo(() => {
     const enriched = products.map((p) => {
       const variants = p.variants || [];
@@ -140,7 +140,7 @@ export const useProducts = () => {
     priceRange.join("-"),
   ]);
 
-  /* -------------------- Finish Filter Loading -------------------- */
+  // Finish Filter Loading
   useEffect(() => {
     if (!filterLoading) return;
 

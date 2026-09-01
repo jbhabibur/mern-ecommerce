@@ -25,8 +25,8 @@ router.post("/request-access", requestInvitation);
 router.post("/setup-password", setupInvitedAdmin);
 
 // @desc    Fetch all pending and approved invitations for the Admin Dashboard
-// @access  Private (Super Admin Only)
 // @route   GET /api/admin-invitation/all
+// @access  Private (Super Admin Only)
 router.get(
   "/all",
   verifyToken,
@@ -35,8 +35,8 @@ router.get(
 );
 
 // @desc    Approve a pending request and send/resend the setup invitation email
+// @route   POST /api/admin/accept/:id
 // @access  Private (Super Admin Only)
-// @method  POST /api/admin/accept/:id
 router.post(
   "/accept/:id",
   verifyToken,
@@ -65,8 +65,8 @@ router.patch(
 );
 
 // @desc    Super Admin: Revoke or delete a pending/approved invitation
-// @access  Private (Super Admin Only)
 // @route   DELETE /api/admin/revoke/:id
+// @access  Private (Super Admin Only)
 router.delete(
   "/revoke/:id",
   verifyToken,

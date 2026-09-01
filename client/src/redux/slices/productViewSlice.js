@@ -9,17 +9,10 @@ const productViewSlice = createSlice({
   name: "productView",
   initialState,
   reducers: {
-    /**
-     * Opens the modal and sets the selected product data.
-     * @param {Object} action.payload - The product object to display.
-     */
     openQuickView: (state, action) => {
       state.isQuickViewOpen = true;
       state.quickViewProduct = action.payload;
     },
-    /**
-     * Closes the modal and clears the product data.
-     */
     closeQuickView: (state) => {
       state.isQuickViewOpen = false;
       state.quickViewProduct = null;

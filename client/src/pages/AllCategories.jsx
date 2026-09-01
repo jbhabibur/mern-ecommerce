@@ -11,7 +11,7 @@ import { ImagePlaceholder } from "../components/atoms/ImagePlaceholder";
 export const AllCategories = () => {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
-  // 1. Pagination-er jonno visible count state (Initial 8)
+  // Visible count state for pagination (Initial count is 8)
   const [visibleCount, setVisibleCount] = useState(8);
 
   const fetchSingleCount = async (slug) => {
@@ -94,7 +94,7 @@ export const AllCategories = () => {
     initializeAllData();
   }, []);
 
-  // 2. Show More handle korar function
+  // Handler function for the Show More button
   const handleShowMore = () => {
     setVisibleCount((prevCount) => prevCount + 8);
   };
@@ -108,7 +108,7 @@ export const AllCategories = () => {
     <SectionLayout custom="py-10">
       <Breadcrumb />
 
-      {/* 3. Slice use kore prothome 8-ta dekhano hocche */}
+      {/* Slice the categories array to display only up to the visibleCount limit */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-10 gap-y-20">
         {categories.slice(0, visibleCount).map((cat) => (
           <div key={cat.id} className="flex flex-col items-center">
@@ -147,7 +147,7 @@ export const AllCategories = () => {
         ))}
       </div>
 
-      {/* 4. Show More Button - Sudhu jodi aro item thake tokhon dekhabe */}
+      {/* Show More Button - Rendered only if there are remaining categories to show */}
       {visibleCount < categories.length && (
         <div className="mt-20 text-center">
           <button

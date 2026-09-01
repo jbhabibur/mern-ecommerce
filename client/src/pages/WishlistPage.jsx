@@ -35,12 +35,12 @@ export const WishlistPage = () => {
   const handleAddToCart = (product) => {
     if (!product) return;
 
-    // 1. Find the primary image object, or fall back to the first image object
+    // Find the primary image object, or fall back to the first image object
     const imageObject =
       product.images?.find((img) => img.isPrimary === true) ||
       product.images?.[0];
 
-    // 2. Extract the URL string (handling cases where the array might contain strings or objects)
+    // Extract the URL string (handling cases where the array might contain strings or objects)
     const productFullImage =
       typeof imageObject === "object" ? imageObject.url : imageObject;
 
@@ -128,7 +128,7 @@ export const WishlistPage = () => {
                     key={product._id}
                     className="flex flex-col md:grid md:grid-cols-12 gap-4 items-center py-6 border-b border-gray-50 px-2 md:px-4 group hover:bg-gray-50/50 transition-all duration-300"
                   >
-                    {/* 1. Product Details (Image + Name) */}
+                    {/* Product Details (Image + Name) */}
                     <div className="w-full md:col-span-6 flex items-center gap-4 md:gap-6">
                       <div className="w-20 h-24 md:w-24 md:h-28 shrink-0 overflow-hidden bg-gray-100 border border-gray-100">
                         <img
@@ -151,14 +151,14 @@ export const WishlistPage = () => {
                       </div>
                     </div>
 
-                    {/* 2. Price (Desktop Only) */}
+                    {/* Price (Desktop Only) */}
                     <div className="hidden md:block md:col-span-2 text-center">
                       <span className="text-sm font-bold text-black">
                         Tk {product.price?.toLocaleString()}
                       </span>
                     </div>
 
-                    {/* 3. Actions (Add to Cart + Remove) */}
+                    {/* Actions (Add to Cart + Remove) */}
                     <div className="w-full md:col-span-4 flex items-center justify-end gap-2">
                       <button
                         onClick={() => handleAddToCart(product)}

@@ -1,9 +1,7 @@
 import mongoose from "mongoose";
 
-/**
- * Category Schema
- * Optimized for granular visibility control on Homepage and Category Menus.
- */
+// Category Schema
+// Optimized for granular visibility control on Homepage and Category Menus.
 const categorySchema = new mongoose.Schema(
   {
     name: {
@@ -33,11 +31,9 @@ const categorySchema = new mongoose.Schema(
       default: null,
     },
 
-    /**
-     * VISIBILITY CONTROLS
-     * showInCarousel: Controls if the promotional image appears in the home slider.
-     * showInCategories: Controls if the category appears in menus/shop pages.
-     */
+    // VISIBILITY CONTROLS
+    // showInCarousel: Controls if the promotional image appears in the home slider.
+    // showInCategories: Controls if the category appears in menus/shop pages.
     showInCarousel: {
       type: Boolean,
       default: false,

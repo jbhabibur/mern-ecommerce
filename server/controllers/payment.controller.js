@@ -1,9 +1,8 @@
 import Order from "../models/order.model.js";
 
-/**
- * @desc    Handle successful payment
- * @route   POST /api/payment/success/:tranId
- */
+// @desc    Handle successful payment
+// @route   POST /api/payment/success/:tranId
+// @access  Public
 export const paymentSuccess = async (req, res) => {
   try {
     const { tranId } = req.params;
@@ -11,7 +10,7 @@ export const paymentSuccess = async (req, res) => {
     // SSLCommerz sends payment details in the request body
     const paymentDetails = req.body;
 
-    // 1. Find the order and update status based on your Mongoose Schema
+    // Find the order and update status based on your Mongoose Schema
     const updatedOrder = await Order.findOneAndUpdate(
       { "payment.transactionId": tranId },
       {
@@ -23,7 +22,7 @@ export const paymentSuccess = async (req, res) => {
           "payment.paymentDate": new Date(),
           orderStatus: "Processing", // Move from 'Order Placed' to 'Processing'
         },
-        // 2. Add an audit trail entry to the history array
+        // Add an audit trail entry to the history array
         $push: {
           history: {
             status: "Paid via SSLCommerz",
@@ -41,7 +40,7 @@ export const paymentSuccess = async (req, res) => {
         .redirect(`${process.env.CLIENT_URL}/order/fail/${tranId}`);
     }
 
-    // 3. Redirect user to the Frontend Success Page
+    // Redirect user to the Frontend Success Page
     // Use environment variable for the frontend URL (e.g., http://localhost:5173)
     res.redirect(`${process.env.CLIENT_URL}/order/success/${tranId}`);
   } catch (error) {
@@ -50,10 +49,9 @@ export const paymentSuccess = async (req, res) => {
   }
 };
 
-/**
- * @desc    Handle failed payment
- * @route   POST /api/payment/fail/:tranId
- */
+// @desc    Handle failed payment
+// @route   POST /api/payment/fail/:tranId
+// @access  Public
 export const paymentFail = async (req, res) => {
   const { tranId } = req.params;
 
@@ -73,10 +71,9 @@ export const paymentFail = async (req, res) => {
   res.redirect(`${process.env.CLIENT_URL}/order/fail/${tranId}`);
 };
 
-/**
- * @desc    Handle cancelled payment
- * @route   POST /api/payment/cancel/:tranId
- */
+// @desc    Handle cancelled payment
+// @route   POST /api/payment/cancel/:tranId
+// @access  Public
 export const paymentCancel = async (req, res) => {
   const { tranId } = req.params;
 

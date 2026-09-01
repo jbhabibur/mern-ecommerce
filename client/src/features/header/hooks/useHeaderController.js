@@ -1,8 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 
-/**
- * Manages header behavior: mobile detection, scroll direction, and sticky state.
- */
+// Manages header behavior: mobile detection, scroll direction, and sticky state.
 export const useHeaderController = () => {
   const [scrollDirection, setScrollDirection] = useState("up");
   const [showSticky, setShowSticky] = useState(false);
@@ -12,7 +10,7 @@ export const useHeaderController = () => {
   const lastScrollY = useRef(0);
   const TOLERANCE = 10; // Pixels to ignore small jitters
 
-  // 1. Monitor screen width for mobile/desktop toggle
+  // Monitor screen width for mobile/desktop toggle
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth <= 1024);
@@ -23,7 +21,7 @@ export const useHeaderController = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // 2. Monitor scroll to determine direction and sticky visibility
+  // Monitor scroll to determine direction and sticky visibility
   useEffect(() => {
     const onScroll = () => {
       const currentY = window.scrollY;

@@ -8,16 +8,19 @@ import { optionalAuth } from "../middleware/optionalAuth.middleware.js";
 
 const router = express.Router();
 
-// 1. Checkout session initiate korar jonno
-// Path: POST /api/checkouts/initiate
+// @desc    Initiate a new checkout session (Supports both guest and authenticated users)
+// @route   POST /api/checkouts/initiate
+// @access  Public / Private (Optional Auth)
 router.post("/initiate", optionalAuth, createCheckoutSession);
 
-// 2. Token diye checkout details anar jonno
-// Path: GET /api/checkouts/cn/:token
+// @desc    Get checkout session details by secure token
+// @route   GET /api/checkouts/cn/:token
+// @access  Public
 router.get("/cn/:token", getCheckoutByToken);
 
-// 3. Status update/complete korar jonno
-// Path: PATCH /api/checkouts/complete/:token
+// @desc    Complete or update the checkout session status using token
+// @route   PATCH /api/checkouts/complete/:token
+// @access  Public
 router.patch("/complete/:token", completeCheckout);
 
 export default router;

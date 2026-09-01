@@ -7,7 +7,7 @@ import { useLogin } from "../hooks/useLogin";
 import { useRegister } from "../hooks/useRegister";
 import { ButtonSpinner } from "../../../components/loaders/ButtonSpinner";
 import { PrimaryButton } from "../../../components/atoms/PrimaryButton";
-import { SocialLogin } from "../components/SocialLogin"; // Make sure to adjust the import path if needed
+import { SocialLogin } from "../components/SocialLogin";
 
 export const AuthDrawer = () => {
   const { isOpen } = useSelector((state) => state.authDrawer);
@@ -16,7 +16,7 @@ export const AuthDrawer = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isRotating, setIsRotating] = useState(false);
 
-  // 1. Create Refs for the input fields
+  // Create Refs for the input fields
   const emailRef = useRef(null);
   const passwordRef = useRef(null);
 
@@ -34,7 +34,7 @@ export const AuthDrawer = () => {
 
   const showGlobalBanner = statusMsg.type === "error" && !statusMsg.field;
 
-  // 2. Updated useEffect to use refs instead of document.getElementsByName
+  // Updated useEffect to use refs instead of document.getElementsByName
   useEffect(() => {
     if (statusMsg.field === "email") {
       emailRef.current?.focus();
@@ -58,7 +58,7 @@ export const AuthDrawer = () => {
 
   return (
     <>
-      {/* 1. Overlay */}
+      {/* Overlay */}
       <div
         className={`fixed inset-0 bg-black/40 z-[100] transition-opacity duration-300 ${
           isOpen
@@ -67,7 +67,7 @@ export const AuthDrawer = () => {
         }`}
         onClick={() => dispatch(closeAuthDrawer())}
       >
-        {/* 2. Floating Close Button */}
+        {/* Floating Close Button */}
         <div
           className="fixed pointer-events-none z-[110] hidden md:flex items-center justify-center bg-white rounded-full w-12 h-12 shadow-xl transition-transform duration-100 ease-out"
           style={{
@@ -80,7 +80,7 @@ export const AuthDrawer = () => {
         </div>
       </div>
 
-      {/* 3. Main Drawer Panel */}
+      {/* Main Drawer Panel */}
       <div
         className={`fixed top-0 right-0 h-full bg-white z-[101] shadow-2xl transition-transform duration-500 ease-in-out transform ${
           isOpen ? "translate-x-0" : "translate-x-full"

@@ -99,7 +99,7 @@ const SubMenuChild = ({ child, onNav }) => {
     >
       <div
         className="flex-1 flex items-center justify-between px-3 py-2.5 font-normal! text-[12px] bg-white text-black uppercase tracking-tight hover:bg-gray-100 hover:text-gray-800 transition-colors cursor-pointer"
-        onClick={() => onNav(child.slug)} // Changed from child.label to child.slug
+        onClick={() => onNav(child.slug)}
       >
         <span className="tracking-widest! ">{child.label}</span>
         {child.children && <ChevronRight size={12} className="opacity-70" />}
@@ -122,7 +122,7 @@ const SubMenuChild = ({ child, onNav }) => {
                 className="px-3 py-[14px] text-[12px] text-gray-600 uppercase font-normal! hover:bg-gray-100 border-b border-gray-50 last:border-0 transition-colors cursor-pointer"
                 onClick={(e) => {
                   e.stopPropagation();
-                  onNav(subChild.slug); // Changed from subChild.label to subChild.slug
+                  onNav(subChild.slug);
                 }}
               >
                 {subChild.label}

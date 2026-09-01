@@ -167,7 +167,7 @@ export const RegisterForm = ({
           <PrimaryButton
             type="submit"
             text="Create Account"
-            loading={loading} // Now works
+            loading={loading}
             disabled={loading}
             initialBg="#18181b"
             initialText="#FFFFFF"

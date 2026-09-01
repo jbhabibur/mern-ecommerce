@@ -9,11 +9,9 @@ import checkoutReducer from "./slices/checkoutSlice";
 import wishlistReducer from "./slices/wishlistSlice";
 import productViewReducer from "./slices/productViewSlice";
 
-/**
- * Redux Store Configuration
- * Standardized global state management for local UI states.
- * Server state is now handled separately by React Query.
- */
+// Redux Store Configuration
+// Standardized global state management for local UI states.
+// Server state is now handled separately by React Query.
 export const store = configureStore({
   reducer: {
     search: searchReducer,
@@ -30,10 +28,8 @@ export const store = configureStore({
   middleware: (getDefaultMiddleware) => getDefaultMiddleware(),
 });
 
-/**
- * Persistence Logic: Sync Cart with Local Storage
- * Ensures cart data persists across browser sessions.
- */
+// Persistence Logic: Sync Cart with Local Storage
+// Ensures cart data persists across browser sessions.
 store.subscribe(() => {
   try {
     const cartState = store.getState().cart;

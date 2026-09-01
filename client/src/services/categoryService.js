@@ -1,10 +1,6 @@
 import apiInstance from "../services/apiInstance";
 import { API_URLS } from "../api/API_URLS";
 
-// ==========================================
-// CATEGORY SERVICE FUNCTIONS
-// ==========================================
-
 /**
  * @description Fetches categories with pagination (Used for Admin tables or Load-more lists)
  * @method POST

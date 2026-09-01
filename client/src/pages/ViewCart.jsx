@@ -10,7 +10,7 @@ import { TimerAlert } from "../features/cart/components/TimerAlert";
 import { OrderSummary } from "../features/cart/components/OrderSummary";
 import { PrimaryButton } from "../components/atoms/PrimaryButton";
 
-// REUSE: Project specific imports
+// Project specific imports
 import { getFullImagePath } from "../api/apiConfig";
 
 export const ViewCart = () => {
@@ -18,8 +18,7 @@ export const ViewCart = () => {
   const { items: cartItems, totalAmount } = useSelector((state) => state.cart);
   console.log(cartItems);
 
-  // REUSE: Custom timer hook
-
+  // Custom timer hook
   const updateQtyHandler = (id, size, type) => {
     dispatch(cartActions.updateQuantity({ id, size, type }));
   };
@@ -54,9 +53,9 @@ export const ViewCart = () => {
       ) : (
         <>
           <div className="flex flex-col lg:flex-row gap-8 xl:gap-12 items-start">
-            {/* ================= LEFT COLUMN (Items List) ================= */}
+            {/* LEFT COLUMN (Items List) */}
             <div className="lg:w-[85%] w-full flex-grow">
-              {/* Header Row: Now visible on Mobile as well */}
+              {/* Header Row */}
               <div className="grid grid-cols-12 px-3 py-3 mb-4 bg-[#FAFAFA] text-[11px] font-black uppercase tracking-widest">
                 {/* Product label: Full width on mobile, 8 cols on tablet, 5 on desktop */}
                 <div className="col-span-10 min-[425px]:col-span-8 min-[765px]:col-span-5">
@@ -291,7 +290,7 @@ export const ViewCart = () => {
               </div>
             </div>
 
-            {/* --------------- Order summary section ------------------ */}
+            {/* Order summary section */}
             <OrderSummary cartItems={cartItems} totalAmount={totalAmount} />
           </div>
         </>

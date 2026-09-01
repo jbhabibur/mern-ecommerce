@@ -38,10 +38,7 @@ export const Toast = ({ message, type = "success", onClose }) => {
         <X className="w-4 h-4" />
       </button>
 
-      {/* Progress Bar:
-        - Duration komiye 2s kora hoyeche jate fast jay.
-        - onAnimationComplete use kora hoyeche jate animation shesh holei onClose() call hoy.
-      */}
+      {/* Progress Bar */}
       <motion.div
         initial={{ width: "100%" }}
         animate={{ width: 0 }}

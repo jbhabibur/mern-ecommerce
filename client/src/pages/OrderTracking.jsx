@@ -53,7 +53,7 @@ export const OrderTracking = () => {
   return (
     <div className="min-h-screen bg-[#f4f4f4] py-4 md:py-8 px-2 md:px-4 font-sans text-[#212121]">
       <div className="max-w-4xl mx-auto">
-        {/* 1. Header Info Card */}
+        {/* Header Info Card */}
         <div className="bg-white rounded-sm shadow-sm p-4 md:p-6 mb-3">
           <h2 className="text-base md:text-lg font-medium mb-4">
             Tracking Details
@@ -83,7 +83,7 @@ export const OrderTracking = () => {
           </div>
         </div>
 
-        {/* 2. Progress Stepper */}
+        {/* Progress Stepper */}
         <div className="bg-white rounded-sm shadow-sm p-6 md:p-10 mb-3 overflow-hidden">
           {/* --- Desktop View (Horizontal) --- */}
           <div className="hidden md:flex relative justify-between items-center max-w-2xl mx-auto">
@@ -151,7 +151,7 @@ export const OrderTracking = () => {
           </div>
         </div>
 
-        {/* 3. Detailed Vertical Timeline */}
+        {/* Detailed Vertical Timeline */}
         <div className="bg-white rounded-sm shadow-sm p-5 md:p-8">
           <div className="relative space-y-8">
             <div className="absolute left-[75px] md:left-[95px] top-2 bottom-2 w-[1px] bg-gray-200" />

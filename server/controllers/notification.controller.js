@@ -1,8 +1,8 @@
 import Notification from "../models/notification.model.js";
 
-/**
- * Get all notifications for the admin dashboard
- */
+// @desc    Fetch latest notifications for admin
+// @route   GET /api/notifications/admin
+// @access  Private/Admin
 export const getAdminNotifications = async (req, res) => {
   try {
     // Fetch latest 20 notifications, sorted by newest first
@@ -23,9 +23,9 @@ export const getAdminNotifications = async (req, res) => {
   }
 };
 
-/**
- * Mark all notifications as read
- */
+// @desc    Mark all notifications as read for admin
+// @route   PUT /api/notifications/admin/mark-all-read
+// @access  Private/Admin
 export const markAllAsRead = async (req, res) => {
   try {
     await Notification.updateMany(

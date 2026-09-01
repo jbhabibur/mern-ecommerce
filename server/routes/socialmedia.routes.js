@@ -8,16 +8,20 @@ import upload from "../middleware/multer.middleware.js";
 
 const router = express.Router();
 
-// Get all social feed items
+// @desc    Get all social feed items
+// @route   GET /api/socialmedia
+// @access  Public
 router.get("/", getSocialFeed);
 
-/**
- * Handle both Multiple Files and Single URL
- * 'images' must match frontend formData.append("images", ...)
- */
+// @desc    Add a new social feed item (Handles both multiple files and single URL)
+// @route   POST /api/socialmedia
+// @access  Private (Admin Only)
+// @note    'images' must match frontend formData.append("images", ...)
 router.post("/", upload.array("images", 10), addSocialFeed);
 
-// Delete specific feed item by ID
+// @desc    Delete a specific social feed item by ID
+// @route   DELETE /api/socialmedia/:id
+// @access  Private (Admin Only)
 router.delete("/:id", deleteSocialFeed);
 
 export default router;

@@ -8,9 +8,8 @@ const storefrontSchema = new mongoose.Schema(
         slot_number: {
           type: Number,
           required: [true, "Slot number is mandatory"],
-          /** * NOTE: 'unique: true' inside an array of subdocuments
-           * does not behave like a standard unique constraint in MongoDB.
-           */
+          // NOTE: 'unique: true' inside an array of subdocuments
+          // does not behave like a standard unique constraint in MongoDB.
         },
         image: {
           url: {
@@ -59,5 +58,4 @@ const storefrontSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
-// Named export
 export const Storefront = mongoose.model("Storefront", storefrontSchema);

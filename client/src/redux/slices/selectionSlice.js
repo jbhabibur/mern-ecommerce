@@ -1,7 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-  // Initialize size from localStorage if available
   selectedSize: "",
   quantity: 1,
   productInfo: null,

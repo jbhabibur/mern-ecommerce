@@ -1,9 +1,9 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-  isFocused: false, // Tracks focus state for desktop input
-  isClicked: false, // Tracks click state for mobile search icon
-  query: "", // Stores the actual search text
+  isFocused: false,
+  isClicked: false,
+  query: "",
 };
 
 const searchSlice = createSlice({

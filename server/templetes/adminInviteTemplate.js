@@ -1,9 +1,11 @@
 /**
- * @desc Professional HTML template for Admin Invitations
- * @param {string} name - Recipient Name
- * @param {string} role - Assigned Role (super-admin, admin, etc.)
- * @param {string} setupUrl - URL with token for account setup
+ * @desc    Professional HTML template for Admin Invitations
+ * @param   {string} name - Recipient Name
+ * @param   {string} role - Assigned Role (super-admin, admin, etc.)
+ * @param   {string} setupUrl - URL with token for account setup
+ * @returns {string} HTML string for email template
  */
+
 export const adminInviteTemplate = (name, role, setupUrl) => `
 <!DOCTYPE html>
 <html>

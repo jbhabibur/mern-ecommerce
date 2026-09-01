@@ -19,16 +19,14 @@ import upload from "../middleware/multer.middleware.js";
 
 const router = express.Router();
 
-/**
- * @route   GET /api/profile/
- * @desc    Get current user
- */
+// @desc    Get current user profile
+// @route   GET /api/profile/
+// @access  Private (Authenticated Users)
 router.get("/", verifyToken, getProfile);
 
-/**
- * @route   GET /api/profile/all-staff
- * @desc    Get all users except customers (Admin/Staff only)
- */
+// @desc    Get all users except customers (Admin/Staff only)
+// @route   GET /api/profile/all-staff
+// @access  Private (Super Admin, Manager, Editor)
 router.get(
   "/all-staff",
   verifyToken,
@@ -36,10 +34,9 @@ router.get(
   getAllStaff,
 );
 
-/**
- * @route   PATCH /api/profile/update-profile
- * @desc    Update profile details (Name, Phone, etc.)
- */
+// @desc    Update profile details (Name, Phone, etc.)
+// @route   PATCH /api/profile/update-profile
+// @access  Private (Authenticated Users)
 router.patch(
   "/update-profile",
   verifyToken,
@@ -47,10 +44,9 @@ router.patch(
   updateProfile,
 );
 
-/**
- * @route   PATCH /api/profile/change-password
- * @desc    Change user password
- */
+// @desc    Change user password
+// @route   PATCH /api/profile/change-password
+// @access  Private (Authenticated Users)
 router.patch(
   "/change-password",
   verifyToken,
@@ -58,10 +54,9 @@ router.patch(
   changePassword,
 );
 
-/**
- * @route   PATCH /api/profile/update-image
- * @desc    Update profile picture (Uploads to Cloudinary)
- */
+// @desc    Update profile picture (Uploads to Cloudinary)
+// @route   PATCH /api/profile/update-image
+// @access  Private (Authenticated Users)
 router.patch(
   "/update-image",
   upload.single("image"),
@@ -69,10 +64,9 @@ router.patch(
   updateProfileImage,
 );
 
-/**
- * @route   PATCH /api/profile/update-role/:id
- * @desc    Update user role (Super Admin only)
- */
+// @desc    Update user role (Super Admin only)
+// @route   PATCH /api/profile/update-role/:id
+// @access  Private (Super Admin Only)
 router.patch(
   "/update-role/:id",
   verifyToken,
@@ -80,10 +74,9 @@ router.patch(
   updateUserRole,
 );
 
-/**
- * @route   DELETE /api/profile/delete-user/:id
- * @desc    Permanently delete a user account (Super Admin only)
- */
+// @desc    Permanently delete a user account (Super Admin only)
+// @route   DELETE /api/profile/delete-user/:id
+// @access  Private (Super Admin Only)
 router.delete(
   "/delete-user/:id",
   verifyToken,

@@ -7,7 +7,7 @@ export const SocialIcon = ({ icon }) => (
   >
     <div className="text-black">
       {" "}
-      {/* আইকন দেখার জন্য কালার অ্যাড করা হয়েছে */}
+
       {icon}
     </div>
   </div>

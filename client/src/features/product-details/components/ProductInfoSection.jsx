@@ -31,12 +31,9 @@ export const ProductInfoSection = ({ product }) => {
   // Logic: Handle initial size selection and cleanup
   useEffect(() => {
     if (hasVariants && variants.length > 0) {
-      // 1. URL-e size thakle sheta priority pabe (Fixes hard reload issue)
       if (selectedSizeFromUrl) {
         dispatch(setSize(selectedSizeFromUrl));
-      }
-      // 2. URL-e kisu na thakle ebong Redux empty thakle default select hobe
-      else if (!selectedSize) {
+      } else if (!selectedSize) {
         const initialSize = variants.find((v) => v.stock > 0)?.size || "";
         if (initialSize) {
           dispatch(setSize(initialSize));

@@ -1,15 +1,15 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-  // 1. Customer Identification
+  // Customer Identification
   customer: {
     userId: null,
     email: "",
     isGuest: true,
   },
-  // 2. Product Snapshots
+  // Product Snapshots
   items: [],
-  // 3. Address Snapshots
+  // Address Snapshots
   shippingAddress: {
     fullName: "",
     phoneNumber: "",
@@ -27,7 +27,7 @@ const initialState = {
     zone: "",
     houseAddress: "",
   },
-  // 4. Financial Breakdown
+  // Financial Breakdown
   financials: {
     subtotal: 0,
     shippingFee: 0,
@@ -36,7 +36,7 @@ const initialState = {
     totalAmount: 0,
     couponCode: null,
   },
-  // 5. Payment Details
+  // Payment Details
   payment: {
     method: "ssl", // default
     status: "pending",

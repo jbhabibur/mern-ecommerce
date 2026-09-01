@@ -7,15 +7,13 @@ import { asyncHandler } from "../middleware/error.middleware.js";
 import { hashPassword } from "../utils/auth.utils.js";
 import { sendAdminInviteEmail } from "../services/email.service.js";
 
-/**
- * @desc    Submit an access request for approval (Accessible by Public & Super Admin)
- * @route   POST /api/admin/request-access
- * @access  Public
- */
+// @desc    Submit an access request for approval (Accessible by Public & Super Admin)
+// @route   POST /api/admin/request-access
+// @access  Public
 export const requestInvitation = asyncHandler(async (req, res) => {
   const { email, name, isSystemGenerated } = req.body;
 
-  // 1. Check if a registered user already exists
+  // Check if a registered user already exists
   const userExists = await User.findOne({ email });
   if (userExists) {
     return res.status(400).json({
@@ -24,7 +22,7 @@ export const requestInvitation = asyncHandler(async (req, res) => {
     });
   }
 
-  // 2. Prevent duplicate pending requests
+  // Prevent duplicate pending requests
   const invitationExists = await Invitation.findOne({
     email,
     status: "pending",
@@ -36,11 +34,11 @@ export const requestInvitation = asyncHandler(async (req, res) => {
     });
   }
 
-  // 3. Generate token and expiry (Important: Always do this)
+  // Generate token and expiry (Important: Always do this)
   const token = crypto.randomBytes(32).toString("hex");
   const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // Valid for 24 hours
 
-  // 4. Create new invitation entry
+  // Create new invitation entry
   // Make sure 'token' and 'expiresAt' are passed here
   const invitation = await Invitation.create({
     email,
@@ -53,10 +51,8 @@ export const requestInvitation = asyncHandler(async (req, res) => {
 
   const dynamicName = invitation.name || invitation.email.split("@")[0];
 
-  /**
-   * 5. Conditional Email Logic:
-   * Only send email if Super Admin triggers it (isSystemGenerated)
-   */
+  // Conditional Email Logic:
+  // Only send email if Super Admin triggers it (isSystemGenerated)
   if (isSystemGenerated) {
     const setupUrl = `${process.env.CLIENT_URL}/account/setup-admin?token=${token}&email=${invitation.email}`;
 
@@ -81,23 +77,21 @@ export const requestInvitation = asyncHandler(async (req, res) => {
     }
   }
 
-  // 6. Response for random user requests (DB save only)
+  // Response for random user requests (DB save only)
   res.status(201).json({
     success: true,
     message: "Request submitted! A Super Admin will review your access soon.",
   });
 });
 
-/**
- * @desc    Approve a pending admin request and send setup credentials
- * @route   POST /api/admin/accept/:id
- * @access  Private (Super Admin)
- */
+// @desc    Approve a pending admin request and send setup credentials
+// @route   POST /api/admin/accept/:id
+// @access  Private (Super Admin)
 export const approveAndInviteAdmin = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const { role } = req.body;
 
-  // 1. Retrieve the invitation from the database
+  // Retrieve the invitation from the database
   const invite = await Invitation.findById(id);
   if (!invite) {
     return res
@@ -105,21 +99,21 @@ export const approveAndInviteAdmin = asyncHandler(async (req, res) => {
       .json({ success: false, message: "Invitation not found." });
   }
 
-  // 2. Generate a secure token and set 24-hour expiration
+  // Generate a secure token and set 24-hour expiration
   const token = crypto.randomBytes(32).toString("hex");
   invite.token = token;
   invite.role = role || invite.role;
   invite.expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
   await invite.save();
 
-  // 3. Logic for dynamic name: uses provided name or email prefix
+  // Logic for dynamic name: uses provided name or email prefix
   const dynamicName = invite.name || invite.email.split("@")[0];
 
-  // 4. Construct the setup URL for the frontend
+  // Construct the setup URL for the frontend
   const setupUrl = `${process.env.CLIENT_URL}/account/setup-admin?token=${token}&email=${invite.email}`;
 
   try {
-    // 5. Send the email using the centralized service
+    // Send the email using the centralized service
     await sendAdminInviteEmail({
       email: invite.email,
       name: dynamicName,
@@ -137,18 +131,13 @@ export const approveAndInviteAdmin = asyncHandler(async (req, res) => {
   }
 });
 
-/**
- * @desc    Super Admin: Resend existing invitation (Triggered by Refresh Icon)
- * @route   POST /api/admin-invitation/resend/:id
- */
-/**
- * @desc    Super Admin: Resend existing invitation (Triggered by Refresh Icon)
- * @route   POST /api/admin-invitation/resend/:id
- */
+// @desc    Resend an invitation email for a pending request
+// @route   POST /api/admin/resend/:id
+// @access  Private (Super Admin)
 export const resendInvitation = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
-  // 1. Find the invitation
+  // Find the invitation
   const invite = await Invitation.findById(id);
 
   if (!invite) {
@@ -158,7 +147,7 @@ export const resendInvitation = asyncHandler(async (req, res) => {
     });
   }
 
-  // 2. Check if the user is already registered (Safety check)
+  // Check if the user is already registered (Safety check)
   const userExists = await User.findOne({ email: invite.email });
   if (userExists) {
     // If user exists, the invitation is no longer "pending" in reality
@@ -170,7 +159,7 @@ export const resendInvitation = asyncHandler(async (req, res) => {
     });
   }
 
-  // 3. Ensure the invitation is still in pending status
+  // Ensure the invitation is still in pending status
   if (invite.status !== "pending") {
     return res.status(400).json({
       success: false,
@@ -178,13 +167,13 @@ export const resendInvitation = asyncHandler(async (req, res) => {
     });
   }
 
-  // 4. Refresh token and expiry (Extend for another 24 hours)
+  // Refresh token and expiry (Extend for another 24 hours)
   const newToken = crypto.randomBytes(32).toString("hex");
   invite.token = newToken;
   invite.expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
   await invite.save();
 
-  // 5. Construct URL and Send Email
+  // Construct URL and Send Email
   const setupUrl = `${process.env.CLIENT_URL}/account/setup-admin?token=${newToken}&email=${invite.email}`;
   const dynamicName = invite.name || invite.email.split("@")[0];
 
@@ -210,10 +199,9 @@ export const resendInvitation = asyncHandler(async (req, res) => {
   }
 });
 
-/**
- * @desc    Super Admin: Update role and notify via email
- * @route   PATCH /api/admin-invitation/update-role/:id
- */
+// @desc    Update the role of an invited admin and notify them via email
+// @route   PUT /api/admin/update-role/:id
+// @access  Private (Super Admin)
 export const updateInvitationRole = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const { role } = req.body;
@@ -241,10 +229,9 @@ export const updateInvitationRole = asyncHandler(async (req, res) => {
     .json({ success: true, message: "Role updated and user notified." });
 });
 
-/**
- * @desc    Public: New Admin sets up account via Email link
- * @route   POST /api/adminsetup-password
- */
+// @desc    Setup account for an invited admin using the token
+// @route   POST /api/admin/setup
+// @access  Public (Token-based)
 export const setupInvitedAdmin = asyncHandler(async (req, res) => {
   const { token, email, password, firstName, lastName } = req.body;
   console.log(token, email, password, firstName, lastName);
@@ -281,11 +268,9 @@ export const setupInvitedAdmin = asyncHandler(async (req, res) => {
     .json({ success: true, message: "Setup complete. You can now login." });
 });
 
-/**
- * @desc    Super Admin: Retrieve all admin invitations for the Dashboard table
- * @route   GET /api/admin/all
- * @access  Private (Super Admin Only)
- */
+// @desc    Get all invitations (Accessible by Super Admin)
+// @route   GET /api/admin/invitations
+// @access  Private (Super Admin)
 export const getAllInvitations = asyncHandler(async (req, res) => {
   const invitations = await Invitation.find().sort({ createdAt: -1 });
 
@@ -298,11 +283,9 @@ export const getAllInvitations = asyncHandler(async (req, res) => {
   res.status(200).json({ success: true, data: formattedData });
 });
 
-/**
- * @desc    Super Admin: Permanently revoke or delete an invitation request
- * @route   DELETE /api/admin/revoke/:id
- * @access  Private (Super Admin Only)
- */
+// @desc    Revoke an invitation (Accessible by Super Admin)
+// @route   DELETE /api/admin/invitations/:id
+// @access  Private (Super Admin)
 export const revokeInvitation = asyncHandler(async (req, res) => {
   const { id } = req.params;
 

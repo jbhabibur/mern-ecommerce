@@ -16,7 +16,6 @@ export const MobileDrawer = ({
       // Get the current scroll position
       const scrollY = window.scrollY;
 
-      // Fix the body position to prevent ANY scrolling
       document.body.style.position = "fixed";
       document.body.style.top = `-${scrollY}px`;
       document.body.style.width = "100%";

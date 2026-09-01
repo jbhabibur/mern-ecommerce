@@ -10,8 +10,7 @@ export const CategoryProductCard = ({
 }) => {
   const isList = view === "list";
 
-  // Image path check: images array theke prothom image nibe
-  // Backend uploads folder-er file access korar jonno full URL banano hoyeche
+  // Determine the image URL based on the images array
   const imageUrl =
     images && images.length > 0 ? `http://localhost:5000/${images[0]}` : "";
 

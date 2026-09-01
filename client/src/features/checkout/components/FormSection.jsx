@@ -18,7 +18,6 @@ export const FormSection = ({
   setIsLoginLoading,
   showSignOut,
   setShowSignOut,
-  // Props from Parent
   selectedAddressId,
   setSelectedAddressId,
   billingOption,

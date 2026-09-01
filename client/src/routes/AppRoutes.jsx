@@ -1,7 +1,6 @@
 import { createBrowserRouter, Outlet } from "react-router";
 
 import { MainLayout } from "../layout/MainLayout";
-
 import { Home } from "../pages/Home";
 import { SearchResultsPage } from "../pages/SearchResultsPage";
 import { WishlistPage } from "../pages/WishlistPage";
@@ -17,23 +16,19 @@ import { VerifyOTPPage } from "../pages/VerifyOTPPage";
 import { LoginPage } from "../pages/LoginPage";
 import { ResetPasswordPage } from "../pages/ResetPasswordPage";
 import { UserLayout } from "../layout/UserLayout";
-
 import { ManageAccount } from "../features/user/components/ManageAccount";
 import { OrderTrackingDetails } from "../features/user/components/OrderTrackingDetails";
 import { MyOrders } from "../features/user/components/MyOrders";
 import { AddressBook } from "../features/user/components/AddressBook";
 import { AddAddressForm } from "../features/user/components/AddAddressForm";
 import { UserProfile } from "../features/user/components/UserProfile";
-
 import { ProtectedRoute } from "./ProtectedRoute";
 import { VerifySuccess } from "../pages/VerifySuccess";
 import { RecoverPage } from "../pages/RecoverPage";
-
 import { CheckoutPage } from "../pages/CheckoutPage";
 import { OrderSuccess } from "../pages/OrderSuccess";
 import { OrderTracking } from "../pages/OrderTracking";
 
-// Comming soon
 import { ComingSoon } from "../components/shared/ComingSoon";
 
 const router = createBrowserRouter([
@@ -105,16 +100,10 @@ const router = createBrowserRouter([
         path: "/track-order/:orderId",
         element: <OrderTracking />,
       },
-
-      // --- Password Reset Routes ---
-
       {
-        // This matches /account/reset-password/ANY_TOKEN
         path: "/account/reset-password/:token",
         element: <ResetPasswordPage />,
       },
-
-      // --- Account/User Routes with Sidebar Layout ---
       {
         path: "/account",
         element: (
@@ -175,14 +164,13 @@ const router = createBrowserRouter([
       },
     ],
   },
-  // Checkout route stays outside MainLayout for a clean, distraction-free UI
   {
     path: "/checkouts/cn/:token/*",
     element: <CheckoutPage />,
   },
   {
     path: "/order-success",
-    element: <OrderSuccess />, // Header/Footer charai dekhabe
+    element: <OrderSuccess />,
   },
 ]);
 

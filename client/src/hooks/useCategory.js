@@ -19,13 +19,13 @@ export const useCategory = (slug) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const debounceTimer = useRef(null);
 
-  /* -------------------- Dynamic Max Price -------------------- */
+  // Dynamic Max Price
   const maxPriceInRange = useMemo(() => {
     if (!products.length) return 0;
     return Math.max(...products.map((p) => Number(p.price) || 0));
   }, [products]);
 
-  /* -------------------- URL Derived States -------------------- */
+  // URL Derived States
   const selectedStock = searchParams.getAll("filter.v.availability");
 
   const priceRange = useMemo(() => {
@@ -38,7 +38,7 @@ export const useCategory = (slug) => {
   const itemsPerPage = parseInt(searchParams.get("limit")) || 10;
   const sortOption = searchParams.get("sort") || "featured";
 
-  /* -------------------- Update Filters -------------------- */
+  // Update Filters
   const updateFilters = useCallback(
     async (newStock, newPrice, newLimit, newSort, forceUpdate = false) => {
       setFilterLoading(true);
@@ -60,18 +60,18 @@ export const useCategory = (slug) => {
 
       if (forceUpdate) {
         await applyChanges();
-        setFilterLoading(false); // ✅ stop loading immediately
+        setFilterLoading(false); // Stop loading immediately
       } else {
         debounceTimer.current = setTimeout(async () => {
           await applyChanges();
-          setFilterLoading(false); // ✅ stop loading after debounce
+          setFilterLoading(false); // Stop loading after debounce
         }, 1000);
       }
     },
     [setSearchParams, itemsPerPage, sortOption],
   );
 
-  /* -------------------- Fetch Category Data -------------------- */
+  // Fetch Category Data
   useEffect(() => {
     if (!slug) return;
 
@@ -84,19 +84,15 @@ export const useCategory = (slug) => {
           (item) => item.slug === slug,
         );
 
-        // Check korchi eta Eid Collection (ba kono Parent) kina
         if (navItem && navItem.children) {
-          // 1. Sob gulo child slug collect kora
           const childrenSlugs = navItem.children.map((child) => child.slug);
 
-          // 2. Protiটি slug er jonno alada alada API call kora (Parallel execution)
           const responses = await Promise.all(
             childrenSlugs.map((s) => fetchCategoryProducts(s)),
           );
 
           if (!mounted) return;
 
-          // 3. Sob gulo response theke product gulo niye ekta single array banano
           const allProducts = responses.reduce((acc, curr) => {
             if (curr.success && curr.products) {
               return [...acc, ...curr.products];
@@ -104,21 +100,18 @@ export const useCategory = (slug) => {
             return acc;
           }, []);
 
-          // 4. Duplicate product remove kora (Jodi thake) ID diye
           const uniqueProducts = Array.from(
             new Map(allProducts.map((p) => [p._id, p])).values(),
           );
 
           setProducts(uniqueProducts);
 
-          // Metadata local theke set kora
           setCategoryInfo({
             title: navItem.label,
             description: "Explore our latest Eid collection.",
-            banner: "", // Apni chaile static banner link dite paren
+            banner: "",
           });
         } else {
-          // Jodi eta sadharon category hoy (Jemon: Panjabi), tobe ager motoi fetch kora
           const data = await fetchCategoryProducts(slug);
           if (!mounted) return;
 
@@ -145,7 +138,7 @@ export const useCategory = (slug) => {
     };
   }, [slug]);
 
-  /* -------------------- Processed Data -------------------- */
+  // Processed Data
   const processedData = useMemo(() => {
     const enriched = products.map((p) => {
       const variants = p.variants || [];
@@ -202,7 +195,7 @@ export const useCategory = (slug) => {
     return navItem ? navItem.label : "";
   }, [slug]);
 
-  /* -------------------- Finish Filter Loading -------------------- */
+  // Finish Filter Loading
   useEffect(() => {
     if (!filterLoading) return;
 

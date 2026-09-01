@@ -43,15 +43,11 @@ export const LoginPage = () => {
     handleVerifyAndRedirect: handleRegisterVerify,
   } = useRegister();
 
-  /**
-   * ACTION: Close Toast
-   */
+  // ACTION: Close Toast
   const handleCloseToast = useCallback(() => setShowToast(false), []);
 
-  /**
-   * EFFECT: Handle URL Parameters & Cleanup
-   * Runs only once on mount to check for verification or errors in URL
-   */
+  // EFFECT: Handle URL Parameters & Cleanup
+  // Runs only once on mount to check for verification or errors in URL
   useEffect(() => {
     const params = new URLSearchParams(location.search);
 
@@ -93,10 +89,8 @@ export const LoginPage = () => {
     }
   }, []);
 
-  /**
-   * EFFECT: Sync Hook Status to Toast
-   * Only triggers when a NEW message arrives from the hooks
-   */
+  // EFFECT: Sync Hook Status to Toast
+  // Only triggers when a NEW message arrives from the hooks
   useEffect(() => {
     const hookMsg = registerStatus?.message || loginStatus?.message;
     const hookType = registerStatus?.type || loginStatus?.type;

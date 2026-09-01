@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const orderSchema = new mongoose.Schema(
   {
-    // 1. Customer Identification
+    // Customer Identification
     customer: {
       userId: {
         type: mongoose.Schema.Types.ObjectId,
@@ -13,7 +13,7 @@ const orderSchema = new mongoose.Schema(
       isGuest: { type: Boolean, default: false },
     },
 
-    // 2. Product Snapshots (Critical for maintaining historical accuracy)
+    // Product Snapshots (Critical for maintaining historical accuracy)
     items: [
       {
         productId: {
@@ -31,7 +31,7 @@ const orderSchema = new mongoose.Schema(
       },
     ],
 
-    // 3. Address Snapshots (Stores exact data at the time of order)
+    // Address Snapshots (Stores exact data at the time of order)
     shippingAddress: {
       fullName: String,
       phoneNumber: String,
@@ -50,7 +50,7 @@ const orderSchema = new mongoose.Schema(
       houseAddress: String,
     },
 
-    // 4. Financial Breakdown
+    // Financial Breakdown
     financials: {
       subtotal: { type: Number, required: true },
       shippingFee: { type: Number, default: 0 },
@@ -60,7 +60,7 @@ const orderSchema = new mongoose.Schema(
       couponCode: { type: String, default: null },
     },
 
-    // 5. Payment Details (Optimized for SSLCommerz)
+    // Payment Details (Optimized for SSLCommerz)
     payment: {
       method: { type: String, required: true }, // 'ssl' or 'cod'
       status: {
@@ -75,7 +75,7 @@ const orderSchema = new mongoose.Schema(
       paymentDate: { type: Date },
     },
 
-    // 6. Logistics & Tracking
+    // Logistics & Tracking
     orderStatus: {
       type: String,
 
@@ -88,7 +88,7 @@ const orderSchema = new mongoose.Schema(
       estimatedDelivery: Date,
     },
 
-    // 7. Status History (Audit Trail using ES6 Date defaults)
+    // Status History (Audit Trail using ES6 Date defaults)
     history: [
       {
         status: { type: String, required: true },

@@ -18,7 +18,7 @@ export const QuickViewModal = () => {
 
   return (
     <>
-      {/* 1. Overlay - Custom cursor scope */}
+      {/* Overlay - Custom cursor scope */}
       <div
         className={`fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] transition-opacity duration-300 ${
           isQuickViewOpen
@@ -27,7 +27,7 @@ export const QuickViewModal = () => {
         }`}
         onClick={() => dispatch(closeQuickView())}
       >
-        {/* 2. Floating Close Button - Visible on background only */}
+        {/* Floating Close Button - Visible on background only */}
         <div
           className="fixed pointer-events-none z-[110] hidden md:flex items-center justify-center bg-white rounded-full w-12 h-12 shadow-xl transition-transform duration-100 ease-out"
           style={{
@@ -40,7 +40,7 @@ export const QuickViewModal = () => {
         </div>
       </div>
 
-      {/* 3. Main Modal Panel */}
+      {/* Main Modal Panel */}
       <div
         className={`fixed inset-0 flex items-center justify-center z-[101] p-4 pointer-events-none transition-all duration-300 ${
           isQuickViewOpen ? "opacity-100 scale-100" : "opacity-0 scale-95"

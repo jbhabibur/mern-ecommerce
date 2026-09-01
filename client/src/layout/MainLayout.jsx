@@ -23,8 +23,6 @@ import { useScrollToTop } from "../hooks/useScrollToTop";
 import { usePreloader } from "../hooks/usePreloader";
 
 // MainLayout Component
-// Manages the global shell. Includes a "Silent Scroll" reset logic
-// using pathname keys and Framer Motion transitions.
 export const MainLayout = () => {
   const { pathname } = useLocation();
 
@@ -32,7 +30,7 @@ export const MainLayout = () => {
   useScrollToTop();
   const { showLoader, handleLoaderComplete } = usePreloader();
 
-  // --- Redux State Selection ---
+  // Redux State Selection
   const { isAppLoading } = useSelector((state) => state.auth);
   const { isOpen: isAuthOpen } = useSelector((state) => state.authDrawer);
   const { isCartOpen } = useSelector((state) => state.cart);
@@ -77,7 +75,7 @@ export const MainLayout = () => {
         <Footer />
       </motion.div>
 
-      {/* --- Global Overlays & Modals --- */}
+      {/* Global Overlays & Modals */}
       <PromoModal showLoader={showLoader} />
 
       {/* Auth Drawer */}

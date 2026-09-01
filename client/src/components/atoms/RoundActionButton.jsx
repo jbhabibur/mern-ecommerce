@@ -4,11 +4,11 @@ export const RoundActionButton = ({
   icon: Icon = Heart,
   expandable = false,
   expandableText = "Add to Wishlist",
-  onClick, // <--- 1. onClick receive korun
+  onClick,
 }) => {
   return (
     <button
-      onClick={onClick} // <--- 2. Button-e onClick-ti bosiye din
+      onClick={onClick}
       className="group/btn flex items-center bg-white text-black border border-gray-200 p-2 rounded-full! shadow-md active:scale-95 hover:bg-gray-50 hover:shadow-lg transition-all duration-300"
     >
       {expandable && (

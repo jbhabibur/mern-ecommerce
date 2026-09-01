@@ -1,11 +1,6 @@
 import { getIO } from "../config/initSocket.js";
 import Notification from "../models/notification.model.js";
 
-/**
- * Sends and saves a real-time socket notification for order events.
- * @param {Object} order - The order document from MongoDB.
- * @param {String} type - Notification type ('NEW_ORDER' or 'PAYMENT_RETRY').
- */
 export const emitOrderNotification = async (order, type = "NEW_ORDER") => {
   try {
     //  Generate custom message based on type

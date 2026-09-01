@@ -18,14 +18,14 @@ export const FilterSidebar = ({
   const [localPrice, setLocalPrice] = useState(priceRange);
   const [shouldShowRefined, setShouldShowRefined] = useState(false);
 
-  /* ---------------- Sync price range ---------------- */
+  // Sync localPrice with priceRange when it changes
   useEffect(() => {
     if (priceRange[0] !== localPrice[0] || priceRange[1] !== localPrice[1]) {
       setLocalPrice(priceRange);
     }
   }, [priceRange]);
 
-  /* ---------------- Refined By visibility + optimized scroll ---------------- */
+  // Determine if the "Refined By" section should be shown based on selected filters
   useEffect(() => {
     const isPriceFiltered = priceRange[0] !== 0 || priceRange[1] !== maxPrice;
     const hasSelectedStock = selectedStock.length > 0;
@@ -51,7 +51,7 @@ export const FilterSidebar = ({
     }
   }, [selectedStock.length, priceRange, maxPrice, loading]);
 
-  /* ---------------- Handlers ---------------- */
+  // Handlers
   const handleToggle = (value) => {
     if (loading) return;
 

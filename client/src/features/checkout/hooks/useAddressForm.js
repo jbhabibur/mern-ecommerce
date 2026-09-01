@@ -63,11 +63,11 @@ export const useAddressForm = () => {
     });
   };
 
-  // --- UPDATED VALIDATION LOGIC ---
+  // UPDATED VALIDATION LOGIC
   const validateForm = (isActuallyLoggedIn, billingOption) => {
     let newErrors = {};
 
-    // 1. Contact Validation (Only for Guest)
+    // Contact Validation (Only for Guest)
     if (!isActuallyLoggedIn) {
       const email = formData.contact.email;
       if (!email) {
@@ -95,13 +95,13 @@ export const useAddressForm = () => {
       });
     };
 
-    // 2. Shipping Validation: Skip if logged in (using saved addresses)
+    // Shipping Validation: Skip if logged in (using saved addresses)
     // Only validate manual shipping form if NOT logged in
     if (!isActuallyLoggedIn) {
       validateSection("shipping");
     }
 
-    // 3. Billing Validation: Always validate if 'different' is chosen
+    // Billing Validation: Always validate if 'different' is chosen
     if (billingOption === "different") {
       validateSection("billing");
     }

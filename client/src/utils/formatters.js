@@ -1,5 +1,3 @@
-// src/utils/formatters.js
-
 export const slugToName = (slug) => {
   if (!slug) return "";
   return slug

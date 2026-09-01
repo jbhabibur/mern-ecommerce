@@ -158,9 +158,9 @@ export const AllProducts = () => {
             <div className="flex items-center gap-4">
               <div className="hidden md:block">
                 <ItemsPerPage
-                  selected={itemsPerPageBase} // base value stays same
+                  selected={itemsPerPageBase}
                   onChange={(val) => {
-                    setItemsPerPageBase(val); // update base value
+                    setItemsPerPageBase(val);
                     updateFilters(
                       selectedStock,
                       priceRange,

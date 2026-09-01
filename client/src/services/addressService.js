@@ -2,7 +2,9 @@ import apiInstance from "./apiInstance";
 
 /**
  * Sends new address data to the backend (Create)
- * @param {Object} addressData
+ * @param {Object} addressData - The address details to be created
+ * @returns {Promise<Object>} - Resolves with the created address response data
+ * @throws {Object|Error} - Throws backend error response data or the error object
  */
 export const createAddress = async (addressData) => {
   try {
@@ -15,8 +17,10 @@ export const createAddress = async (addressData) => {
 
 /**
  * Updates existing address data in the backend (Update)
- * @param {string} id - The unique ID of the address
- * @param {Object} addressData - The updated data
+ * @param {string} id - The unique ID of the address to update
+ * @param {Object} addressData - The updated address details
+ * @returns {Promise<Object>} - Resolves with the updated address response data
+ * @throws {Object|Error} - Throws backend error response data or the error object
  */
 export const updateAddress = async (id, addressData) => {
   try {
@@ -29,8 +33,10 @@ export const updateAddress = async (id, addressData) => {
 
 /**
  * Toggles default status for an address (Patch)
- * @param {string} id
- * @param {Object} data - { type: "shipping" | "billing", status: boolean }
+ * @param {string} id - The unique ID of the address
+ * @param {Object} data - The payload containing the default status configuration
+ * @returns {Promise<Object>} - Resolves with the response data from the default address update
+ * @throws {Object|Error} - Throws backend error response data or the error object
  */
 export const setDefaultAddress = async (id, data) => {
   try {
@@ -46,7 +52,9 @@ export const setDefaultAddress = async (id, data) => {
 
 /**
  * Removes an address from the backend (Delete)
- * @param {string} id
+ * @param {string} id - The unique ID of the address to delete
+ * @returns {Promise<Object>} - Resolves with the deletion response data
+ * @throws {Object|Error} - Throws backend error response data or the error object
  */
 export const deleteAddress = async (id) => {
   try {

@@ -31,7 +31,7 @@ export const CheckoutPage = () => {
   const [paymentMethod, setPaymentMethod] = useState("ssl");
   const [showSignOut, setShowSignOut] = useState(false);
 
-  // --- LIFTED STATE FROM FORMSECTION ---
+  // LIFTED STATE FROM FORMSECTION
   const [selectedAddressId, setSelectedAddressId] = useState(null);
   const [billingOption, setBillingOption] = useState("same");
   const [isEditing, setIsEditing] = useState(false);
@@ -49,7 +49,7 @@ export const CheckoutPage = () => {
   // Access addresses for validation logic
   const { addresses } = useAddress();
 
-  // --- SUBMIT LOGIC ---
+  // SUBMIT LOGIC
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -84,7 +84,7 @@ export const CheckoutPage = () => {
 
     // Constructing Payload based on Mongoose Schema
     const orderPayload = {
-      // 1. Customer Identification
+      // Customer Identification
       customer: {
         email: isLoggedIn ? user?.email : contact.email,
         userId: isLoggedIn ? user?.id : null,
@@ -101,7 +101,7 @@ export const CheckoutPage = () => {
         },
       },
 
-      // 2. Product Snapshots (Mapping from Redux store)
+      // Product Snapshots (Mapping from Redux store)
       items: checkoutStore.items.map((item) => ({
         productId: item.productId._id || item.productId,
         name: item.productId.name,
@@ -113,7 +113,7 @@ export const CheckoutPage = () => {
         sku: item.sku || "",
       })),
 
-      // 3. Address Snapshots
+      // Address Snapshots
       shippingAddress: isActuallyLoggedIn
         ? {
             fullName: selectedAddressObject?.fullName,
@@ -128,14 +128,14 @@ export const CheckoutPage = () => {
       billingAddress:
         billingOption === "same"
           ? isActuallyLoggedIn
-            ? { ...shippingAddress } // Use mapped object if logged in
+            ? { ...shippingAddress }
             : shippingAddress
           : billingAddress,
 
-      // 4. Financial Breakdown (Taken directly from Redux)
+      // Financial Breakdown (Taken directly from Redux)
       financials: checkoutStore.financials,
 
-      // 5. Payment Details
+      // Payment Details
       payment: {
         method: paymentMethod,
         status: "pending",
@@ -159,7 +159,7 @@ export const CheckoutPage = () => {
         }
         // If payment by cod
         else {
-          // Success page-e redirect korbe
+          // Redirect success page-e
           navigate(`/order-success?orderId=${response.data.orderId}`);
         }
       }

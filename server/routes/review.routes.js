@@ -12,31 +12,45 @@ import { restrictTo } from "../middleware/restrictTo.middleware.js";
 const router = express.Router();
 
 /**
- * @description Public Routes
+ * @desc    Get all approved reviews for a specific product
+ * @route   GET /api/reviews/product/:productId
+ * @access  Public
  */
-// Anyone can view approved reviews
 router.get("/product/:productId", getProductReviews);
 
 /**
- * @description Private Routes (Requires Login)
+ * @desc    Create a new product review
+ * @route   POST /api/reviews
+ * @access  Private (Authenticated Users)
  */
-// Use verifyToken to populate req.user so createReview can access req.user._id
 router.post("/", verifyToken, createReview);
 
 /**
- * @description Admin/Moderation Routes (Requires Login + Role)
+ * @desc    Admin / Moderation Protection Middleware
+ * @access  Private (Super Admin, Manager, Editor)
  */
-// Apply protection to all routes below this line
 router.use(verifyToken);
-router.use(restrictTo("super-admin", "manager", "editor")); // Adjust roles based on your setup
+router.use(restrictTo("super-admin", "manager", "editor"));
 
-// GET /api/reviews - Admin management
+/**
+ * @desc    Get all reviews for admin management dashboard
+ * @route   GET /api/reviews
+ * @access  Private (Admin / Staff Only)
+ */
 router.get("/", getAllReviews);
 
-// Update review status (Approve/Reject)
+/**
+ * @desc    Update review status (Approve or Reject)
+ * @route   PATCH /api/reviews/:id/status
+ * @access  Private (Admin / Staff Only)
+ */
 router.patch("/:id/status", updateReviewStatus);
 
-// Delete a review permanently
+/**
+ * @desc    Delete a review permanently
+ * @route   DELETE /api/reviews/:id
+ * @access  Private (Admin / Staff Only)
+ */
 router.delete("/:id", deleteReview);
 
 export default router;

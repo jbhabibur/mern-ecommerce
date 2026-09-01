@@ -2,19 +2,13 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 import { BASE_URL } from "../../api/apiConfig";
 
-/* ================================
-   HELPER: GET TOKEN
-================================ */
+// HELPER: GET TOKEN
 const getAuthToken = (getState) => {
-  // userInfo apnar auth slice theke asche (ProductCard-e userInfo check kora ache)
   return getState().auth.userInfo?.token || getState().auth.token;
 };
 
-/* ================================
-   ASYNC THUNKS
-================================ */
-
-// 1. Fetch Wishlist
+// ASYNC THUNKS
+// Fetch Wishlist
 export const fetchWishlist = createAsyncThunk(
   "wishlist/fetchWishlist",
   async (_, { getState, rejectWithValue }) => {
@@ -32,13 +26,12 @@ export const fetchWishlist = createAsyncThunk(
   },
 );
 
-// 2. Add to Wishlist DB (Aliased to Toggle Route)
+// Add to Wishlist DB (Aliased to Toggle Route)
 export const addToWishlistDB = createAsyncThunk(
   "wishlist/addToWishlistDB",
   async (payload, { getState, rejectWithValue }) => {
     try {
       const token = getAuthToken(getState);
-      // ProductCard theke { userId, product } ashche, amra sudhu ID nibo
       const productId = payload.product?._id || payload.productId;
 
       const { data } = await axios.post(
@@ -53,13 +46,12 @@ export const addToWishlistDB = createAsyncThunk(
   },
 );
 
-// 3. Remove from Wishlist DB (Aliased to Toggle Route)
+// Remove from Wishlist DB (Aliased to Toggle Route)
 export const removeFromWishlistDB = createAsyncThunk(
   "wishlist/removeFromWishlistDB",
   async (payload, { getState, rejectWithValue }) => {
     try {
       const token = getAuthToken(getState);
-      // ProductCard theke { userId, productId } ashche
       const productId = payload.productId;
 
       const { data } = await axios.post(
@@ -76,9 +68,7 @@ export const removeFromWishlistDB = createAsyncThunk(
   },
 );
 
-/* ================================
-   INITIAL STATE
-=============================== */
+// INITIAL STATE
 const initialState = {
   wishlistItems: localStorage.getItem("wishlistItems")
     ? JSON.parse(localStorage.getItem("wishlistItems"))
@@ -87,9 +77,7 @@ const initialState = {
   error: null,
 };
 
-/* ================================
-   SLICE
-================================ */
+// SLICE
 const wishlistSlice = createSlice({
   name: "wishlist",
   initialState,
@@ -123,7 +111,7 @@ const wishlistSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      /* FETCH CASES */
+      // FETCH CASES
       .addCase(fetchWishlist.pending, (state) => {
         state.status = "loading";
       })
@@ -140,14 +128,13 @@ const wishlistSlice = createSlice({
         state.error = action.payload;
       })
 
-      /* DB SYNC CASES (Add & Remove) */
+      // DB SYNC CASES (Add & Remove)
       .addMatcher(
         (action) =>
           action.type === addToWishlistDB.fulfilled.type ||
           action.type === removeFromWishlistDB.fulfilled.type,
         (state, action) => {
           state.status = "succeeded";
-          // Backend ekhon updated list pathachhe, tai sorasori replace
           state.wishlistItems = action.payload;
           localStorage.setItem(
             "wishlistItems",

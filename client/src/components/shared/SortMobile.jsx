@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { X, ChevronDown } from "lucide-react";
-import { createPortal } from "react-dom"; // Import createPortal
+import { createPortal } from "react-dom";
 
 export const SortMobile = ({ selected, onChange }) => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -21,7 +21,7 @@ export const SortMobile = ({ selected, onChange }) => {
     setIsDrawerOpen(false);
   };
 
-  // --- Scroll Lock for Sort Drawer ---
+  // Prevent background scrolling when the drawer is open
   useEffect(() => {
     if (isDrawerOpen) {
       document.body.style.overflow = "hidden";

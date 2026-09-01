@@ -35,7 +35,7 @@ export const EditItemModal = ({ isOpen, onClose, item }) => {
 
   const sizes = ["M", "L", "XL", "XXL"];
 
-  // --- Shared Components for DRYness inside the return ---
+  // Shared Components for DRYness inside the return
   const QuantitySelector = () => (
     <div className="flex items-center border border-gray-200 w-32 h-11">
       <button

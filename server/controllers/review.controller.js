@@ -2,15 +2,13 @@ import Review from "../models/review.model.js";
 import Product from "../models/Product.js";
 import { asyncHandler } from "../middleware/error.middleware.js";
 
-/**
- * @desc    Create a new product review (Pending by default)
- * @route   POST /api/reviews
- * @access  Private
- */
+// @desc    Create a new review for a product
+// @route   POST /api/reviews
+// @access  Private (Authenticated Users)
 export const createReview = asyncHandler(async (req, res) => {
   const { product, rating, comment } = req.body;
 
-  // 1. Create the review
+  // Create the review
   const review = await Review.create({
     product,
     user: req.user._id,
@@ -26,11 +24,9 @@ export const createReview = asyncHandler(async (req, res) => {
   });
 });
 
-/**
- * @desc    Admin: Get all reviews for management
- * @route   GET /api/reviews
- * @access  Private (Admin Only)
- */
+// @desc    Get all reviews (Admin Only)
+// @route   GET /api/reviews
+// @access  Private (Admin Only)
 export const getAllReviews = asyncHandler(async (req, res) => {
   // Fetch all reviews, populate user info (name, email) and product info (name)
   const reviews = await Review.find({})
@@ -44,11 +40,9 @@ export const getAllReviews = asyncHandler(async (req, res) => {
   });
 });
 
-/**
- * @desc    Get all APPROVED reviews for a specific product
- * @route   GET /api/reviews/product/:productId
- * @access  Public
- */
+// @desc    Get all approved reviews for a specific product
+// @route   GET /api/reviews/product/:productId
+// @access  Public
 export const getProductReviews = asyncHandler(async (req, res) => {
   const { productId } = req.params;
 
@@ -64,11 +58,9 @@ export const getProductReviews = asyncHandler(async (req, res) => {
   });
 });
 
-/**
- * @desc    Admin: Update review status (Approve/Reject) and update Product Analytics
- * @route   PATCH /api/reviews/:id/status
- * @access  Private (Admin Only)
- */
+// @desc    Admin: Update the status of a review (approve/reject)
+// @route   PUT /api/reviews/:id/status
+// @access  Private (Admin Only)
 export const updateReviewStatus = asyncHandler(async (req, res) => {
   const { status } = req.body; // 'approved' or 'rejected'
   const reviewId = req.params.id;
@@ -109,11 +101,9 @@ export const updateReviewStatus = asyncHandler(async (req, res) => {
   });
 });
 
-/**
- * @desc    Admin: Delete a review
- * @route   DELETE /api/reviews/:id
- * @access  Private (Admin Only)
- */
+// @desc    Admin: Delete a review
+// @route   DELETE /api/reviews/:id
+// @access  Private (Admin Only)
 export const deleteReview = asyncHandler(async (req, res) => {
   const review = await Review.findById(req.params.id);
 

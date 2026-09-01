@@ -61,12 +61,10 @@ export const ProductThumbnails = ({
         }}
         slidesPerView={3}
         spaceBetween={15}
-        // Enable loop only if there are enough slides to fill the view
         loop={productImages.length > 3}
         watchSlidesProgress={true}
         className="select-none"
         onSlideChange={(swiper) => {
-          // Update the index using realIndex to account for cloned slides in loop mode
           setCurrentIndex(swiper.realIndex);
         }}
       >

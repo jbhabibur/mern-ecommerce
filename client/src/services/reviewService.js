@@ -4,6 +4,7 @@ import { API_URLS } from "../api/API_URLS";
 /**
  * @desc Create a new product review (Initially pending)
  * @param {Object} reviewData - { product, rating, comment }
+ * @returns {Promise<Object>} - Resolves with success status, message, and created review data
  */
 export const createReviewService = async (reviewData) => {
   try {
@@ -25,6 +26,7 @@ export const createReviewService = async (reviewData) => {
 /**
  * @desc Get all approved reviews for a specific product
  * @param {string} productId - The ID of the product
+ * @returns {Promise<Object>} - Resolves with success status, reviews data array, and count
  */
 export const getProductReviewsService = async (productId) => {
   try {
@@ -49,6 +51,7 @@ export const getProductReviewsService = async (productId) => {
  * @desc Admin: Approve or Reject a review
  * @param {string} id - Review ID
  * @param {string} status - 'approved' or 'rejected'
+ * @returns {Promise<Object>} - Resolves with success status, message, and updated review data
  */
 export const updateReviewStatusService = async (id, status) => {
   try {
@@ -71,6 +74,7 @@ export const updateReviewStatusService = async (id, status) => {
 /**
  * @desc Admin: Delete a review permanently
  * @param {string} id - Review ID
+ * @returns {Promise<Object>} - Resolves with success status and deletion message
  */
 export const deleteReviewService = async (id) => {
   try {

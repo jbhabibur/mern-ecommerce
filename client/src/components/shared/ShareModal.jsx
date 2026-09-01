@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { useCustomCursor } from "../../hooks/useCustomCursor";
 
-// --- Share Modal Component ---
+// Share Modal Component
 export const ShareModal = ({ isOpen, onClose, productUrl }) => {
   const [copied, setCopied] = useState(false);
   const { mousePos } = useCustomCursor(isOpen);
@@ -40,7 +40,7 @@ export const ShareModal = ({ isOpen, onClose, productUrl }) => {
         }`}
         onClick={onClose}
       >
-        {/* 2. Floating Close Button */}
+        {/* Floating Close Button */}
         <div
           className="fixed pointer-events-none z-[110] hidden md:flex items-center justify-center bg-white rounded-full w-12 h-12 shadow-xl transition-transform duration-100 ease-out"
           style={{

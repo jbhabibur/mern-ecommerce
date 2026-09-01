@@ -21,7 +21,7 @@ export const DesktopSearchOverlay = () => {
   // Combined loading state
   const isLoading = apiLoading || isWaiting;
 
-  // --- 1. Artificial 1-second delay logic ---
+  // --- Artificial 1-second delay logic ---
   useEffect(() => {
     if (query) {
       setIsWaiting(true);
@@ -32,7 +32,7 @@ export const DesktopSearchOverlay = () => {
     }
   }, [query]);
 
-  // --- 2. Handle Close and Clear ---
+  // --- Handle Close and Clear ---
   const handleClose = () => {
     dispatch(setFocus(false));
     dispatch(setQuery("")); // Clear query on close
@@ -72,7 +72,7 @@ export const DesktopSearchOverlay = () => {
       ref={overlayRef}
       className="absolute top-full right-0 w-[550px] bg-white shadow-2xl z-[500] p-6 border border-gray-100 rounded-b-md"
     >
-      {/* 1. Trending Section */}
+      {/* Trending Section */}
       {!query && (
         <div className="mb-8">
           <h3 className="text-[11px]! font-bold uppercase text-gray-900 mb-2 tracking-wider">
@@ -105,7 +105,7 @@ export const DesktopSearchOverlay = () => {
         </div>
       )}
 
-      {/* 2. Results Section */}
+      {/* Results Section */}
       <div>
         <div className="flex justify-between items-center mb-2">
           <h3 className="text-[11px]! font-bold uppercase text-gray-900 tracking-wider">
@@ -158,7 +158,7 @@ export const DesktopSearchOverlay = () => {
         </div>
       </div>
 
-      {/* 3. Footer */}
+      {/* Footer */}
       {!isLoading && query && products?.length > 0 && (
         <div className="mt-8 pt-4 border-t border-gray-100 text-center">
           <button

@@ -13,8 +13,9 @@ import { addressValidationSchema } from "../validators/address.validator.js";
 
 const router = express.Router();
 
-// POST: /api/address
-// sequence: verifyToken (Check Auth) -> createAddress (Save to DB)
+// @desc    Create a new shipping address
+// @route   POST /api/address
+// @access  Private (Authenticated Users)
 router.post(
   "/",
   verifyToken,
@@ -22,12 +23,14 @@ router.post(
   createAddress,
 );
 
-// GET: /api/address
-// sequence: verifyToken (Check Auth) -> getAddresses (Fetch from DB)
+// @desc    Get all addresses for the authenticated user
+// @route   GET /api/address
+// @access  Private (Authenticated Users)
 router.get("/", verifyToken, getAddresses);
 
-// PUT: /api/address/:id
-// sequence: verifyToken (Check Auth) -> updateAddress (Update in DB)
+// @desc    Update an existing address by ID
+// @route   PUT /api/address/:id
+// @access  Private (Authenticated Users)
 router.put(
   "/:id",
   verifyToken,
@@ -35,12 +38,14 @@ router.put(
   updateAddress,
 );
 
-// DELETE: /api/address/:id
-// sequence: verifyToken (Check Auth) -> deleteAddress (Remove from DB)
+// @desc    Delete an address by ID
+// @route   DELETE /api/address/:id
+// @access  Private (Authenticated Users)
 router.delete("/:id", verifyToken, deleteAddress);
 
-// PATCH: /api/address/default/:id
-// sequence: verifyToken (Check Auth) -> setDefaultAddress (Toggle Default status)
+// @desc    Set a specific address as the default address
+// @route   PATCH /api/address/default/:id
+// @access  Private (Authenticated Users)
 router.patch("/default/:id", verifyToken, setDefaultAddress);
 
 export default router;

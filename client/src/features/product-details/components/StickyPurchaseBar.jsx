@@ -19,7 +19,7 @@ export const StickyPurchaseBar = ({ isVisible }) => {
   const [isSizeOpen, setIsSizeOpen] = useState(false);
   const dropdownRef = useRef(null);
 
-  // 1. Get state from Redux (Syncing with global productInfo)
+  // Get state from Redux (Syncing with global productInfo)
   const { quantity, selectedSize, productInfo } = useSelector(
     (state) => state.selection,
   );
@@ -33,7 +33,7 @@ export const StickyPurchaseBar = ({ isVisible }) => {
 
   const primaryImage = image?.url || "";
 
-  // 2. Use Redux actions for quantity buttons
+  // Use Redux actions for quantity buttons
   const increaseQty = () => dispatch(incrementQuantity());
   const decreaseQty = () => dispatch(decrementQuantity());
 

@@ -4,11 +4,9 @@ import Category from "../models/Category.js";
 import { slugify } from "../utils/slugify.utils.js";
 import { asyncHandler } from "../middleware/error.middleware.js";
 
-/**
- * @desc    Fetch products marked as New Arrivals
- * @route   GET /api/new-arrivals
- * @access  Public
- */
+// @desc    Fetch latest 8 products marked as new arrivals
+// @route   GET /api/products/new-arrivals
+// @access  Public
 export const getNewArrivals = async (req, res) => {
   try {
     const products = await Product.find({ isNewArrival: true }).sort({
@@ -36,11 +34,9 @@ export const getNewArrivals = async (req, res) => {
   }
 };
 
-/**
- * @desc    Fetch top 8 products based on popularity score
- * @route   GET /api/products/popular
- * @access  Public
- */
+// @desc    Fetch top 8 popular products based on analytics.popularityScore
+// @route   GET /api/products/popular
+// @access  Public
 export const getPopularProducts = async (req, res) => {
   try {
     // 1. Find all products
@@ -74,17 +70,15 @@ export const getPopularProducts = async (req, res) => {
   }
 };
 
-/**
- * @desc    Fetch products by category (including sub-categories)
- * @route   GET /api/categories/:categoryName
- * @access  Public
- */
+// @desc    Fetch products by category name (slugified)
+// @route   GET /api/products/category/:categoryName
+// @access  Public
 export const getProductsByCategory = async (req, res) => {
   try {
     const { categoryName } = req.params;
     const slug = categoryName.toLowerCase();
 
-    // 1️⃣ Find category metadata
+    // Find category metadata
     const category = await Category.findOne({ slug });
 
     if (!category) {
@@ -94,7 +88,7 @@ export const getProductsByCategory = async (req, res) => {
       });
     }
 
-    // 2️⃣ Find products under this category or its parent
+    // Find products under this category or its parent
     const products = await Product.find({
       $or: [{ category: category._id }, { parentCategory: category._id }],
     }).sort({ createdAt: -1 });
@@ -117,11 +111,9 @@ export const getProductsByCategory = async (req, res) => {
   }
 };
 
-/**
- * @desc    Fetch a single product by its slug
- * @route   GET /api/products/:slug
- * @access  Public
- */
+// @desc    Fetch a single product by its slug
+// @route   GET /api/products/:slug
+// @access  Public
 export const getSingleProductBySlug = asyncHandler(async (req, res, next) => {
   const { slug } = req.params;
 
@@ -129,7 +121,7 @@ export const getSingleProductBySlug = asyncHandler(async (req, res, next) => {
   const product = await Product.findOne({ slug }).select({
     category: 0,
     parentCategory: 0,
-    __v: 0, // Industry Standard: Usually exclude the version key
+    __v: 0,
   });
 
   // Resource Check: Handle cases where the slug does not match any document
@@ -146,14 +138,12 @@ export const getSingleProductBySlug = asyncHandler(async (req, res, next) => {
   });
 });
 
-/**
- * @desc    Create a new product with full classification and analytics
- * @route   POST /api/product/add
- * @access  Admin / Private
- */
+// @desc    Create a new product with image and metadata handling
+// @route   POST /api/products/create
+// @access  Admin / Private
 export const createProduct = asyncHandler(async (req, res, next) => {
   console.log("Hello 2");
-  // 1. Basic Fields Extraction
+  // Basic Fields Extraction
   const {
     name,
     slug,
@@ -161,7 +151,7 @@ export const createProduct = asyncHandler(async (req, res, next) => {
     price,
     compare_at_price,
     currency,
-    itemType, // New field added
+    itemType,
     parentCategory,
     category,
     subcategory,
@@ -171,16 +161,16 @@ export const createProduct = asyncHandler(async (req, res, next) => {
     variants,
     isNewArrival,
     bestSeller,
-    analytics, // Received as a JSON string from FormData
+    analytics,
   } = req.body;
 
-  // 2. Data Parsing with Safety Fallbacks
+  // Data Parsing with Safety Fallbacks
   // Since FormData sends everything as strings, we must parse JSON fields
   const parsedMetadata = imageMetadata ? JSON.parse(imageMetadata) : [];
   const parsedVariants = variants ? JSON.parse(variants) : [];
   const parsedAnalytics = analytics ? JSON.parse(analytics) : {};
 
-  // 3. Image Handling (Merging Cloudinary storage data with UI metadata)
+  // Image Handling (Merging Cloudinary storage data with UI metadata)
   let imageObjects = [];
   if (req.files && req.files.length > 0) {
     imageObjects = req.files.map((file, index) => ({
@@ -191,7 +181,7 @@ export const createProduct = asyncHandler(async (req, res, next) => {
     }));
   }
 
-  // 4. Product Data Object Preparation
+  // Product Data Object Preparation
   const productData = {
     name,
     itemType, // Assigned to the new schema field
@@ -224,11 +214,11 @@ export const createProduct = asyncHandler(async (req, res, next) => {
     },
   };
 
-  // 5. Database Operation
+  // Database Operation
   const newProduct = new Product(productData);
   const savedProduct = await newProduct.save();
 
-  // 6. Final Response
+  // Final Response
   res.status(201).json({
     success: true,
     message: "Product Created Successfully",
@@ -236,15 +226,13 @@ export const createProduct = asyncHandler(async (req, res, next) => {
   });
 });
 
-/**
- * @desc    Search products by query string (Name, Description, Color, itemType, etc.)
- * @route   GET /api/products/search
- * @access  Public
- */
+// @desc    Search products with filters and sorting
+// @route   GET /api/products/search
+// @access  Public
 export const searchProducts = asyncHandler(async (req, res, next) => {
   const { query, minPrice, maxPrice, stock, sort } = req.query;
 
-  // 1. Search Regex (Existing logic)
+  // Search Regex (Existing logic)
   const keywords = query
     .replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
     .trim()
@@ -252,7 +240,7 @@ export const searchProducts = asyncHandler(async (req, res, next) => {
     .join("|");
   const searchRegex = new RegExp(keywords, "i");
 
-  // 2. Build Filter Object
+  // Build Filter Object
   let filter = {
     $or: [
       { name: { $regex: searchRegex } },
@@ -274,7 +262,7 @@ export const searchProducts = asyncHandler(async (req, res, next) => {
   if (stock === "inStock") filter.countInStock = { $gt: 0 };
   if (stock === "outOfStock") filter.countInStock = { $eq: 0 };
 
-  // 3. Sorting & Execution
+  // Sorting & Execution
   const products = await Product.find(filter)
     .sort(
       sort === "priceLow"
@@ -290,45 +278,41 @@ export const searchProducts = asyncHandler(async (req, res, next) => {
     .json({ success: true, count: products.length, data: products });
 });
 
-/**
- * @desc    Fetch all products without pagination
- * @route   GET /api/products
- * @access  Public
- */
+// @desc    Fetch all products for admin dashboard
+// @route   GET /api/products/admin/all
+// @access  Admin / Private
 export const getAllProducts = asyncHandler(async (req, res) => {
-  // 1. Fetch all products from the database sorted by newest
+  // Fetch all products from the database sorted by newest
   const products = await Product.find().sort({ createdAt: -1 });
 
-  // 2. Send response
+  // Send response
   res.status(200).json({
     success: true,
     data: products,
-    totalProducts: products.length, // Total count of products found
+    totalProducts: products.length,
   });
 });
 
-/**
- * @desc    Fetch products with pagination and category names
- * @route   GET /api/products/paginated
- * @access  Public
- */
+// @desc    Fetch paginated products for admin dashboard
+// @route   GET /api/products/admin/paginated
+// @access  Admin / Private
 export const getPaginatedProducts = asyncHandler(async (req, res) => {
-  // 1. Get page and limit from query parameters
+  // Get page and limit from query parameters
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 8;
   const skip = (page - 1) * limit;
 
-  // 2. Get the total number of products
+  // Get the total number of products
   const totalProducts = await Product.countDocuments();
 
-  // 3. Fetch products and POPULATE the category field
+  // Fetch products and POPULATE the category field
   const products = await Product.find()
     .populate("category", "name")
     .sort({ createdAt: -1 })
     .skip(skip)
     .limit(limit);
 
-  // 4. Send success response
+  // Send success response
   res.status(200).json({
     success: true,
     data: products,
@@ -338,16 +322,14 @@ export const getPaginatedProducts = asyncHandler(async (req, res) => {
   });
 });
 
-/**
- * @desc    Get all unique sizes across all products for filters/analytics
- * @route   GET /api/products/admin/all-sizes
- * @access  Admin / Private
- */
+// @desc    Get all unique sizes across all products
+// @route   GET /api/products/sizes/unique
+// @access  Public
 export const getAllUniqueSizes = asyncHandler(async (req, res) => {
-  // 1. Fetch only the 'variants' field from the database
+  // Fetch only the 'variants' field from the database
   const products = await Product.find().select("variants");
 
-  // 2. Extract sizes from all product variants
+  // Extract sizes from all product variants
   const sizeSet = new Set();
 
   products.forEach((product) => {
@@ -358,7 +340,7 @@ export const getAllUniqueSizes = asyncHandler(async (req, res) => {
     });
   });
 
-  // 3. Convert the Set back into an Array
+  // Convert the Set back into an Array
   const uniqueSizes = Array.from(sizeSet);
 
   res.status(200).json({
@@ -368,11 +350,9 @@ export const getAllUniqueSizes = asyncHandler(async (req, res) => {
   });
 });
 
-/**
- * @desc    Get size and stock breakdown for a specific product
- * @route   GET /api/products/admin/stock-analysis/:id
- * @access  Admin / Private
- */
+// @desc    Get stock analysis for a specific product by ID
+// @route   GET /api/products/:id/stock-analysis
+// @access  Admin / Private
 export const getProductStockAnalysis = asyncHandler(async (req, res, next) => {
   const product = await Product.findById(req.params.id).select("variants name");
 
@@ -395,11 +375,9 @@ export const getProductStockAnalysis = asyncHandler(async (req, res, next) => {
   });
 });
 
-/**
- * @desc    Update an existing product with image and metadata management
- * @route   PUT /api/products/update/:id
- * @access  Admin / Private
- */
+// @desc    Update a product with image and metadata handling
+// @route   PUT /api/products/update/:id
+// @access  Admin / Private
 export const updateProduct = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
 
@@ -434,12 +412,12 @@ export const updateProduct = asyncHandler(async (req, res, next) => {
     analytics, // JSON string
   } = req.body;
 
-  // 3. Parse JSON data (these come as strings since they are sent via FormData)
+  //  Parse JSON data (these come as strings since they are sent via FormData)
   const parsedMetadata = imageMetadata ? JSON.parse(imageMetadata) : [];
   const parsedVariants = variants ? JSON.parse(variants) : product.variants;
   const parsedAnalytics = analytics ? JSON.parse(analytics) : product.analytics;
 
-  // 4. Image Handling (Smart Merging)
+  // Image Handling (Smart Merging)
   let updatedImages = [];
   let newFileIndex = 0;
 
@@ -474,7 +452,7 @@ export const updateProduct = asyncHandler(async (req, res, next) => {
     updatedImages = product.images;
   }
 
-  // 5. Create the update data object
+  // Create the update data object
   const updateData = {
     name: name || product.name,
     itemType: itemType || product.itemType,
@@ -516,13 +494,13 @@ export const updateProduct = asyncHandler(async (req, res, next) => {
     },
   };
 
-  // 6. Database Update
+  // Database Update
   const updatedProduct = await Product.findByIdAndUpdate(id, updateData, {
     new: true, // Returns the updated data
     runValidators: true,
   });
 
-  // 7. Send Response
+  // Send Response
   res.status(200).json({
     success: true,
     message: "Product Updated Successfully",
@@ -530,11 +508,9 @@ export const updateProduct = asyncHandler(async (req, res, next) => {
   });
 });
 
-/**
- * @desc    Delete a product
- * @route   DELETE /api/products/delete/:id
- * @access  Admin / Private
- */
+// @desc    Delete a product by ID
+// @route   DELETE /api/products/delete/:id
+// @access  Admin / Private
 export const deleteProduct = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
 
@@ -555,11 +531,10 @@ export const deleteProduct = asyncHandler(async (req, res, next) => {
     message: "Product deleted successfully.",
   });
 });
-/**
- * @desc    Get inventory statistics for low stock and out of stock products
- * @route   GET /api/products/stats/inventory
- * @access  Admin / Private
- */
+
+// @desc    Get stock statistics across all products
+// @route   GET /api/products/stock-stats
+// @access  Admin / Private
 export const getStockStats = async (req, res) => {
   try {
     const LOW_STOCK_THRESHOLD = 5;

@@ -8,12 +8,12 @@ import { setClicked } from "../../redux/slices/searchSlice";
 export const BottomNavigation = () => {
   const dispatch = useDispatch();
 
-  // 1. Get cart count from Redux state
+  // Get cart count from Redux state
   const totalQuantity = useSelector((state) => state.cart.totalQuantity);
 
   const { isCartOpen } = useSelector((state) => state.cart);
 
-  // 2. Handle navigation item clicks
+  // Handle navigation item clicks
   const handleItemClick = (label) => {
     if (label === "Account") {
       dispatch(openAuthDrawer());
@@ -26,7 +26,6 @@ export const BottomNavigation = () => {
     if (label === "Search") {
       dispatch(setClicked(true));
     }
-    // You can add other navigation logic here (e.g., using useNavigate)
   };
 
   const navItems = [
@@ -42,7 +41,7 @@ export const BottomNavigation = () => {
       {navItems.map((item, index) => (
         <button
           key={index}
-          onClick={() => handleItemClick(item.label)} // Click event handler
+          onClick={() => handleItemClick(item.label)}
           className="flex flex-col items-center justify-center gap-1 min-w-[64px] transition-colors hover:text-black text-gray-700"
         >
           <div className="relative">

@@ -12,27 +12,44 @@ import { verifyAdmin } from "../middleware/verifyAdmin.middleware.js";
 
 const router = express.Router();
 
-// Admin-only route for top performing items
-router.get("/top-items", getTopPerformingItems);
+// @desc    Get top performing items for admin dashboard
+// @route   GET /api/analytics/top-items
+// @access  Private (Admin Only)
+router.get("/top-items", verifyToken, verifyAdmin, getTopPerformingItems);
 
+// @desc    Get KPI stats for admin dashboard
 // @route   GET /api/analytics/kpi-stats
-// @desc    Get KPI stats for dashboard
-router.get("/kpi-stats", getKpiStats);
+// @access  Private (Admin Only)
+router.get("/kpi-stats", verifyToken, verifyAdmin, getKpiStats);
 
+// @desc    Get low stock or out of stock products for dashboard analysis
 // @route   GET /api/analytics/stock-analysis
-// @desc    Get only low stock or out of stock products for dashboard
-router.get("/stock-analysis", getStockAnalysis);
+// @access  Private (Admin Only)
+router.get("/stock-analysis", verifyToken, verifyAdmin, getStockAnalysis);
 
+// @desc    Get customer insights for admin dashboard
 // @route   GET /api/analytics/customer-insights
-// @desc    Get customer insights for dashboard
-router.get("/customer-insights", getCustomerInsights);
+// @access  Private (Admin Only)
+router.get("/customer-insights", verifyToken, verifyAdmin, getCustomerInsights);
 
+// @desc    Get product performance stats for admin dashboard
 // @route   GET /api/analytics/product-performance
-// @desc    Get product performance stats for dashboard
-router.get("/product-performance", getProductPerformanceStats);
+// @access  Private (Admin Only)
+router.get(
+  "/product-performance",
+  verifyToken,
+  verifyAdmin,
+  getProductPerformanceStats,
+);
 
+// @desc    Get monthly revenue stats for admin dashboard
 // @route   GET /api/analytics/monthly-revenue-stats
-// @desc    Get only low stock or out of stock products for dashboard
-router.get("/monthly-revenue-stats", getMonthlyRevenueStats);
+// @access  Private (Admin Only)
+router.get(
+  "/monthly-revenue-stats",
+  verifyToken,
+  verifyAdmin,
+  getMonthlyRevenueStats,
+);
 
 export default router;

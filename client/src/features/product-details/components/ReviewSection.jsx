@@ -17,7 +17,7 @@ export const ReviewSection = ({ productId, productAnalytics = {} }) => {
   const { user } = useSelector((state) => state.auth);
   const isLoggedIn = !!user;
 
-  // --- 1. AUTO-OPEN & SCROLL RESTORATION LOGIC ---
+  // AUTO-OPEN & SCROLL RESTORATION LOGIC
   useEffect(() => {
     const hasPendingReview = sessionStorage.getItem("pendingReview");
     const params = new URLSearchParams(window.location.search);

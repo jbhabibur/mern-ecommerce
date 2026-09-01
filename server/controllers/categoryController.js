@@ -1,11 +1,9 @@
 import Category from "../models/Category.js";
 import Product from "../models/Product.js";
 
-/**
- * @desc    Fetch categories with dynamic field selection
- * @route   GET /api/categories/list-all
- * @access  Public
- */
+// @desc    Fetch all categories with optional field selection
+// @route   GET /api/categories/list
+// @access  Public
 export const getCategoryListOnly = async (req, res) => {
   try {
     const { fields } = req.query;
@@ -32,20 +30,17 @@ export const getCategoryListOnly = async (req, res) => {
   }
 };
 
-/**
- * @desc    Fetch products based on hierarchical category levels (Parent, Category, or Sub-category)
- * @route   GET /api/categories/:slug
- * @access  Public
- */
+// @desc    Fetch category details and associated products based on slug(s)
+// @route   GET /api/categories/:slug
+// @access  Public
 export const getCategory = async (req, res) => {
   try {
     const { slug } = req.params;
 
-    // 1. Frontend theke comma separated slugs asle array banano
-    // Example: "eid-collection-26,panjabi,formal-shirt"
+    // Slug multiple categories support (e.g., "eid-collection-26,eid-collection-27")
     const slugList = slug.split(",");
 
-    // 2. Metadata-r jonno prothom slug ti check kora (eid-collection-26)
+    // Check if the first slug exists in the database
     const currentCategory = await Category.findOne({
       slug: slugList[0],
     }).lean();
@@ -56,14 +51,13 @@ export const getCategory = async (req, res) => {
         .json({ success: false, message: "Category not found" });
     }
 
-    // 3. Sob gulo category slug-er ID collect kora
+    // Fetch all categories that match the provided slugs to get their IDs
     const allCategoriesInList = await Category.find({
       slug: { $in: slugList },
     }).select("_id");
     const categoryIds = allCategoriesInList.map((cat) => cat._id);
 
-    // 4. Ebar logic holo: Product-er subcategory, category, ba parentCategory
-    // er moddhe jodi kono ekta categoryIds array-te thake, tobei sheta dekhabe.
+    // Fetch products associated with the matched categories
     const products = await Product.find({
       $or: [
         { subcategory: { $in: categoryIds } },
@@ -89,11 +83,9 @@ export const getCategory = async (req, res) => {
   }
 };
 
-/**
- * @desc    Create a new category with manual slug and visibility support
- * @route   POST /api/categories
- * @access  Private/Admin
- */
+// @desc    Create a new category with optional images and slug generation
+// @route   POST /api/categories
+// @access  Private/Admin
 export const createCategory = async (req, res) => {
   try {
     const {
@@ -166,10 +158,9 @@ export const createCategory = async (req, res) => {
   }
 };
 
-/**
- * @desc    Fetch all categories with counts and visibility status
- * @route   POST /api/categories/all
- */
+// @desc    Fetch all categories with pagination and product count
+// @route   POST /api/categories/list
+// @access  Public
 export const getAllCategory = async (req, res) => {
   try {
     const { page } = req.body;
@@ -196,8 +187,8 @@ export const getAllCategory = async (req, res) => {
           thumbnail: 1,
           bannerImage: 1,
           carouselImage: 1,
-          showInCarousel: 1, // Added
-          showInCategories: 1, // Added
+          showInCarousel: 1,
+          showInCategories: 1,
           displayImage: {
             $cond: {
               if: { $gt: ["$thumbnail", ""] },
@@ -228,9 +219,9 @@ export const getAllCategory = async (req, res) => {
   }
 };
 
-/**
- * @desc    Update specific category images individually
- */
+// @desc    Update category images (thumbnail, banner, carousel)
+// @route   PUT /api/categories/:id/images
+// @access  Private/Admin
 export const updateCategoryImage = async (req, res) => {
   try {
     const { id } = req.params;
@@ -265,9 +256,9 @@ export const updateCategoryImage = async (req, res) => {
   }
 };
 
-/**
- * @desc    Update status/fields and regenerate slug if name changes
- */
+// @desc    Update category status (active/inactive) and regenerate slug if name changes
+// @route   PUT /api/categories/:id/status
+// @access  Private/Admin
 export const updateCategoryStatus = async (req, res) => {
   try {
     const { id } = req.params;

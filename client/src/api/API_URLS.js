@@ -9,17 +9,13 @@ export const API_URLS = {
   CATEGORY_PRODUCTS: (slug) => `${BASE_URL}/api/categories/${slug}`,
   SINGLE_PRODUCT: `${BASE_URL}/api/products`,
 
-  // Categories endpoints
-  /** * @description Fetch categories with specific fields to optimize payload.
-   * @usage API_URLS.GET_CATEGORIES("name,carouselImage")
-   * @param {string} fields - Comma-separated field names.
-   */
+  // Category endpoints
   GET_CATEGORIES: (fields) => {
     const query = fields ? `?fields=${fields}` : "";
     return `${BASE_URL}/api/categories/list-all${query}`;
   },
 
-  // Auth endpoints
+  // Authentication endpoints
   LOGIN: `${BASE_URL}/api/auth/login`,
   REGISTER: `${BASE_URL}/api/auth/register`,
   VERIFY_OTP: `${BASE_URL}/api/auth/verify-otp`,

@@ -2,8 +2,9 @@ import User from "../models/User.js";
 import bcrypt from "bcryptjs";
 import { asyncHandler } from "../middleware/error.middleware.js";
 
-// 1. Get User Profile
-// Fetches user data excluding the password field
+// @desc    Get the profile of the currently authenticated user
+// @route   GET /api/profile
+// @access  Private (Authenticated Users)
 export const getProfile = async (req, res) => {
   try {
     // req.user.id is populated by your verifyToken middleware
@@ -19,8 +20,9 @@ export const getProfile = async (req, res) => {
   }
 };
 
-// 2. Create User / Register
-// Handles new user registration with email uniqueness check and password hashing
+// @desc    Register a new user
+// @route   POST /api/register
+// @access  Public
 export const registerUser = async (req, res) => {
   try {
     const { firstName, lastName, email, password } = req.body;
@@ -52,8 +54,9 @@ export const registerUser = async (req, res) => {
   }
 };
 
-// 3. Update Profile
-// Updates non-sensitive user information
+// @desc    Update user profile information
+// @route   PUT /api/profile
+// @access  Private (Authenticated Users)
 export const updateProfile = async (req, res) => {
   try {
     const { firstName, lastName, phone, birthday, gender, isSubscribed } =
@@ -83,8 +86,9 @@ export const updateProfile = async (req, res) => {
   }
 };
 
-// 4. Change Password
-// Verifies current password before allowing a password reset
+// @desc    Change user password
+// @route   PUT /api/profile/change-password
+// @access  Private (Authenticated Users)
 export const changePassword = async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
@@ -111,8 +115,9 @@ export const changePassword = async (req, res) => {
   }
 };
 
-// 5. Update Profile Image
-// Handles profile picture updates by saving the Cloudinary URL to the database
+// @desc    Update user profile image
+// @route   PUT /api/profile/update-image
+// @access  Private (Authenticated Users)
 export const updateProfileImage = async (req, res) => {
   try {
     // Check if the file was successfully uploaded via the Multer-Cloudinary middleware
@@ -151,7 +156,9 @@ export const updateProfileImage = async (req, res) => {
   }
 };
 
-// 6. Get all users except customers
+// @desc    Get all staff members (excluding customers)
+// @route   GET /api/admin/staff
+// @access  Private (Admin Only)
 export const getAllStaff = async (req, res) => {
   try {
     // Finds all users where role is NOT "customer"
@@ -173,17 +180,16 @@ export const getAllStaff = async (req, res) => {
   }
 };
 
-/**
- * @desc    Super Admin: Update user role and notify via email
- * @route   PATCH /api/admin/update-role/:id
- */
+// @desc    Super Admin: Update user role and notify via email
+// @route   PATCH /api/admin/update-role/:id
+// @access  Private (Admin Only)
 export const updateUserRole = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const { role } = req.body;
 
   console.log("double check", role);
 
-  // 1. Find the user and update their role in the database
+  // Find the user and update their role in the database
   const user = await User.findByIdAndUpdate(
     id,
     { role },
@@ -194,7 +200,7 @@ export const updateUserRole = asyncHandler(async (req, res) => {
     return res.status(404).json({ success: false, message: "User not found." });
   }
 
-  // 2. Notify the user about the role change via email
+  // Notify the user about the role change via email
   try {
     await transporter.sendMail({
       from: process.env.EMAIL_USER,
@@ -223,18 +229,16 @@ export const updateUserRole = asyncHandler(async (req, res) => {
   });
 });
 
-/**
- * @desc    Super Admin: Permanently delete a user account
- * @route   DELETE /api/profile/delete-user/:id
- * @access  Private (Super Admin Only)
- */
+// @desc    Super Admin: Permanently delete a user account
+// @route   DELETE /api/profile/delete-user/:id
+// @access  Private (Super Admin Only)
 export const deleteUser = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
-  // 1. Attempt to find and delete the user by their ID
+  // Attempt to find and delete the user by their ID
   const user = await User.findByIdAndDelete(id);
 
-  // 2. Return an error if the user does not exist
+  // Return an error if the user does not exist
   if (!user) {
     return res.status(404).json({
       success: false,
@@ -242,7 +246,7 @@ export const deleteUser = asyncHandler(async (req, res) => {
     });
   }
 
-  // 3. Confirm successful deletion
+  // Confirm successful deletion
   res.status(200).json({
     success: true,
     message: "User account has been permanently deleted.",

@@ -60,6 +60,11 @@ export const fetchPopularProducts = async () => {
   }
 };
 
+/**
+ * Service to fetch products associated with a specific category slug
+ * @param {string} slug - The unique category slug identifier
+ * @returns {Promise<Object>} - Resolves with response data containing category products
+ */
 export const fetchCategoryProducts = async (slug) => {
   // Use the dynamic function from API_URLS for environmental compatibility
   const response = await apiInstance.get(API_URLS.CATEGORY_PRODUCTS(slug));

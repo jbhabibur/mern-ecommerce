@@ -6,11 +6,9 @@ dotenv.config();
 
 let io;
 
-/**
- * Initialize Socket.io instance with the provided HTTP server
- * @param {Object} httpServer - The Node.js HTTP server instance
- * @returns {Object} io - The configured Socket.io server
- */
+// Initialize Socket.io instance with the provided HTTP server
+// @param {Object} httpServer - The Node.js HTTP server instance
+// @returns {Object} io - The configured Socket.io server
 export const initSocket = (httpServer) => {
   // Define allowed origins from environment variables
   // Splitting by comma allows multiple URLs if needed (e.g., CLIENT_URL,ADMIN_URL)
@@ -41,10 +39,8 @@ export const initSocket = (httpServer) => {
   return io;
 };
 
-/**
- * Global getter to access the Socket.io instance from anywhere in the app
- * @returns {Object} io - The initialized Socket.io instance
- */
+// Global getter to access the Socket.io instance from anywhere in the app
+// @returns {Object} io - The initialized Socket.io instance
 export const getIO = () => {
   if (!io) {
     throw new Error("Critical Error: Socket.io has not been initialized!");

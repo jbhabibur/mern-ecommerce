@@ -11,9 +11,9 @@ export const verifyToken = async (req, res, next) => {
   }
 
   try {
-    // 1. Firebase Token Check
+    // Firebase Token Check
     try {
-      // Admin initialize na hole ekhane error throw korbe
+      // If Firebase Admin is not initialized, it will throw an error here
       const firebaseUser = await admin.auth().verifyIdToken(token);
 
       const user = await User.findOne({ email: firebaseUser.email }).select(
@@ -24,11 +24,11 @@ export const verifyToken = async (req, res, next) => {
       req.firebaseUser = firebaseUser;
       return next();
     } catch (firebaseError) {
-      // Firebase token na hole console-e dekhte paren (Optional)
+      // Log if it is not a Firebase token, then proceed to try custom JWT
       console.log("Not a Firebase token, trying custom JWT...");
     }
 
-    // 2. Custom JWT Check
+    // Custom JWT Check
     if (!process.env.JWT_ACCESS_SECRET) {
       throw new Error("JWT_ACCESS_SECRET is missing in .env file");
     }
@@ -43,12 +43,12 @@ export const verifyToken = async (req, res, next) => {
     req.user = user;
     next();
   } catch (error) {
-    // Console-e asol error-ti dekhun (Expired token naki Secret mismatch?)
+    // Log the actual error for debugging (Expired token or Secret mismatch?)
     console.error("Auth Middleware Error:", error.message);
 
     res.status(401).json({
       message: "Not authorized, token failed",
-      error: error.message, // Debugging-er somoy error message pathale thik kora shohoj hoy
+      error: error.message, // Returning error message helps debugging during development
     });
   }
 };

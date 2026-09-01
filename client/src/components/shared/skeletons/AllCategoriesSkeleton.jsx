@@ -2,12 +2,12 @@ import React from "react";
 
 const SkeletonCard = () => (
   <div className="flex flex-col items-center w-full">
-    {/* Image Placeholder: Matches the 220px height & styling */}
+    {/* Image Placeholder */}
     <div className="relative overflow-hidden bg-gray-200 w-full h-[220px] mb-8">
       <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
     </div>
 
-    {/* Title Placeholder: Matches the text size/spacing */}
+    {/* Title Placeholder */}
     <div className="relative overflow-hidden bg-gray-200 h-8 w-3/4 mb-2">
       <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
     </div>

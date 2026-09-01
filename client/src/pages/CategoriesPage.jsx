@@ -22,7 +22,7 @@ export const CategoriesPage = () => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [view, setView] = useState("grid4");
 
-  // NEW: Track the base selection for the dropdown separately
+  // Track the base selection for the dropdown separately
   const [itemsPerPageBase, setItemsPerPageBase] = useState(10);
 
   const [isInitialMount, setIsInitialMount] = useState(true);
@@ -60,7 +60,7 @@ export const CategoriesPage = () => {
     }
   }, [loading, isInitialMount]);
 
-  // --- Scroll Lock Logic for Mobile Only ---
+  // Scroll Lock Logic for Mobile Only
   useEffect(() => {
     const isMobile = window.innerWidth < 768;
 
@@ -197,16 +197,16 @@ export const CategoriesPage = () => {
             <div className="flex items-center gap-4 md:gap-4">
               <div className="hidden md:block">
                 <ItemsPerPage
-                  selected={itemsPerPageBase} // Use the base state here
+                  selected={itemsPerPageBase}
                   onChange={(val) => {
-                    setItemsPerPageBase(val); // Update local state
+                    setItemsPerPageBase(val);
                     updateFilters(
                       selectedStock,
                       priceRange,
                       val,
                       sortOption,
                       true,
-                    ); // Sync with URL
+                    );
                   }}
                 />
               </div>
@@ -255,7 +255,7 @@ export const CategoriesPage = () => {
             </div>
           </div>
 
-          {/* --- LOAD MORE SECTION --- */}
+          {/* LOAD MORE SECTION */}
           {products.length > 0 && (
             <div className="mt-16 mb-24 flex flex-col items-center gap-3">
               <div className="flex flex-col items-center w-full max-w-[200px] gap-3">
@@ -280,7 +280,7 @@ export const CategoriesPage = () => {
                     onClick={() => {
                       setIsLoadingMore(true);
                       setTimeout(() => {
-                        const step = Number(itemsPerPageBase); // Use base step
+                        const step = Number(itemsPerPageBase);
                         const nextLimit = products.length + step;
                         updateFilters(
                           selectedStock,

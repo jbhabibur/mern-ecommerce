@@ -1,9 +1,7 @@
 import admin from "firebase-admin";
 
-/**
- * Firebase Admin Initialization
- * Using environment variables to avoid file path issues in production
- */
+// Firebase Admin Initialization
+// Using environment variables to avoid file path issues in production
 try {
   let serviceAccount;
 

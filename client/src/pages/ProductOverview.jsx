@@ -23,11 +23,9 @@ import {
 } from "../redux/slices/productSlice";
 import { resetSelection, setSize } from "../redux/slices/selectionSlice";
 
-/**
- * ProductOverview Component
- * Serves as the main container for individual product pages.
- * Handles data fetching, synchronization with Redux, and scroll-based UI states.
- */
+// ProductOverview Component
+// Serves as the main container for individual product pages.
+// Handles data fetching, synchronization with Redux, and scroll-based UI states.
 export const ProductOverview = () => {
   const { slug } = useParams();
   const location = useLocation();
@@ -82,9 +80,7 @@ export const ProductOverview = () => {
     };
   }, [product?._id, dispatch]); // Optimized dependency array to prevent flickering
 
-  /**
-   * Effect: Updates Redux with the visibility state of the sticky add-to-cart bar.
-   */
+  // Effect: Updates Redux with the visibility state of the sticky add-to-cart bar.
   useEffect(() => {
     dispatch(setStickyVisibility(isVisible));
   }, [isVisible, dispatch]);

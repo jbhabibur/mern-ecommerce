@@ -1,11 +1,5 @@
 import jwt from "jsonwebtoken";
 
-/**
- * Generates Access & Refresh tokens and sets the Refresh token in a secure cookie.
- * @param {Object} user - The user object from the database.
- * @param {Object} res - The Express response object.
- * @returns {String} accessToken
- */
 export const sendTokens = (user, res) => {
   const accessToken = jwt.sign(
     { id: user._id, role: user.role },

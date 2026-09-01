@@ -1,3 +1,11 @@
+/**
+ * @desc    Professional HTML template for Admin Invitations
+ * @param   {string} name - Recipient Name
+ * @param   {string} role - Assigned Role (super-admin, admin, etc.)
+ * @param   {string} setupUrl - URL with token for account setup
+ * @returns {string} HTML string for email template
+ */
+
 export const resetPasswordTemplate = (name, resetUrl) => {
   return `
     <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #ddd; padding: 20px; border-radius: 10px;">

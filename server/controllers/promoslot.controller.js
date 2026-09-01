@@ -2,21 +2,20 @@ import { Storefront } from "../models/storefront.model.js";
 import { cloudinary } from "../config/cloudinary.js";
 import { asyncHandler } from "../middleware/error.middleware.js";
 
-/**
- * @desc    Create or Update a promo slot
- * @route   POST /api/storefront/promo-slots
- */
+// @desc    Save or update a promo slot
+// @route   POST /api/storefront/promo-slots
+// @access  Private/Admin
 export const savePromoSlot = asyncHandler(async (req, res) => {
   const { slot_number, category, title, isActive } = req.body;
 
-  // 1. Check if file was uploaded to Cloudinary via Multer
+  // Check if file was uploaded to Cloudinary via Multer
   if (!req.file && !req.body.image) {
     return res
       .status(400)
       .json({ success: false, message: "Image is required" });
   }
 
-  // 2. Prepare the slot object
+  // Prepare the slot object
   const slotData = {
     slot_number: Number(slot_number),
     category,
@@ -32,13 +31,13 @@ export const savePromoSlot = asyncHandler(async (req, res) => {
     };
   }
 
-  // 3. Find the storefront (create one if it doesn't exist)
+  // Find the storefront (create one if it doesn't exist)
   let storefront = await Storefront.findOne();
   if (!storefront) {
     storefront = await Storefront.create({ promos: [] });
   }
 
-  // 4. Check if slot already exists in the array
+  // Check if slot already exists in the array
   const existingSlotIndex = storefront.promos.findIndex(
     (p) => p.slot_number === Number(slot_number),
   );
@@ -72,10 +71,9 @@ export const savePromoSlot = asyncHandler(async (req, res) => {
   });
 });
 
-/**
- * @desc    Get all promo slots
- * @route   GET /api/storefront/promo-slots
- */
+// @desc    Get all promo slots
+// @route   GET /api/storefront/promo-slots
+// @access  Public
 export const getPromoSlots = asyncHandler(async (req, res) => {
   const storefront = await Storefront.findOne().populate("promos.category");
 
@@ -85,10 +83,9 @@ export const getPromoSlots = asyncHandler(async (req, res) => {
   });
 });
 
-/**
- * @desc    Delete a promo slot & its Cloudinary image
- * @route   DELETE /api/storefront/promo-slots/:slotId
- */
+// @desc    Delete a promo slot
+// @route   DELETE /api/storefront/promo-slots/:slotId
+// @access  Private/Admin
 export const deletePromoSlot = asyncHandler(async (req, res) => {
   const { slotId } = req.params; // This is the slot_number
 
@@ -119,15 +116,14 @@ export const deletePromoSlot = asyncHandler(async (req, res) => {
   });
 });
 
-/**
- * @desc    Toggle Promo Slot status (Active/Inactive)
- * @route   PATCH /api/storefront/promo-slots/:slotId/status
- */
+// @desc    Toggle the active status of a promo slot
+// @route   PATCH /api/storefront/promo-slots/:slotId/toggle
+// @access  Private/Admin
 export const togglePromoStatus = asyncHandler(async (req, res) => {
   const { slotId } = req.params;
   const slotNum = Number(slotId);
 
-  // 1️⃣ Find storefront first
+  // Find storefront first
   const storefront = await Storefront.findOne({
     "promos.slot_number": slotNum,
   });
@@ -139,13 +135,13 @@ export const togglePromoStatus = asyncHandler(async (req, res) => {
     });
   }
 
-  // 2️⃣ Find the slot
+  // Find the slot
   const promo = storefront.promos.find((p) => p.slot_number === slotNum);
 
-  // 3️⃣ Toggle value
+  // Toggle value
   promo.isActive = !promo.isActive;
 
-  // 4️⃣ Save
+  // Save
   await storefront.save();
 
   res.status(200).json({

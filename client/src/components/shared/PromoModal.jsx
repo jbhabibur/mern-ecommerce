@@ -7,10 +7,10 @@ export const PromoModal = ({ showLoader }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
-    // 1. Check if the user has seen it before
+    // Check if the user has seen it before
     const hasSeenPromo = localStorage.getItem("mensfaashion_promo_seen");
 
-    // 2. Show if loader is finished and not seen before
+    // Show if loader is finished and not seen before
     if (!showLoader && !hasSeenPromo) {
       const timer = setTimeout(() => {
         setIsOpen(true);
@@ -20,7 +20,7 @@ export const PromoModal = ({ showLoader }) => {
   }, [showLoader]);
 
   const handleClose = () => {
-    // 3. Save to LocalStorage so it doesn't reappear
+    // Save to LocalStorage so it doesn't reappear
     localStorage.setItem("mensfaashion_promo_seen", "true");
     setIsOpen(false);
   };

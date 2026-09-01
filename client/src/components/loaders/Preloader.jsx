@@ -4,7 +4,6 @@ import { motion } from "framer-motion";
 export const Preloader = ({ onFinish }) => {
   const [count, setCount] = useState(0);
   const [phase, setPhase] = useState("loading");
-  // phases: loading → brand → sliding
 
   const timers = useRef([]);
 
@@ -26,12 +25,12 @@ export const Preloader = ({ onFinish }) => {
     }
   }, [count, phase]);
 
-  // Brand → Slide → Finish sequence
+  // Phase transitions
   useEffect(() => {
     if (phase === "brand") {
       const brandTimer = setTimeout(() => {
         setPhase("sliding");
-      }, 1000); // Show brand 1s
+      }, 1000);
 
       timers.current.push(brandTimer);
     }
@@ -39,7 +38,7 @@ export const Preloader = ({ onFinish }) => {
     if (phase === "sliding") {
       const finishTimer = setTimeout(() => {
         onFinish();
-      }, 1200); // Match slide duration
+      }, 1200);
 
       timers.current.push(finishTimer);
     }

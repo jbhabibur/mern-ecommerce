@@ -8,10 +8,7 @@ export const ComponentLoader = ({
       // Fills the remaining viewport height perfectly below your 130px header
       style={{ minHeight: `calc(100vh - ${headerHeight})` }}
     >
-      {/* The Progress Bar:
-         A hair-thin 1px line that provides subtle feedback 
-         without cluttering the interface with text.
-      */}
+      {/* Progress Bar */}
       <div className="relative w-32 h-[1px] bg-slate-100 overflow-hidden">
         <div
           className="absolute h-full w-1/4 animate-modern-slide"
@@ -19,9 +16,7 @@ export const ComponentLoader = ({
         />
       </div>
 
-      {/* Cubic-bezier animation creates a premium 'velocity' effect 
-         where the line accelerates and decelerates smoothly.
-      */}
+      {/* Animation Styles */}
       <style>{`
         @keyframes modern-slide {
           0% { left: -30%; }

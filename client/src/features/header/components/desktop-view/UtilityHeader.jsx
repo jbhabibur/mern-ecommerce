@@ -9,7 +9,7 @@ import { DesktopSearchOverlay } from "../../../search/components/DesktopSearchOv
 import { cartActions } from "../../../../redux/slices/cartSlice";
 import { openAuthDrawer } from "../../../../redux/slices/authDrawerSlice";
 
-// --- IMPORT HOOKS ---
+// IMPORT HOOKS
 import { useLogout } from "../../../../hooks/useLogout";
 import { AccountDropdown } from "../../../auth/components/AccountDropdown";
 import { SectionLayout } from "../../../../layout/SectionLayout";
@@ -150,11 +150,9 @@ export const UtilityHeader = () => {
                     </button>
 
                     {isDropdownOpen && (
-                      // <div className="absolute right-0 z-10">
                       <AccountDropdown
                         onClose={() => setIsDropdownOpen(false)}
                       />
-                      // </div>
                     )}
                   </div>
                 ) : (

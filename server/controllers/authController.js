@@ -11,24 +11,23 @@ import { asyncHandler } from "../middleware/error.middleware.js";
 import { sendTokens } from "../utils/token.utils.js";
 import { sendResetPasswordEmail } from "../services/email.service.js";
 
-/**
- * @desc    Register a new user
- * @route   POST /api/auth/register
- */
+// @desc    Register a new user and send verification email
+// @route   POST /api/auth/register
+// @access  Public
 export const registerUser = asyncHandler(async (req, res) => {
   const { firstName, lastName, email, password, isSubscribed } = req.body;
 
   const userExists = await User.findOne({ email });
 
   if (userExists) {
-    // 1. User exists and is already verified (Return direct error)
+    // User exists and is already verified (Return direct error)
     if (userExists.isVerified) {
       return res.status(409).json({
         message: "This email is already registered and verified. Please login.",
       });
     }
 
-    // 2. User exists but is not verified (Don't resend OTP here, just send a flag)
+    // User exists but is not verified (Don't resend OTP here, just send a flag)
     return res.status(403).json({
       success: false,
       unverified: true, // This flag allows the frontend to show a "Verify Now" button
@@ -37,7 +36,7 @@ export const registerUser = asyncHandler(async (req, res) => {
     });
   }
 
-  // 3. New user flow (Save user and send initial verification email)
+  // New user flow (Save user and send initial verification email)
   const hashedPassword = await hashPassword(password);
   const otp = generateOTP();
   const verificationToken = crypto.randomBytes(32).toString("hex");
@@ -72,18 +71,17 @@ export const registerUser = asyncHandler(async (req, res) => {
   });
 });
 
-/**
- * @desc    Verify user email using OTP code
- * @route   POST /api/auth/verify-otp
- */
+// @desc    Verify OTP sent to user's email
+// @route   POST /api/auth/verify-otp
+// @access  Public
 export const verifyOTP = async (req, res) => {
   const { email, otp } = req.body;
 
   try {
-    // 1. DATABASE LOOKUP: Find the user by email
+    // DATABASE LOOKUP: Find the user by email
     const user = await User.findOne({ email });
 
-    // 2. EXISTENCE CHECK: Verify if the user exists
+    // EXISTENCE CHECK: Verify if the user exists
     if (!user) {
       return res.status(404).json({
         success: false,
@@ -91,7 +89,7 @@ export const verifyOTP = async (req, res) => {
       });
     }
 
-    // 3. VERIFICATION CHECK: Prevent re-verifying an already active account
+    // VERIFICATION CHECK: Prevent re-verifying an already active account
     if (user.isVerified) {
       return res.status(409).json({
         success: false,
@@ -99,7 +97,7 @@ export const verifyOTP = async (req, res) => {
       });
     }
 
-    // 4. OTP MATCH: Compare submitted OTP with stored OTP
+    // OTP MATCH: Compare submitted OTP with stored OTP
     if (user.otp !== otp) {
       return res.status(400).json({
         success: false,
@@ -107,7 +105,7 @@ export const verifyOTP = async (req, res) => {
       });
     }
 
-    // 5. EXPIRY CHECK: Ensure current time hasn't passed otpExpires
+    // EXPIRY CHECK: Ensure current time hasn't passed otpExpires
     if (new Date() > user.otpExpires) {
       return res.status(410).json({
         success: false,
@@ -115,13 +113,13 @@ export const verifyOTP = async (req, res) => {
       });
     }
 
-    // 6. UPDATE USER STATUS
+    // UPDATE USER STATUS
     user.isVerified = true;
     user.otp = undefined;
     user.otpExpires = undefined;
     await user.save();
 
-    // 7. SEND SUCCESS EMAIL (Isolated try-catch)
+    // SEND SUCCESS EMAIL (Isolated try-catch)
     try {
       await sendSuccessEmail({
         email: user.email,
@@ -132,13 +130,13 @@ export const verifyOTP = async (req, res) => {
       // We don't return an error here because the user is already verified in DB
     }
 
-    // 8. FINAL RESPONSE
+    // FINAL RESPONSE
     return res.status(200).json({
       success: true,
       message: "Email verified successfully!",
     });
   } catch (error) {
-    // 9. GLOBAL ERROR CATCH
+    // GLOBAL ERROR CATCH
     console.error("OTP Verification Error:", error);
     return res.status(500).json({
       success: false,
@@ -147,15 +145,14 @@ export const verifyOTP = async (req, res) => {
   }
 };
 
-/**
- * @desc    Resend OTP and Magic Link to user's email
- * @route   POST /api/auth//resend-verification
- */
+// @desc    Resend verification email with new OTP and magic link
+// @route   POST /api/auth/resend-verification
+// @access  Public
 export const resendVerification = asyncHandler(async (req, res) => {
   const { email } = req.body;
   console.log("Resend verification called with:", email);
 
-  // 1. DATABASE LOOKUP
+  // DATABASE LOOKUP
   // Check if the user exists in the system
   const user = await User.findOne({ email });
 
@@ -166,7 +163,7 @@ export const resendVerification = asyncHandler(async (req, res) => {
     });
   }
 
-  // 2. VERIFICATION CHECK
+  // VERIFICATION CHECK
   // If user is already verified, no need to send anything
   if (user.isVerified) {
     return res.status(400).json({
@@ -175,7 +172,7 @@ export const resendVerification = asyncHandler(async (req, res) => {
     });
   }
 
-  // 3. GENERATE NEW OTP & MAGIC TOKEN
+  // GENERATE NEW OTP & MAGIC TOKEN
   // Consistency: Using the same logic as your registerUser function
   const newOtp = generateOTP();
   const newVerificationToken = crypto.randomBytes(32).toString("hex");
@@ -183,7 +180,7 @@ export const resendVerification = asyncHandler(async (req, res) => {
   // Set expiration (matching your 10-minute registration window)
   const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
-  // 4. UPDATE USER RECORD
+  // UPDATE USER RECORD
   user.otp = newOtp;
   user.otpExpires = expiresAt;
   user.verificationToken = newVerificationToken;
@@ -191,11 +188,11 @@ export const resendVerification = asyncHandler(async (req, res) => {
 
   await user.save();
 
-  // 5. CONSTRUCT MAGIC LINK URL
+  // CONSTRUCT MAGIC LINK URL
   // Matches the URL structure used in the registration flow
   const verificationUrl = `${process.env.BACKEND_URL || "http://localhost:5000"}/api/auth/verify-magic-link?email=${user.email}&token=${newVerificationToken}`;
 
-  // 6. SEND EMAIL (Background task)
+  // SEND EMAIL (Background task)
   // Ensure your email helper can handle both 'otp' and 'verificationUrl'
   sendVerificationEmail({
     email: user.email,
@@ -204,21 +201,20 @@ export const resendVerification = asyncHandler(async (req, res) => {
     verificationUrl: verificationUrl,
   });
 
-  // 7. SUCCESS RESPONSE
+  // SUCCESS RESPONSE
   res.status(200).json({
     success: true,
     message: "A new verification link and OTP have been sent to your email.",
   });
 });
 
-/**
- * @desc    Login user & get token
- * @route   POST /api/auth/login
- */
+// @desc    Login user and return access token
+// @route   POST /api/auth/login
+// @access  Public
 export const loginUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
-  // 1. Validation check
+  // Validation check
   if (!email || !password) {
     return res.status(400).json({
       success: false,
@@ -226,7 +222,7 @@ export const loginUser = asyncHandler(async (req, res) => {
     });
   }
 
-  // 2. Check if user exists (Explicitly select password)
+  // Check if user exists (Explicitly select password)
   const user = await User.findOne({ email }).select("+password");
 
   if (!user) {
@@ -236,7 +232,7 @@ export const loginUser = asyncHandler(async (req, res) => {
     });
   }
 
-  // 3. Check if password is correct
+  // Check if password is correct
   const isMatch = await bcrypt.compare(password, user.password);
 
   if (!isMatch) {
@@ -246,7 +242,7 @@ export const loginUser = asyncHandler(async (req, res) => {
     });
   }
 
-  // 4. Check verification status
+  // Check verification status
   if (!user.isVerified) {
     return res.status(403).json({
       // Changed to 403 Forbidden
@@ -257,7 +253,7 @@ export const loginUser = asyncHandler(async (req, res) => {
     });
   }
 
-  // 5. Generate Tokens
+  // Generate Tokens
   // NOTE: Ensure sendTokens returns the token string and does NOT
   // call res.send() or res.json() inside it.
   const accessToken = sendTokens(user, res);
@@ -276,11 +272,9 @@ export const loginUser = asyncHandler(async (req, res) => {
   });
 });
 
-/**
- * @desc    Logout user & clear refresh token cookie
- * @route   POST /api/auth/logout
- * @access  Public
- */
+// @desc    Logout user and clear refresh token cookie
+// @route   POST /api/auth/logout
+// @access  Public
 export const logoutUser = asyncHandler(async (req, res) => {
   // 1. Clear the refreshToken cookie from the browser
   // The options must match the ones used when the cookie was originally set
@@ -303,14 +297,13 @@ export const logoutUser = asyncHandler(async (req, res) => {
   });
 });
 
-/**
- * @desc    Forgot Password - Send reset link to email
- * @route   POST /api/auth/forgot-password
- */
+// @desc    Forgot Password - Generate reset token and send email
+// @route   POST /api/auth/forgot-password
+// @access  Public
 export const forgotPassword = asyncHandler(async (req, res) => {
   const { email } = req.body;
 
-  // 1. Find User
+  // Find User
   const user = await User.findOne({ email });
   if (!user) {
     return res
@@ -318,26 +311,25 @@ export const forgotPassword = asyncHandler(async (req, res) => {
       .json({ success: false, message: "No account with this email" });
   }
 
-  // 2. Generate temporary reset token (plain text for email)
+  // Generate temporary reset token (plain text for email)
   const resetToken = crypto.randomBytes(32).toString("hex");
 
-  // 3. Store hashed version of token in DB for security
+  // Store hashed version of token in DB for security
   user.forgotPasswordToken = crypto
     .createHash("sha256")
     .update(resetToken)
     .digest("hex");
 
-  // 4. Set token expiry time (e.g., 15 minutes)
+  // Set token expiry time (e.g., 15 minutes)
   user.forgotPasswordTokenExpires = new Date(Date.now() + 15 * 60 * 1000);
 
   await user.save();
 
-  // 5. Construct reset URL for Frontend
-
+  // Construct reset URL for Frontend
   const resetUrl = `${process.env.CLIENT_URL}/account/reset-password/${resetToken}`;
 
   try {
-    // 6. Send Email using the service layer
+    // Send Email using the service layer
     await sendResetPasswordEmail({
       email: user.email,
       name: user.firstName,
@@ -349,7 +341,7 @@ export const forgotPassword = asyncHandler(async (req, res) => {
       message: "Password reset link sent to email",
     });
   } catch (error) {
-    // 7. Cleanup on email failure
+    // Cleanup on email failure
     user.forgotPasswordToken = undefined;
     user.forgotPasswordTokenExpires = undefined;
     await user.save();
@@ -359,20 +351,19 @@ export const forgotPassword = asyncHandler(async (req, res) => {
   }
 });
 
-/**
- * @desc    Reset Password using token
- * @route   POST /api/auth/reset-password/:token
- */
+// @desc    Reset Password using token from email
+// @route   POST /api/auth/reset-password/:token
+// @access  Public
 export const resetPassword = asyncHandler(async (req, res) => {
   console.log("hello");
 
-  // 1. Hash the token received from the URL to match the DB version
+  // Hash the token received from the URL to match the DB version
   const hashedToken = crypto
     .createHash("sha256")
     .update(req.params.token)
     .digest("hex");
 
-  // 2. Find user with valid token and not expired
+  // Find user with valid token and not expired
   const user = await User.findOne({
     forgotPasswordToken: hashedToken,
     forgotPasswordTokenExpires: { $gt: Date.now() },
@@ -384,10 +375,10 @@ export const resetPassword = asyncHandler(async (req, res) => {
       .json({ success: false, message: "Invalid or expired reset token" });
   }
 
-  // 3. Set new hashed password
+  // Set new hashed password
   user.password = await hashPassword(req.body.password);
 
-  // 4. Clear reset token fields
+  // Clear reset token fields
   user.forgotPasswordToken = undefined;
   user.forgotPasswordTokenExpires = undefined;
 
@@ -399,10 +390,9 @@ export const resetPassword = asyncHandler(async (req, res) => {
   });
 });
 
-/**
- * @desc    Verify magic link from email and redirect to a success confirmation page
- * @route   GET /api/auth/verify-magic-link
- */
+// @desc    Verify Magic Link from email
+// @route   GET /api/auth/verify-magic-link
+// @access  Public
 export const verifyMagicLink = asyncHandler(async (req, res) => {
   const { email, token } = req.query;
 
@@ -444,11 +434,9 @@ export const verifyMagicLink = asyncHandler(async (req, res) => {
   res.redirect(`${process.env.CLIENT_URL}/account/verify-success`);
 });
 
-/**
- * @desc    Firebase OAuth Login (Google/GitHub)
- * @route   POST /api/auth/firebase
- * @access  Public
- */
+// @desc    Firebase Authentication - Handle social login and user creation
+// @route   POST /api/auth/firebase-auth
+// @access  Public
 export const firebaseAuth = asyncHandler(async (req, res) => {
   // 1. Data extracted and attached by your Firebase middleware
   const { uid, email, name, picture } = req.firebaseUser;

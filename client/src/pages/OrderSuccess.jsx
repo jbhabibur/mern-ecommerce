@@ -28,9 +28,7 @@ export const OrderSuccess = () => {
   // Extract orderId from the URL query parameters (e.g., ?orderId=123)
   const orderId = searchParams.get("orderId");
 
-  /* ---------------------------------------------------------
-     1. Lifecycle: Fetch order details from API on mount
-  --------------------------------------------------------- */
+  // Lifecycle: Fetch order details from API on mount
   useEffect(() => {
     const fetchOrder = async () => {
       if (!orderId) return setLoading(false);
@@ -48,9 +46,7 @@ export const OrderSuccess = () => {
     fetchOrder();
   }, [orderId]);
 
-  /* ---------------------------------------------------------
-     2. Loading State: Minimalist B&W Spinner
-  --------------------------------------------------------- */
+  // Loading State: Minimalist B&W Spinner
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-white gap-4">
@@ -62,9 +58,7 @@ export const OrderSuccess = () => {
     );
   }
 
-  /* ---------------------------------------------------------
-     3. Error State: If orderId is invalid or not found
-  --------------------------------------------------------- */
+  // Error State: If orderId is invalid or not found
   if (!orderData) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white p-6 text-black">
@@ -98,7 +92,7 @@ export const OrderSuccess = () => {
   return (
     <div className="min-h-screen bg-white text-black py-16 px-4 selection:bg-black selection:text-white">
       <div className="max-w-4xl mx-auto">
-        {/* ================= SUCCESS HEADER ================= */}
+        {/* ---------- SUCCESS HEADER -------- */}
         <div className="text-center mb-16">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full border-2 border-black mb-6">
             <CheckCircle2 className="w-8 h-8 stroke-[1.5]" />
@@ -112,7 +106,7 @@ export const OrderSuccess = () => {
           </p>
         </div>
 
-        {/* ================= SUMMARY GRID (B&W BORDER LAYOUT) ================= */}
+        {/* ------------ SUMMARY GRID (B&W BORDER LAYOUT) -------------- */}
         <div className="border-y border-black py-10 grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
           {/* Order ID & Date */}
           <div className="space-y-1">
@@ -158,7 +152,7 @@ export const OrderSuccess = () => {
           </div>
         </div>
 
-        {/* ================= DETAILS SECTION ================= */}
+        {/* -------------------- DETAILS SECTION ---------------- */}
         <div className="grid md:grid-cols-2 gap-12 mb-16">
           {/* Shipping Address Column */}
           <section>
@@ -198,7 +192,7 @@ export const OrderSuccess = () => {
           </section>
         </div>
 
-        {/* ================= ACTION BAR (NAVIGATION) ================= */}
+        {/* -------------------- ACTION BAR (NAVIGATION) ----------------- */}
         <div className="flex flex-col sm:flex-row gap-4">
           {/* Track Shipment Link: Navigates to tracking page passing order data via state */}
           <Link

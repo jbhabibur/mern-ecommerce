@@ -1,3 +1,9 @@
+/**
+ * @desc    Professional HTML template for Account Verification Success Notification
+ * @param   {string} name - Recipient Name
+ * @returns {string} HTML string for email template
+ */
+
 export const successTemplate = (name) => {
   // Use the env variable if it exists, otherwise default to localhost
   const loginUrl = `${process.env.CLIENT_URL || "http://localhost:5173"}/account/login`;

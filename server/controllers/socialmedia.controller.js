@@ -2,10 +2,9 @@ import { Storefront } from "../models/storefront.model.js";
 import { cloudinary } from "../config/cloudinary.js";
 import { asyncHandler } from "../middleware/error.middleware.js";
 
-/**
- * @desc    Get Social Feed
- * @route   GET /api/storefront/social-feed
- */
+// @desc    Get all social feed items
+// @route   GET /api/storefront/social-feed
+// @access  Public
 export const getSocialFeed = asyncHandler(async (req, res) => {
   let storefront = await Storefront.findOne();
 
@@ -36,14 +35,13 @@ export const getSocialFeed = asyncHandler(async (req, res) => {
   });
 });
 
-/**
- * @desc    Add Social Feed (Multiple Files or Single URL)
- * @route   POST /api/storefront/social-feed
- */
+// @desc    Add social feed item(s)
+// @route   POST /api/storefront/social-feed
+// @access  Private/Admin
 export const addSocialFeed = asyncHandler(async (req, res) => {
   let itemsToAdd = [];
 
-  // 1. Handle Multiple Local Files
+  // Handle Multiple Local Files
   if (req.files && req.files.length > 0) {
     itemsToAdd = req.files.map((file) => ({
       image: {
@@ -52,7 +50,7 @@ export const addSocialFeed = asyncHandler(async (req, res) => {
       },
     }));
   }
-  // 2. Handle Single External URL
+  // Handle Single External URL
   else if (req.body.url) {
     itemsToAdd = [
       {
@@ -89,10 +87,9 @@ export const addSocialFeed = asyncHandler(async (req, res) => {
   });
 });
 
-/**
- * @desc    Delete Social Feed Item
- * @route   DELETE /api/storefront/social-feed/:id
- */
+// @desc    Delete a social feed item
+// @route   DELETE /api/storefront/social-feed/:id
+// @access  Private/Admin
 export const deleteSocialFeed = asyncHandler(async (req, res) => {
   const { id } = req.params;
 

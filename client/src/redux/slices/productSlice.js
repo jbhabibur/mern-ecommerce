@@ -1,8 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
-/**
- * Async Thunk to fetch all products from API
- */
+// Async Thunk to fetch all products from API
 export const fetchProducts = createAsyncThunk(
   "products/fetchProducts",
   async (_, { rejectWithValue }) => {
@@ -22,8 +20,8 @@ const productSlice = createSlice({
   initialState: {
     items: [],
     newArrivals: [],
-    activeProduct: null, // Used for StickyPurchaseBar in MainLayout
-    isStickyVisible: false, // New state to track scroll visibility globally
+    activeProduct: null,
+    isStickyVisible: false,
     loading: false,
     error: null,
   },

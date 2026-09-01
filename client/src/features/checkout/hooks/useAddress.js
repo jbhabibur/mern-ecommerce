@@ -5,7 +5,7 @@ export const useAddress = () => {
   const queryClient = useQueryClient();
   const token = localStorage.getItem("token");
 
-  // --- 1. Fetch Addresses (Query) ---
+  // Fetch Addresses (Query)
   const {
     data: addresses = [],
     isLoading: loading,
@@ -33,7 +33,7 @@ export const useAddress = () => {
     enabled: !!token,
   });
 
-  // --- 2. Create Address (Mutation) ---
+  // Create Address (Mutation)
   const addMutation = useMutation({
     mutationFn: async (newAddress) => {
       const response = await fetch(`${BASE_URL}/api/address`, {
@@ -57,7 +57,7 @@ export const useAddress = () => {
     },
   });
 
-  // --- 3. Update Address (Mutation) ---
+  // Update Address (Mutation)
   const updateMutation = useMutation({
     mutationFn: async ({ id, updatedData }) => {
       const response = await fetch(`${BASE_URL}/api/address/${id}`, {
@@ -84,7 +84,7 @@ export const useAddress = () => {
     },
   });
 
-  // --- 4. Delete Address (Mutation) ---
+  // Delete Address (Mutation)
   const deleteMutation = useMutation({
     mutationFn: async (id) => {
       const response = await fetch(`${BASE_URL}/api/address/${id}`, {
@@ -107,12 +107,10 @@ export const useAddress = () => {
     loading,
     error: error?.message,
     refresh,
-    // API Actions
     addAddressApi: (data) => addMutation.mutateAsync(data),
     updateAddressApi: (id, updatedData) =>
       updateMutation.mutateAsync({ id, updatedData }),
     deleteAddressApi: (id) => deleteMutation.mutateAsync(id),
-    // Loading States
     isAdding: addMutation.isPending,
     isUpdating: updateMutation.isPending,
     isDeleting: deleteMutation.isPending,

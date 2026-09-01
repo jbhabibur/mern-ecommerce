@@ -1,3 +1,11 @@
+/**
+ * @desc    Professional HTML template for Account Verification (OTP and Magic Link)
+ * @param   {string} name - Recipient Name
+ * @param   {string} otp - One-Time Password for verification
+ * @param   {string} verificationUrl - URL with token for magic link verification
+ * @returns {string} HTML string for email template
+ */
+
 export const verificationTemplate = (name, otp, verificationUrl) => {
   return `
     <!DOCTYPE html>

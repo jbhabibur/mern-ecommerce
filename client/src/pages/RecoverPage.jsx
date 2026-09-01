@@ -15,7 +15,7 @@ export const RecoverPage = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  // --- STATE ---
+  // STATE
   const [showToast, setShowToast] = useState(false);
   const [activeToast, setActiveToast] = useState({ message: "", type: "info" });
 
@@ -32,14 +32,10 @@ export const RecoverPage = () => {
     handleVerifyAndRedirect: handleRegisterVerify,
   } = useRegister();
 
-  /**
-   * ACTION: Close Toast
-   */
+  // ACTION: Close Toast
   const handleCloseToast = useCallback(() => setShowToast(false), []);
 
-  /**
-   * EFFECT: Handle URL Parameters & Cleanup
-   */
+  // EFFECT: Handle URL Parameters & Cleanup
   useEffect(() => {
     if (hasCleanedUp.current) return;
 
@@ -68,9 +64,7 @@ export const RecoverPage = () => {
     }
   }, [searchParams, setSearchParams]);
 
-  /**
-   * EFFECT: Sync Hook Status (Register) to Toast
-   */
+  // EFFECT: Sync Hook Status (Register) to Toast
   useEffect(() => {
     if (registerStatus?.message) {
       setActiveToast({

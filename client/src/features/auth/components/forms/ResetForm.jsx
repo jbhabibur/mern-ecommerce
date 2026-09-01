@@ -108,7 +108,6 @@ export const ResetForm = () => {
               value={formData.password}
               onChange={handleChange}
               disabled={loading}
-              // Added pr-10 to make space for the icon so text doesn't overlap
               className={`w-full border-b-2 bg-transparent py-2 pr-10 text-sm transition-all focus:outline-none ${
                 fieldErrors.password
                   ? "border-red-500"
@@ -118,7 +117,6 @@ export const ResetForm = () => {
             <button
               type="button"
               onClick={togglePassword}
-              // Changed bottom to 2 to keep it vertically aligned regardless of hover
               className="absolute right-0 bottom-2 text-zinc-400 hover:text-black transition-colors"
             >
               {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}

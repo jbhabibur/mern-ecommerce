@@ -25,38 +25,44 @@ const categoryUploads = upload.fields([
 ]);
 
 /**
- * @route   POST /api/categories
  * @desc    Create a new category with multiple images
+ * @route   POST /api/categories
+ * @access  Private (Admin Only)
  */
 router.post("/", categoryUploads, createCategory);
 
 /**
- * @route   PATCH /api/categories/:id/update-image
  * @desc    Update a specific image (one-by-one) without affecting other fields
+ * @route   PATCH /api/categories/:id/update-image
+ * @access  Private (Admin Only)
  */
 router.patch("/:id/update-image", categoryUploads, updateCategoryImage);
 
 /**
- * @route   POST /api/categories/all
  * @desc    Fetch paginated categories with product counts
+ * @route   POST /api/categories/all
+ * @access  Public / Private
  */
 router.post("/all", getAllCategory);
 
 /**
- * @route   GET /api/categories/list-all
  * @desc    Fetch lightweight list for dropdowns/admin management
+ * @route   GET /api/categories/list-all
+ * @access  Public / Private
  */
 router.get("/list-all", getCategoryListOnly);
 
 /**
- * @route   PATCH /api/categories/:id
  * @desc    Update text fields or visibility status
+ * @route   PATCH /api/categories/:id
+ * @access  Private (Admin Only)
  */
 router.patch("/:id", updateCategoryStatus);
 
 /**
- * @route   GET /api/categories/:slug
  * @desc    Fetch single category details and products by slug
+ * @route   GET /api/categories/:slug
+ * @access  Public
  * @note    Keep dynamic slug routes at the bottom to prevent route conflicts
  */
 router.get("/:slug", getCategory);

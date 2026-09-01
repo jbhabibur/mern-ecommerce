@@ -13,7 +13,7 @@ export const ProtectedRoute = ({ children }) => {
   const currentPath = encodeURIComponent(location.pathname + location.search);
   const loginUrlWithRedirect = `/account/login?return_to=${currentPath}`;
 
-  // 1. Check authentication status
+  // Check authentication status
   // Validates if the user is logged in via manual token or social profile
   const isAuthenticated = isLoggedIn && (token || user?.id || user?._id);
 
@@ -21,7 +21,7 @@ export const ProtectedRoute = ({ children }) => {
     return <Navigate to={loginUrlWithRedirect} replace />;
   }
 
-  // 2. Token Expiration Check
+  // Token Expiration Check
   if (token) {
     try {
       const decoded = jwtDecode(token);

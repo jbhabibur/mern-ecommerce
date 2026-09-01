@@ -152,7 +152,7 @@ export const DeliveryForm = ({
           </label>
           <input
             type="text"
-            value={formData.address || ""} // Updated key to 'address'
+            value={formData.address || ""}
             onChange={(e) => handleChange("address", e.target.value)}
             placeholder="Please enter your address"
             className={getInputClass("address")}

@@ -6,7 +6,7 @@ export const StockProgressBar = ({ stockLimit = 50, currentStock = 10 }) => {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      // 1. Capping logic: Max 100% er beshi hobe na
+      // 1. Calculate the percentage of stock left
       const percentage = (currentStock / stockLimit) * 100;
       setProgress(Math.min(percentage, 100));
     }, 500);

@@ -1,36 +1,38 @@
 import Wishlist from "../models/Wishlist.js";
 
-// Toggle Product in Wishlist (Add/Remove)
+// @desc    Toggle product in user's wishlist (Add if not exists, remove if exists)
+// @route   POST /api/wishlist/toggle
+// @access  Private (Authenticated Users)
 export const toggleWishlist = async (req, res) => {
   try {
     const { productId } = req.body;
-    const userId = req.user._id; // verifyToken theke asche
+    const userId = req.user._id;
 
     let wishlist = await Wishlist.findOne({ user: userId });
 
-    // 1. Wishlist na thakle notun create koro
+    // Check if wishlist doesn't exist, create a new one with the product
     if (!wishlist) {
       wishlist = await Wishlist.create({
         user: userId,
         products: [productId],
       });
     } else {
-      // 2. Product ki agei ache?
+      // Check if product already exists in the wishlist
       const isExist = wishlist.products.includes(productId);
 
       if (isExist) {
-        // Product thakle remove koro
+        // Remove product if it already exists
         wishlist.products = wishlist.products.filter(
           (id) => id.toString() !== productId,
         );
       } else {
-        // Product na thakle add koro
+        // Add product if it does not exist
         wishlist.products.push(productId);
       }
       await wishlist.save();
     }
 
-    // Update korar por populate kore pathano jate frontend-e details pawa jay
+    // Populate and fetch the updated wishlist to send detailed product objects to the frontend
     const updatedWishlist = await Wishlist.findOne({ user: userId }).populate(
       "products",
     );
@@ -38,14 +40,16 @@ export const toggleWishlist = async (req, res) => {
     res.status(200).json({
       success: true,
       message: "Wishlist updated successfully",
-      products: updatedWishlist.products, // Sorasori products array pathachhi
+      products: updatedWishlist.products,
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 };
 
-// Get User's Wishlist
+// @desc    Get currently authenticated user's wishlist
+// @route   GET /api/wishlist
+// @access  Private (Authenticated Users)
 export const getWishlist = async (req, res) => {
   try {
     const userId = req.user._id;

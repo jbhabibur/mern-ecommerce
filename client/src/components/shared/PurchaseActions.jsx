@@ -34,15 +34,13 @@ export const PurchaseActions = ({
   const dispatch = useDispatch();
   const { onProceed, isProcessing } = useCheckoutInitiate();
 
-  // Data form redux
+  // Get the current quantity from the Redux store
   const { quantity } = useSelector((state) => state.selection);
 
   // Extract the URL string from the object safely
   const imageUrl = productImage?.url || productImage;
 
-  /**
-   * Handle adding product to cart with size validation
-   */
+  // Handle adding product to cart with size validation
   const handleAddToCart = () => {
     if (!noSizeRequired && !selectedSize) {
       alert("Please select a size first!");
@@ -56,7 +54,7 @@ export const PurchaseActions = ({
         price: unitPrice,
         quantity: quantity,
         size: noSizeRequired ? "N/A" : selectedSize,
-        image: imageUrl, // Sending the string URL
+        image: imageUrl,
       }),
     );
 
@@ -86,7 +84,7 @@ export const PurchaseActions = ({
   const safeQuantity = Number(quantity) || 1;
   const subtotal = safeUnitPrice * safeQuantity;
 
-  /* -------- Start: Wishlist Added Logic (Adjusted) ------------ */
+  // start: Wishlist Added Logic
   const { wishlistItems = [] } = useSelector((state) => state.wishlist || {});
   const { token } = useSelector((state) => state.auth);
 
@@ -127,7 +125,7 @@ export const PurchaseActions = ({
       }
     }
   };
-  /* -------- End: Wishlist Added Logic ------------ */
+  // end: Wishlist Added Logic
 
   // Get the current URL for sharing
   const productUrl = typeof window !== "undefined" ? window.location.href : "";

@@ -27,14 +27,14 @@ export const Home = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // --- Toast State ---
+  // Toast State
   const [toast, setToast] = useState({
     show: false,
     message: "",
     type: "success",
   });
 
-  // --- Effect: Handle Toast from Navigation State ---
+  // Effect: Handle Toast from Navigation State
   useEffect(() => {
     if (location.state?.showToast) {
       setToast({
@@ -43,7 +43,6 @@ export const Home = () => {
         type: location.state.toastType || "success",
       });
 
-      // CLEANUP: State clear kora jate refresh korle abar Toast na ashe
       const newState = { ...location.state };
       delete newState.showToast;
       delete newState.toastMsg;
@@ -54,7 +53,7 @@ export const Home = () => {
 
   const handleCloseToast = () => setToast((prev) => ({ ...prev, show: false }));
 
-  // --- Data Fetching ---
+  // Data Fetching
   // We maintain the hooks here to ensure data starts loading as soon as Home mounts
   useHeroData(5000);
   useCategoriesData();
